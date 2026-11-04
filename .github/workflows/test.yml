@@ -1,11 +1,9 @@
-# Runs the test suite on every push and pull request, on Linux and Windows with every Node version
-# Floorplan supports. macOS runs separately (macos.yml), since GitHub's macOS machines are often all
-# busy. No dependencies to install: Node's built-in runner.
+# Les tests sur Linux et Windows, avec chaque version de Node. Seulement à la demande (Actions, Tests,
+# Run workflow) : au quotidien ils tournent sur le PC. Rien à installer : le lanceur intégré à Node.
 name: Tests
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
