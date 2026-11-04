@@ -2,7 +2,7 @@
 // floorplan/query.mjs (as a CLI that the Claude Code CLI or Codex calls). Plain script: no imports, no exports.
 // Item ids: n:<node id>  f:<file path>  r:<route index>  s:<file path>#<export index>
 
-function createGraphQuery(G) {
+function creerRequetesGraphe(G) {
   const nodes = new Map(G.nodes.map((n) => [n.id, n]));
   const files = new Map(G.files.map((f) => [f.p, f]));
   const routes = G.routes || [];
@@ -165,9 +165,9 @@ function createGraphQuery(G) {
 
   function overview() {
     return {
-      project: G.project.name, summary: G.project.summary || '',
+      projet: G.projet.name, summary: G.projet.summary || '',
       systems: G.nodes.filter((n) => !n.parent).map((n) => ({ id: 'n:' + n.id, name: n.label, kind: n.kind, description: n.summary || '', modules: (kidsOf.get(n.id) || []).map((k) => `n:${k} ${nodes.get(k).label}`) })),
-      flows: (G.flows || []).map((f) => ({ title: f.title, steps: f.steps.map((s) => `${s.ref} ${s.note}`) })),
+      parcours: (G.parcours || []).map((f) => ({ title: f.title, steps: f.steps.map((s) => `${s.ref} ${s.note}`) })),
       counts: { files: G.files.length, endpoints: routes.length },
       ...(G.recent ? { recentWork: (G.recent.tasks || []).map((t, ti) => ({ title: t.title, request: t.request, summary: t.summary, changed: G.recent.items.filter((x) => x.task === ti).map((x) => `${x.id} ${x.note}`) })) } : {}),
     };
@@ -177,7 +177,7 @@ function createGraphQuery(G) {
 }
 
 // What an answer looks like, for both engines (JSON Schema).
-const FLOORPLAN_ANSWER_SCHEMA = {
+const FLOORPLAN_SCHEMA_REPONSE = {
   type: 'object',
   properties: {
     title: { type: 'string', description: 'Short title for the answer view, at most 6 words.' },
@@ -190,7 +190,7 @@ const FLOORPLAN_ANSWER_SCHEMA = {
 };
 
 // A requested flow: an ordered walkthrough of map items (JSON Schema).
-const FLOORPLAN_FLOW_SCHEMA = {
+const FLOORPLAN_SCHEMA_PARCOURS = {
   type: 'object',
   properties: {
     title: { type: 'string', description: 'Short flow title, at most 6 words, e.g. "Checkout to Stripe payment".' },
@@ -202,7 +202,7 @@ const FLOORPLAN_FLOW_SCHEMA = {
 
 // A requested change to a blueprint: the whole updated plan.json and architecture.json, and what changed
 // (JSON Schema). The documents travel as JSON text so the schema stays the same for every engine.
-const FLOORPLAN_CHANGE_SCHEMA = {
+const FLOORPLAN_SCHEMA_CHANGEMENT = {
   type: 'object',
   properties: {
     title: { type: 'string', description: 'What changed, 2-6 words, e.g. "Planned out payments".' },
@@ -215,10 +215,10 @@ const FLOORPLAN_CHANGE_SCHEMA = {
   required: ['title', 'summary', 'plan', 'architecture', 'changes'],
 };
 
-function floorplanChangeInstructions(G) {
-  const src = G.meta?.blueprint?.source;
+function floorplanConsignesChangement(G) {
+  const src = G.meta?.ebauche?.source;
   return [
-    `You change a blueprint: an interactive map of "${G.project.name}", a system that is planned but not built yet. The person looking at it asks for a change, addition or removal ("also plan out payments", "drop the admin page", "staff should sign in with Google"), and you update the plan.`,
+    `You change a blueprint: an interactive map of "${G.projet.name}", a system that is planned but not built yet. The person looking at it asks for a change, addition or removal ("also plan out payments", "drop the admin page", "staff should sign in with Google"), and you update the plan.`,
     `Read floorplan/plan.json and floorplan/architecture.json first${src ? `, and ${src} (the PRD it was planned from) when the request touches what the PRD says` : ''}. You can look things up on the map with \`node floorplan/query.mjs find "<words>"\` and \`show <id>\`.`,
     'plan.json format: { source, stack[], assumptions[], questions[{question, about[]}], files[{path, name, description, screen?, uses[], calls["METHOD /path"], services[node ids], data[node ids]}], endpoints[{method, path, file, name, description, access: public|signed-in|team|webhook|internal, who?, publicBecause?}] }. Every endpoint\'s file is a planned file, every call matches a planned endpoint exactly, and services/data name nodes in architecture.json.',
     'architecture.json: { project, nodes[{id, label, kind, parent?, summary, paths[globs]}], edges[], flows[{id, title, steps[{node, note}]}], tour[] }. Kinds: ui service worker library feature data config test script infra external. External nodes (outside services, the database) own no files. Every planned file must fall under some node\'s paths, so add or widen globs for new folders. Flow and tour steps point at node ids or planned file paths.',
@@ -228,9 +228,9 @@ function floorplanChangeInstructions(G) {
   ].join('\n');
 }
 
-function floorplanFlowInstructions(G, engine) {
+function floorplanConsignesParcours(G, engine) {
   return [
-    `You build guided flows for an interactive architecture map of the codebase "${G.project.name}". A flow is an ordered walkthrough: each step is one map item (module n:..., file f:..., endpoint r:..., or export s:...) and a note on what happens there.`,
+    `You build guided flows for an interactive architecture map of the codebase "${G.projet.name}". A flow is an ordered walkthrough: each step is one map item (module n:..., file f:..., endpoint r:..., or export s:...) and a note on what happens there.`,
     engine === 'cli'
       ? 'Find the items with `node floorplan/query.mjs find "<words>"`, `show <id>` and `path <fromId> <toId>`; read source files when you need to confirm the order of events.'
       : 'Find the items with the tools find_items, get_item and dependency_path.',
@@ -240,13 +240,13 @@ function floorplanFlowInstructions(G, engine) {
   ].join('\n');
 }
 
-function floorplanAskInstructions(G, engine) {
+function floorplanConsignesQuestion(G, engine) {
   const tools = engine === 'cli'
     ? `Query the map from the shell: \`node floorplan/query.mjs overview\`, \`node floorplan/query.mjs find "<words>" [--kind module|file|endpoint|symbol]\`, \`node floorplan/query.mjs show <id>\`, \`node floorplan/query.mjs path <fromId> <toId>\`. Every result is JSON with ids. Start with the map; read or grep source files when you need specifics the map does not have.`
     : `Use the tools find_items, get_item and dependency_path to explore the map. You cannot read source files, so answer from the map's names, descriptions, endpoints and connections, and say so when a question needs the code itself.`;
-  const bp = G.meta?.blueprint;
+  const bp = G.meta?.ebauche;
   return [
-    `You answer questions about the codebase "${G.project.name}" for someone exploring an interactive architecture map of it.`,
+    `You answer questions about the codebase "${G.projet.name}" for someone exploring an interactive architecture map of it.`,
     `The map has cards for modules (ids n:...), files (f:<path>), HTTP endpoints (r:<number>) and exported symbols (s:<path>#<number>), each with a human-readable name and description, connected by imports and HTTP calls.`,
     tools,
     bp ? `This map is a blueprint: a plan of a system that hasn't been built yet, so its files don't exist.${engine === 'cli' ? ` Instead of source files, read floorplan/plan.json${bp.source ? ` and ${bp.source} (what it was planned from)` : ''} when you need more than the map.` : ''} Answer about what would be built and why, and say plainly when the plan doesn't cover something.` : '',

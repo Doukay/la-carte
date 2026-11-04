@@ -7,14 +7,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { parseArgs, mapDir } from './lib/common.mjs';
+import { lireArguments, dossierCarte } from './lib/common.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const dir = mapDir(root);
+const dir = dossierCarte(root);
 const serveFile = path.join(dir, 'serve.mjs');
 const stateFile = path.join(dir, '.cache', 'server.json');
-const rel = path.relative(process.cwd(), dir).replace(/\\/g, '/') || '.';
+const cheminRelatif = path.relative(process.cwd(), dir).replace(/\\/g, '/') || '.';
 const IDLE_MINUTES = 120;
 
 if (!fs.existsSync(path.join(dir, 'index.html')) || !fs.existsSync(serveFile)) {
@@ -66,7 +66,7 @@ if (!status) {
     if (n?.pid && n.pid !== prev && alive(n.pid)) { s = n; status = await api(s, '/api/status'); if (status) break; }
   }
   if (!status) {
-    console.error(`✗ The map server didn't start. Its log is in ${rel}/.cache/server.log. The map still opens as a file: ${rel}/index.html`);
+    console.error(`✗ The map server didn't start. Its log is in ${cheminRelatif}/.cache/server.log. The map still opens as a file: ${cheminRelatif}/index.html`);
     process.exit(1);
   }
   // tabs from before a restart come back on their own within a few seconds
@@ -87,4 +87,4 @@ const CLI = {
 console.log(health?.cli
   ? `ASK  works: questions run through ${CLI[health.engine]?.name || 'the Claude Code CLI'}${health.version ? ' (' + health.version + ')' : ''}`
   : `ASK  needs ${(CLI[health?.want] || CLI.claude).name}, which was not found; the map itself works (${(CLI[health?.want] || CLI.claude).docs})`);
-console.log(`SERVER  runs in the background, updates open tabs when the map is rebuilt, and stops ${IDLE_MINUTES / 60} hours after the last tab closes. Stop it now: node ${rel}/serve.mjs --stop`);
+console.log(`SERVER  runs in the background, updates open tabs when the map is rebuilt, and stops ${IDLE_MINUTES / 60} hours after the last tab closes. Stop it now: node ${cheminRelatif}/serve.mjs --stop`);

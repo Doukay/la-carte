@@ -22,7 +22,7 @@ const JS_LANGS = new Set(['typescript', 'javascript', 'vue', 'svelte', 'astro'])
 
 // ======================= scan side =======================
 
-export function findScreens(src, file) {
+export function trouverEcrans(src, file) {
   if (file.category !== 'code' || !JS_LANGS.has(file.lang)) return [];
   const p = file.path;
   const out = [];
@@ -71,10 +71,10 @@ function fileBasedScreen(p, src) {
   // Remix / React Router v7 file routes: app/routes/*
   if ((m = /(?:^|\/)app\/routes\/(.+)\.(?:tsx|jsx|ts|js|mdx)$/.exec(p)) && !/react-native/.test(src)) {
     if (!/\bexport\s+default\b/.test(src)) return null; // resource routes (loader/action only) aren't screens
-    let rel = m[1];
-    if (/(^|\/)route$/.test(rel)) rel = rel.replace(/\/?route$/, '');            // folder routes: products.$id/route.tsx
+    let cheminRelatif = m[1];
+    if (/(^|\/)route$/.test(cheminRelatif)) cheminRelatif = cheminRelatif.replace(/\/?route$/, '');            // folder routes: products.$id/route.tsx
     const segs = [];
-    for (const part of rel.split('/')) for (const raw of part.split(/\.(?![^[]*\])/)) {
+    for (const part of cheminRelatif.split('/')) for (const raw of part.split(/\.(?![^[]*\])/)) {
       let s = raw.replace(/\[(.*?)\]/g, '$1');
       if (s === '_index' || s === 'index') continue;
       if (s.startsWith('_')) continue;                   // pathless layout
@@ -296,7 +296,7 @@ const DB_PKG =/sqlalchemy|psycopg|\bpg\b|postgres|mysql|mongo|prisma|redis|sqlit
 const AUTHY = /(^|\/)(auth|middlewares?|decorators?|permissions?|security|extensions)(\/|\.[a-z]+$|_)/i;
 const VERBS = new Set('place book reserve claim view read write post put rename renew rotate revoke grant request notify email share attach detach link unlink accept reject decline finalize lock unlock release hold quote estimate count tag untag filter sort report track subscribe unsubscribe join leave follow rate review comment reply flag block activate deactivate suspend resume pause poll ping backfill seed migrate map match swap replace convert recalculate rerun reprocess regenerate recount reorder restock return exchange weigh label fulfill dispatch deliver build deploy upsert insert fill clear flush purge expire invalidate trigger handle ack list get fetch load create add update edit save delete remove search find look check send start stop run mark apply approve cancel set reset preview calculate compute generate refresh submit record adjust issue redeem void close open print scan sync import export upload download move transfer assign archive restore publish unpublish toggle enable disable confirm complete process verify validate log sign register login logout invite connect disconnect wake retry resend bulk merge split duplicate clone schedule queue push pull test rebuild reprice receive pick pack ship refund charge pay collect capture authorize'.split(' '));
 
-export function buildScreens({ graph, scan, root }) {
+export function construireEcrans({ graph, scan, root }) {
   const files = new Map(graph.files.map((f) => [f.p, f]));
   const nodes = new Map(graph.nodes.map((n) => [n.id, n]));
   const routes = graph.routes || [];
@@ -333,7 +333,7 @@ export function buildScreens({ graph, scan, root }) {
   };
   const routed = []; // router entries: { url, file, fw }
   const pageHints = [];
-  for (const f of scanFiles) for (const h of f.screens || []) {
+  for (const f of scanFiles) for (const h of f.ecrans || []) {
     if (!h || typeof h.url !== 'string') continue;
     if (h.comp || h.spec || h.target) { const file = resolveHint(f.path, h); if (file) routed.push({ url: h.url, file, fw: h.fw }); }
     else pageHints.push({ url: h.url, file: f.path, fw: h.fw });

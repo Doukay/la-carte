@@ -8,7 +8,7 @@ const DETECT = {
 };
 export const AGENTS = Object.keys(DETECT);
 
-export function detectAgent(args = {}, env = process.env) {
+export function detecterAgent(args = {}, env = process.env) {
   const v = String(args.agent || env.FLOORPLAN_AGENT || '').toLowerCase();
   if (AGENTS.includes(v)) return v;
   return AGENTS.find((a) => DETECT[a](env)) || 'claude';

@@ -1,7 +1,7 @@
 // Turn per-file route definitions + mounts into full paths, then match HTTP call literals to them.
 // This is what links a frontend repo to a backend repo when no import connects them.
 
-export const routeSegments = (p) => p.split('/').filter(Boolean).map((s) =>
+export const segmentsRoute = (p) => p.split('/').filter(Boolean).map((s) =>
   /^(<[^>]*>|\{[^}]*\}|:\w+|\[\.{0,3}[^\]]*\]|\*{1,2}|\$\{[^}]*\})$/.test(s) || /\$\{|\{[^}]*\}/.test(s) ? '*' : s);
 
 const TEST_FILE = /(^|\/)(tests?|__tests__|spec|specs|e2e|fixtures?)\/|\.(test|spec)\.[a-z]+$|(^|\/)test_[^/]*\.py$|_test\.(py|go)$|(^|\/)conftest\.py$/;
@@ -45,7 +45,7 @@ function mountTarget(f, mount) {
   return { file: f.path, v: head }; // defined in the same file
 }
 
-export function resolveRoutes(files) {
+export function resoudreRoutes(files) {
   // mountsTo[file] = [{ from, v, prefix }]   (v === '*' applies to every route in the file)
   const mountsTo = new Map();
   for (const f of files) for (const mount of TEST_FILE.test(f.path) ? [] : f.mounts || []) {
@@ -145,14 +145,14 @@ function score(c, r) {
  * under /api/store, its ambiguous `/orders` means /api/store/orders, not /api/admin/orders.
  * @returns [{ from, to, method, path, call, line }]
  */
-export function matchCalls(files, routes) {
-  const rs = routes.map((r) => ({ ...r, segs: routeSegments(r.path) }));
+export function associerAppels(files, routes) {
+  const rs = routes.map((r) => ({ ...r, segs: segmentsRoute(r.path) }));
   const pending = [];
   const learned = new Map(); // caller file or dir -> Map(prefix -> count)
   const learn = (key, prefix) => { if (!learned.has(key)) learned.set(key, new Map()); const m = learned.get(key); m.set(prefix, (m.get(prefix) || 0) + 1); };
   for (const f of files) {
     for (const call of f.calls || []) {
-      const cs = routeSegments(call.path);
+      const cs = segmentsRoute(call.path);
       let best = -Infinity, hits = [];
       for (const r of rs) {
         if (r.file === f.path) continue;

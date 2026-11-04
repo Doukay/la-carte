@@ -3,15 +3,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-export const toPosix = (p) => p.replace(/\\/g, '/');
-export const rel = (from, to) => toPosix(path.relative(from, to)) || '.';
+export const versPosix = (p) => p.replace(/\\/g, '/');
+export const cheminRelatif = (from, to) => versPosix(path.relative(from, to)) || '.';
 
 // ---------- globs ----------
 
 const GLOB_CHARS = /[*?{[]/;
 
-export function globToRegExp(glob) {
-  const g = toPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
+export function motifVersRegex(glob) {
+  const g = versPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
   let re = '';
   let braces = 0;
   for (let i = 0; i < g.length; ) {
@@ -50,15 +50,15 @@ export function globToRegExp(glob) {
 }
 
 /** Compile a glob. A pattern with no wildcards also matches everything under it as a directory. */
-export function compileGlob(glob) {
-  const g = toPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
+export function compilerMotif(glob) {
+  const g = versPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
   const literalPrefix = g.split(GLOB_CHARS)[0];
   if (!GLOB_CHARS.test(g)) {
     return { glob, specificity: g.length, test: (p) => p === g || p.startsWith(g + '/') };
   }
   // A glob that names directories (src/components/{a,b}) also matches everything beneath them.
-  const re = globToRegExp(g);
-  const under = globToRegExp(g + '/**');
+  const re = motifVersRegex(g);
+  const under = motifVersRegex(g + '/**');
   return { glob, specificity: literalPrefix.length, test: (p) => re.test(p) || under.test(p) };
 }
 
@@ -90,46 +90,46 @@ const LOCK_NAMES = /^(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb|p
 const GENERATED = /(\.min\.(js|css)$|\.map$|\.tsbuildinfo$|\.pyc$|\.pyo$|\.class$|\.o$|(^|\/)next-env\.d\.ts$)/i;
 
 /** Directories never worth scanning, even if a repo tracks them. */
-export const HARD_IGNORE_DIRS = new Set([
+export const DOSSIERS_TOUJOURS_IGNORES = new Set([
   'node_modules', '.git', '.pnpm-store', '.yarn', '__pycache__', '.venv', 'venv', 'site-packages',
   '.tox', '.mypy_cache', '.pytest_cache', '.ruff_cache', '.next', '.nuxt', '.svelte-kit', '.turbo',
   '.parcel-cache', '.gradle', '.idea',
 ]);
 
 /** The folder the map lives in, at the codebase root. Maps made before the rename used show-code/. */
-export const MAP_DIR = 'floorplan';
-export const LEGACY_MAP_DIR = 'show-code';
+export const DOSSIER_CARTE = 'floorplan';
+export const ANCIEN_DOSSIER_CARTE = 'show-code';
 /** True for a folder holding a map, so a project's own folder that happens to be called "floorplan" isn't taken for one. */
-export const isMapDir = (d) => ['architecture.json', 'plan.json', 'graph.json', '.cache'].some((f) => fs.existsSync(path.join(d, f)));
+export const estDossierCarte = (d) => ['architecture.json', 'plan.json', 'graph.json', '.cache'].some((f) => fs.existsSync(path.join(d, f)));
 /**
  * Keeps the map folder out of git: its own .gitignore ignores everything in it, itself included, so
  * nothing in the project's tracked files changes. Returns a warning when git already tracks files
  * there (ignoring doesn't untrack them), else null.
  */
-export function keepOutOfGit(dir) {
+export function garderHorsGit(dir) {
   const gi = path.join(dir, '.gitignore');
   const want = '# Floorplan keeps its map out of git: this ignores everything in this folder, this file included.\n*\n';
   fs.mkdirSync(dir, { recursive: true });
   try { if (!fs.existsSync(gi) || fs.readFileSync(gi, 'utf8') !== want) fs.writeFileSync(gi, want); } catch {}
   const tracked = (git(dir, ['ls-files', '--', '.']) || '').split('\n').filter(Boolean);
   if (!tracked.length) return null;
-  const rel = path.basename(dir);
-  return `${tracked.length} file(s) in ${rel}/ were committed to git before; they stay tracked until you run: git rm -r --cached ${rel}  (this keeps the files on disk)`;
+  const cheminRelatif = path.basename(dir);
+  return `${tracked.length} file(s) in ${cheminRelatif}/ were committed to git before; they stay tracked until you run: git rm -r --cached ${cheminRelatif}  (this keeps the files on disk)`;
 }
 
 /** The map folder for a codebase root. */
-export function mapDir(root) {
-  const dir = path.join(root, MAP_DIR);
-  if (fs.existsSync(dir) && !isMapDir(dir) && fs.readdirSync(dir).length) {
-    console.error(`✗ ${MAP_DIR}/ already exists here and isn't a map (it's part of the project). Pass --out <folder> to put the map somewhere else.`);
+export function dossierCarte(root) {
+  const dir = path.join(root, DOSSIER_CARTE);
+  if (fs.existsSync(dir) && !estDossierCarte(dir) && fs.readdirSync(dir).length) {
+    console.error(`✗ ${DOSSIER_CARTE}/ already exists here and isn't a map (it's part of the project). Pass --out <folder> to put the map somewhere else.`);
     process.exit(1);
   }
   return dir;
 }
 /** Extra directories skipped when walking outside of git (where .gitignore can't help). */
-export const WALK_IGNORE_DIRS = new Set([...HARD_IGNORE_DIRS, 'dist', 'build', 'out', 'target', 'coverage', '.cache', 'vendor', 'bin', 'obj', 'env', '.vscode', '.claude']);
+export const DOSSIERS_IGNORES_PARCOURS = new Set([...DOSSIERS_TOUJOURS_IGNORES, 'dist', 'build', 'out', 'target', 'coverage', '.cache', 'vendor', 'bin', 'obj', 'env', '.vscode', '.claude']);
 
-export function classify(relPath, bytes) {
+export function classer(relPath, bytes) {
   const base = path.posix.basename(relPath).toLowerCase();
   const ext = path.posix.extname(base);
   if (GENERATED.test(relPath)) return { category: 'generated', lang: null };
@@ -157,7 +157,7 @@ export function git(cwd, args) {
   }
 }
 
-export function gitInfo(dir) {
+export function infosGit(dir) {
   const head = git(dir, ['rev-parse', 'HEAD']);
   const branch = git(dir, ['rev-parse', '--abbrev-ref', 'HEAD']);
   const remote = git(dir, ['config', '--get', 'remote.origin.url']);
@@ -165,10 +165,10 @@ export function gitInfo(dir) {
 }
 
 /** Files git considers part of the repo: tracked + untracked-but-not-ignored. */
-export function gitFiles(dir) {
+export function fichiersGit(dir) {
   const out = git(dir, ['ls-files', '-co', '--exclude-standard', '-z']);
   if (out == null) return null;
-  return [...new Set(out.split('\0').filter(Boolean))].map(toPosix);
+  return [...new Set(out.split('\0').filter(Boolean))].map(versPosix);
 }
 
 /** If dir/.git is a file pointing into another repo's worktrees/, return that repo's working dir. */
@@ -180,9 +180,9 @@ function worktreeMain(dir) {
   const m = /gitdir:\s*(.+)/.exec(fs.readFileSync(dotgit, 'utf8'));
   if (!m) return null;
   const gitdir = path.resolve(dir, m[1].trim());
-  const idx = toPosix(gitdir).lastIndexOf('/.git/worktrees/');
+  const idx = versPosix(gitdir).lastIndexOf('/.git/worktrees/');
   if (idx === -1) return null; // submodule or other indirection: treat as a normal repo
-  return path.resolve(toPosix(gitdir).slice(0, idx));
+  return path.resolve(versPosix(gitdir).slice(0, idx));
 }
 
 // ---------- discovery ----------
@@ -192,45 +192,45 @@ function worktreeMain(dir) {
  * (git ls-files covers them). Loose files outside any repo are collected too.
  * Linked worktrees of a repo that is itself in the codebase are skipped as duplicates.
  */
-export function discover(root, { includeWorktrees = false, maxLooseFiles = 5000 } = {}) {
+export function decouvrir(root, { includeWorktrees = false, maxLooseFiles = 5000 } = {}) {
   const repos = [];
   const loose = [];
   const skipped = [];
 
   const walk = (dir, depth) => {
     if (fs.existsSync(path.join(dir, '.git'))) {
-      repos.push({ abs: dir, path: rel(root, dir), worktreeOf: worktreeMain(dir) });
+      repos.push({ abs: dir, path: cheminRelatif(root, dir), worktreeOf: worktreeMain(dir) });
       return;
     }
     if (depth > 8) return;
     let entries;
     try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
-    if (entries.filter((e) => e.isFile()).length > 500) { skipped.push({ path: rel(root, dir), reason: 'over 500 files outside git (data dump?)' }); return; }
+    if (entries.filter((e) => e.isFile()).length > 500) { skipped.push({ path: cheminRelatif(root, dir), reason: 'over 500 files outside git (data dump?)' }); return; }
     for (const e of entries) {
       const abs = path.join(dir, e.name);
       if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) {
-        if (WALK_IGNORE_DIRS.has(e.name) || (e.name.startsWith('.') && e.name !== '.github')) {
-          if (!['.git', 'node_modules', '__pycache__'].includes(e.name)) skipped.push({ path: rel(root, abs), reason: 'ignored directory' });
+        if (DOSSIERS_IGNORES_PARCOURS.has(e.name) || (e.name.startsWith('.') && e.name !== '.github')) {
+          if (!['.git', 'node_modules', '__pycache__'].includes(e.name)) skipped.push({ path: cheminRelatif(root, abs), reason: 'ignored directory' });
           continue;
         }
         walk(abs, depth + 1);
       } else if (e.isFile()) {
-        if (loose.length < maxLooseFiles) loose.push(rel(root, abs));
+        if (loose.length < maxLooseFiles) loose.push(cheminRelatif(root, abs));
       }
     }
   };
   walk(root, 0);
 
   // Drop worktree duplicates.
-  const norm = (p) => toPosix(path.resolve(p)).toLowerCase();
+  const norm = (p) => versPosix(path.resolve(p)).toLowerCase();
   const primary = new Set(repos.filter((r) => !r.worktreeOf).map((r) => norm(r.abs)));
   const seenMains = new Set();
   const kept = [];
   for (const r of repos) {
     if (r.worktreeOf && !includeWorktrees && r.abs !== root) {
       const main = norm(r.worktreeOf);
-      if (primary.has(main)) { skipped.push({ path: r.path, reason: `worktree of ${rel(root, r.worktreeOf)}` }); continue; }
+      if (primary.has(main)) { skipped.push({ path: r.path, reason: `worktree of ${cheminRelatif(root, r.worktreeOf)}` }); continue; }
       if (seenMains.has(main)) { skipped.push({ path: r.path, reason: `another worktree of ${r.worktreeOf}` }); continue; }
       seenMains.add(main);
     }
@@ -241,7 +241,7 @@ export function discover(root, { includeWorktrees = false, maxLooseFiles = 5000 
 
 // ---------- misc ----------
 
-export function readJsonLoose(file) {
+export function lireJsonSouple(file) {
   try {
     const txt = fs.readFileSync(file, 'utf8')
       .replace(/^﻿/, '')
@@ -253,7 +253,7 @@ export function readJsonLoose(file) {
   }
 }
 
-export function parseArgs(argv, defaults = {}) {
+export function lireArguments(argv, defaults = {}) {
   const out = { _: [], ...defaults };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -267,4 +267,4 @@ export function parseArgs(argv, defaults = {}) {
   return out;
 }
 
-export const fmtNum = (n) => n >= 10000 ? (n / 1000).toFixed(0) + 'k' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+export const formaterNombre = (n) => n >= 10000 ? (n / 1000).toFixed(0) + 'k' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);

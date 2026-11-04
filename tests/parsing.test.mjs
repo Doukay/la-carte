@@ -3,11 +3,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib } from './helpers.mjs';
 
-const { extract, flattenTemplates, cleanDoc } = await lib('extract.mjs');
-const routes = (src, lang, file) => extract(src, lang, file).routes.map((r) => `${r.method} ${r.path}`);
+const { extraire, aplatirGabarits, nettoyerDoc } = await lib('extract.mjs');
+const routes = (src, lang, file) => extraire(src, lang, file).routes.map((r) => `${r.method} ${r.path}`);
 
 test('JavaScript: imports and Express endpoints', () => {
-  const r = extract([
+  const r = extraire([
     `import express from 'express';`,
     `import { db, cache as c } from './db.js';`,
     `const router = express.Router();`,
@@ -28,7 +28,7 @@ test('Next.js app router: each exported method is an endpoint at the folder path
 });
 
 test('Flask: blueprint prefix, methods list and handler docstring', () => {
-  const r = extract([
+  const r = extraire([
     `"""Order endpoints."""`,
     `from flask import Blueprint`,
     `bp = Blueprint('orders', __name__, url_prefix='/api')`,
@@ -46,7 +46,7 @@ test('Flask: blueprint prefix, methods list and handler docstring', () => {
 });
 
 test('FastAPI: router prefix and path parameters', () => {
-  const r = extract([
+  const r = extraire([
     `from fastapi import APIRouter`,
     `router = APIRouter(prefix="/items")`,
     `@router.get("/{item_id}")`,
@@ -59,13 +59,13 @@ test('FastAPI: router prefix and path parameters', () => {
 });
 
 test('Go: grouped imports and http.HandleFunc endpoints', () => {
-  const r = extract(`package main\nimport (\n  "net/http"\n  "example.com/app/store"\n)\nfunc main() { http.HandleFunc("/health", h) }\n`, 'go', 'cmd/main.go');
+  const r = extraire(`package main\nimport (\n  "net/http"\n  "example.com/app/store"\n)\nfunc main() { http.HandleFunc("/health", h) }\n`, 'go', 'cmd/main.go');
   assert.deepEqual(r.imports.map((i) => i.spec), ['net/http', 'example.com/app/store']);
   assert.deepEqual(r.routes.map((x) => `${x.method} ${x.path}`), ['ANY /health']);
 });
 
 test('web requests: fetch with template strings and axios with a method', () => {
-  const r = extract([
+  const r = extraire([
     'export const load = (id) => fetch(`/api/orders/${id}`);',
     `export const pay = (id) => axios.post('/api/orders/' + id + '/pay');`,
   ].join('\n'), 'typescript', 'web/src/api.ts');
@@ -75,7 +75,7 @@ test('web requests: fetch with template strings and axios with a method', () => 
 });
 
 test('comments: a /* inside a string is not a comment, so the code after it is still read', () => {
-  const r = extract([
+  const r = extraire([
     `import { Hono } from 'hono';`,
     `const app = new Hono();`,
     `app.use('/api/*', cors());`,
@@ -88,10 +88,10 @@ test('comments: a /* inside a string is not a comment, so the code after it is s
 });
 
 test('flattenTemplates replaces every ${…} with a placeholder, nested or not', () => {
-  assert.equal(flattenTemplates('fetch(`${API}/users/${id}`)'), 'fetch(`${x}/users/${x}`)');
+  assert.equal(aplatirGabarits('fetch(`${API}/users/${id}`)'), 'fetch(`${x}/users/${x}`)');
 });
 
 test('doc comments: JSDoc is cleaned, license headers are ignored', () => {
-  assert.equal(cleanDoc('/**\n * Lists orders.\n * @param x\n */'), 'Lists orders.');
-  assert.equal(cleanDoc('# Copyright 2020 Example Corp'), null);
+  assert.equal(nettoyerDoc('/**\n * Lists orders.\n * @param x\n */'), 'Lists orders.');
+  assert.equal(nettoyerDoc('# Copyright 2020 Example Corp'), null);
 });

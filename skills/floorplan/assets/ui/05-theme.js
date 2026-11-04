@@ -2,9 +2,9 @@
 // device. The theme itself is picked by a tiny script at the top of viewer.html, before anything is drawn,
 // so the page never flashes the wrong colours; this file only adds the button and keeps it in step.
 (() => {
-  const SC = window.Floorplan;
+  const CARTE = window.Floorplan;
   const T = window.floorplanTheme;
-  if (!SC || !T) return;
+  if (!CARTE || !T) return;
 
   const ICON = {
     auto: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
@@ -34,7 +34,7 @@
   status.setAttribute('role', 'status');
   document.body.appendChild(status);
 
-  const btn = SC.addHeaderButton({ id: 'theme-toggle', svg: ICON.auto, onClick: () => {
+  const btn = CARTE.ajouterBoutonEntete({ id: 'theme-toggle', svg: ICON.auto, onClick: () => {
     const next = NEXT[T.get()];
     T.set(next);
     status.textContent = `Theme is now ${next === 'auto' ? 'Auto, following your device' : WORD[next]}.`;

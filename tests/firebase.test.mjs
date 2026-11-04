@@ -6,13 +6,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { REPO, lib, makeProject, run, readGraph, routeKeys, openEndpoints, cleanup } from './helpers.mjs';
 
-const { extract } = await lib('extract.mjs');
-const { matchCalls } = await lib('routes.mjs');
+const { extraire } = await lib('extract.mjs');
+const { associerAppels } = await lib('routes.mjs');
 
 let root, graph, summary;
 before(() => {
   root = makeProject({}, { arch: {
-    project: { name: 'firebase-app', summary: 'Test fixture.' },
+    projet: { name: 'firebase-app', summary: 'Test fixture.' },
     nodes: [
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The website.', paths: ['web/**'] },
       { id: 'fn', label: 'Functions', kind: 'service', summary: 'Cloud Functions.', paths: ['functions/**'] },
@@ -46,7 +46,7 @@ test("the website's calls reach the functions: httpsCallable, a helper around it
 });
 
 test('Screens shows the server code behind a page that calls functions', () => {
-  const items = graph.screens.find((s) => s.url === '/items');
+  const items = graph.ecrans.find((s) => s.url === '/items');
   assert.ok(items, 'the /items screen');
   const server = items.behind.filter((b) => b.kind === 'server').map((b) => b.id);
   assert.deepEqual(server, ['f:functions/src/items/itemCallables.ts', 'f:functions/src/legacy/v1.js']);
@@ -64,7 +64,7 @@ test('background functions are listed in the scan summary', () => {
 });
 
 test('v1 chains, multi-line generics, grouped names and cloudfunctions.net addresses', () => {
-  const fn = extract([
+  const fn = extraire([
     `const functions = require('firebase-functions');`,
     `exports.report = functions.region('europe-west1').runWith({ memory: '1GB' }).https.onRequest((req, res) => res.end());`,
     `exports.onSignup = functions.auth.user().onCreate(async (user) => {});`,
@@ -73,7 +73,7 @@ test('v1 chains, multi-line generics, grouped names and cloudfunctions.net addre
   assert.deepEqual(fn.routes.map((r) => `${r.method} ${r.path}`), ['ANY /report']);
   assert.deepEqual(fn.triggers.map((t) => `${t.name} ${t.on}`), ['onSignup auth.onCreate']);
 
-  const web = extract([
+  const web = extraire([
     `import { httpsCallable } from 'firebase/functions';`,
     `const a = httpsCallable<`,
     `  Req,`,
@@ -92,5 +92,5 @@ test('a callable only matches callables, and a URL never matches a callable', ()
     { file: 'api/b.ts', method: 'ANY', path: '/approve' },
   ];
   const files = [{ path: 'web/x.ts', calls: [{ path: '/approve', method: 'CALL', line: 1 }, { path: '/approve', method: 'POST', line: 2 }] }];
-  assert.deepEqual(matchCalls(files, routes).map((h) => `${h.line} ${h.to}`), ['1 fn/a.ts', '2 api/b.ts']);
+  assert.deepEqual(associerAppels(files, routes).map((h) => `${h.line} ${h.to}`), ['1 fn/a.ts', '2 api/b.ts']);
 });

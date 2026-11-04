@@ -61,17 +61,17 @@ function exportMap(include, extraFlows = []) {
     ...g,
     // the remote can carry a sign-in token; the folder path is this computer's
     meta: { ...g.meta, root: null, repos: (g.meta.repos || []).map(({ remote, ...r }) => r), exported: { at: new Date().toISOString(), include: on } },
-    flows: on.includes('flows') ? [...g.flows, ...extraFlows.filter((f) => !g.flows.some((x) => x.id === f.id))] : [],
-    tour: on.includes('flows') ? g.tour : [],
+    parcours: on.includes('flows') ? [...g.parcours, ...extraFlows.filter((f) => !g.parcours.some((x) => x.id === f.id))] : [],
+    visite: on.includes('flows') ? g.visite : [],
     files: on.includes('notes') ? g.files : g.files.map(({ note, ...f }) => f),
   };
   if (!on.includes('recent')) delete out.recent;
-  if (!on.includes('health')) delete out.health;
+  if (!on.includes('health')) delete out.sante;
   // dismissals made since the last build travel with the copy (the page applies them; no reasons, which are notes to self)
-  else if (out.health) { const list = readDismissed().map(({ reason, ...d }) => d); if (list.length) out.health = { ...out.health, dismissed: list }; else delete out.health.dismissed; }
+  else if (out.sante) { const list = readDismissed().map(({ reason, ...d }) => d); if (list.length) out.sante = { ...out.sante, dismissed: list }; else delete out.sante.dismissed; }
   const json = JSON.stringify(out).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-  const slug = String(g.project?.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'floorplan';
-  return { html: html.slice(0, a + DATA_START.length) + json + html.slice(b), name: `${slug}-map.html`, include: on, plan: !!g.meta?.blueprint };
+  const slug = String(g.projet?.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'floorplan';
+  return { html: html.slice(0, a + DATA_START.length) + json + html.slice(b), name: `${slug}-map.html`, include: on, plan: !!g.meta?.ebauche };
 }
 /** Flows requested from the map since it was last built, as the page sends them: checked and trimmed. */
 const cleanFlows = (list) => (Array.isArray(list) ? list : []).slice(0, 50)
@@ -89,7 +89,7 @@ if (has('export')) {
     const file = path.resolve(dest && !dest.startsWith('--') ? dest : path.join(here, x.name));
     fs.writeFileSync(file, x.html);
     console.log(`Exported the map to ${file}`);
-    const label = { flows: 'flows and the tour', notes: 'notes', recent: 'recent work', health: x.plan ? 'the design review' : 'the health check' };
+    const label = { parcours: 'flows and the tour', notes: 'notes', recent: 'recent work', sante: x.plan ? 'the design review' : 'the health check' };
     console.log(`Includes: the map${x.include.map((p) => ', ' + label[p]).join('')}. One file that opens in any browser, with no Ask bar.`);
     if (x.include.includes('health') && !x.plan) console.log('It includes the health check: which endpoints are open and where secrets sit in the code (never their values). Share it only with people you trust.');
     process.exit(0);
@@ -186,16 +186,16 @@ function load() {
   const html = fs.readFileSync(path.join(here, 'index.html'), 'utf8');
   const g = JSON.parse(fs.readFileSync(path.join(here, 'graph.json'), 'utf8'));
   const coreSrc = fs.readFileSync(path.join(here, 'query.mjs'), 'utf8').split('// ---- cli ----')[0];
-  const c = new Function(`${coreSrc.replace(/^import .*$/gm, '')}; return { FLOORPLAN_ANSWER_SCHEMA, FLOORPLAN_FLOW_SCHEMA, FLOORPLAN_CHANGE_SCHEMA, floorplanAskInstructions, floorplanFlowInstructions, floorplanChangeInstructions, createGraphQuery };`)();
-  c.q = c.createGraphQuery(g);
+  const c = new Function(`${coreSrc.replace(/^import .*$/gm, '')}; return { FLOORPLAN_SCHEMA_REPONSE, FLOORPLAN_SCHEMA_PARCOURS, FLOORPLAN_SCHEMA_CHANGEMENT, floorplanConsignesQuestion, floorplanConsignesParcours, floorplanConsignesChangement, creerRequetesGraphe };`)();
+  c.q = c.creerRequetesGraphe(g);
   page = html.replace('</head>', inject + '</head>');
   G = g; core = c;
   // kinds of request: a question (answer + board), a new guided flow, and for a blueprint, a change to the
   // plan. Codex reads its schema from a file.
   MODES = {
-    ask: { instructions: core.floorplanAskInstructions(G, 'cli'), schema: core.FLOORPLAN_ANSWER_SCHEMA, file: path.join(here, '.cache', 'answer-schema.json') },
-    flow: { instructions: core.floorplanFlowInstructions(G, 'cli'), schema: core.FLOORPLAN_FLOW_SCHEMA, file: path.join(here, '.cache', 'flow-schema.json') },
-    ...(G.meta?.blueprint && canChange ? { change: { instructions: core.floorplanChangeInstructions(G), schema: core.FLOORPLAN_CHANGE_SCHEMA, file: path.join(here, '.cache', 'change-schema.json') } } : {}),
+    ask: { instructions: core.floorplanConsignesQuestion(G, 'cli'), schema: core.FLOORPLAN_SCHEMA_REPONSE, file: path.join(here, '.cache', 'answer-schema.json') },
+    flow: { instructions: core.floorplanConsignesParcours(G, 'cli'), schema: core.FLOORPLAN_SCHEMA_PARCOURS, file: path.join(here, '.cache', 'flow-schema.json') },
+    ...(G.meta?.ebauche && canChange ? { change: { instructions: core.floorplanConsignesChangement(G), schema: core.FLOORPLAN_SCHEMA_CHANGEMENT, file: path.join(here, '.cache', 'change-schema.json') } } : {}),
   };
   if (ENGINES[engine]?.schemaFile) {
     fs.mkdirSync(path.join(here, '.cache'), { recursive: true });
@@ -223,12 +223,12 @@ fs.watchFile(path.join(here, 'index.html'), { interval: 1000 }, (cur, prev) => {
 });
 if (idleExit) setInterval(() => { if (!tabs.size && !running.size && Date.now() - lastTab > idleExit) process.exit(0); }, 60000).unref();
 const flowsFile = path.join(here, 'custom-flows.json');
-const readFlows = () => { try { return JSON.parse(fs.readFileSync(flowsFile, 'utf8')).flows || []; } catch { return []; } };
+const readFlows = () => { try { return JSON.parse(fs.readFileSync(flowsFile, 'utf8')).parcours || []; } catch { return []; } };
 
 // ---------- asking ----------
 const nameFor = (id) => { try { return core.q.brief(id)?.name || id; } catch { return id; } };
 const running = new Map();
-const rel = (p) => String(p || '').replace(/\\/g, '/').replace(root.replace(/\\/g, '/') + '/', '');
+const cheminRelatif = (p) => String(p || '').replace(/\\/g, '/').replace(root.replace(/\\/g, '/') + '/', '');
 /** A shell command, in words: map lookups by name, then searches, file reads and listings. */
 function describeCommand(command) {
   let c = String(command || '');
@@ -253,14 +253,14 @@ function describeCommand(command) {
   if (/^(rg\s.*--files|ls|dir|Get-ChildItem|gci|find|tree)\b/i.test(first)) return 'Listing files';
   if (/^(cat|type|Get-Content|gc|sed|head|tail|nl|more|less)\b/i.test(first)) {
     const file = [...first.matchAll(/[\w@.\\/-]+\.\w{1,6}\b/g)].map((m) => m[0]).pop();
-    return file ? `Reading ${rel(file)}` : 'Reading a file';
+    return file ? `Reading ${cheminRelatif(file)}` : 'Reading a file';
   }
   return 'Running a command';
 }
 function describeTool(name, input = {}) {
   if (name === 'Bash') return describeCommand(input.command);
   // a long result the CLI saved to read back in parts lives outside the project
-  if (name === 'Read') return /[\\/]tool-results[\\/]/.test(input.file_path || '') ? 'Reading the rest of a long file' : `Reading ${rel(input.file_path)}`;
+  if (name === 'Read') return /[\\/]tool-results[\\/]/.test(input.file_path || '') ? 'Reading the rest of a long file' : `Reading ${cheminRelatif(input.file_path)}`;
   if (name === 'Grep') return `Searching code for "${input.pattern}"`;
   if (name === 'Glob') return `Listing ${input.pattern}`;
   return name;
@@ -443,7 +443,7 @@ function applyChange(data, request, lastTry) {
 }
 async function changePlan(res, send, body) {
   const request = String(body.question || '').slice(0, 4000);
-  if (!MODES.change) { send('failure', { code: 'cli_error', message: G.meta?.blueprint ? `${ENGINES[engine].name} can't change a plan from the map.` : 'Only a blueprint can be changed from the map.' }); return res.end(); }
+  if (!MODES.change) { send('failure', { code: 'cli_error', message: G.meta?.ebauche ? `${ENGINES[engine].name} can't change a plan from the map.` : 'Only a blueprint can be changed from the map.' }); return res.end(); }
   if (changing) { send('failure', { code: 'busy', message: 'Another change to this plan is still being made. Try again when it’s done.' }); return res.end(); }
   changing = true;
   let session, errors = null;
@@ -505,7 +505,7 @@ const server = http.createServer((req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/health') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ cli: !!cli, engine, want, version, path: cli?.path || null })); }
     // requested flows are saved next to the map; build.mjs folds them into graph.json
     if (url.pathname === '/api/flows') {
-      if (req.method === 'GET') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ flows: readFlows() })); }
+      if (req.method === 'GET') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ parcours: readFlows() })); }
       if (req.method === 'POST' || req.method === 'DELETE') {
         let raw = '';
         req.on('data', (d) => { raw += d; if (raw.length > 50000) req.destroy(); });
@@ -513,8 +513,8 @@ const server = http.createServer((req, res) => {
           let body = {}; try { body = JSON.parse(raw); } catch {}
           let flows = readFlows().filter((x) => x.id !== body.id && x.id !== body.flow?.id);
           if (req.method === 'POST' && body.flow?.id && Array.isArray(body.flow.steps)) flows.push({ ...body.flow, createdAt: new Date().toISOString() });
-          fs.writeFileSync(flowsFile, JSON.stringify({ flows }, null, 2) + '\n');
-          res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ flows }));
+          fs.writeFileSync(flowsFile, JSON.stringify({ parcours: flows }, null, 2) + '\n');
+          res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ parcours: flows }));
         });
         return;
       }
@@ -546,7 +546,7 @@ const server = http.createServer((req, res) => {
       req.on('end', () => {
         let body = {}; try { body = JSON.parse(raw); } catch {}
         try {
-          const x = exportMap(Array.isArray(body.include) ? body.include.map(String) : EXPORT_DEFAULT, cleanFlows(body.flows));
+          const x = exportMap(Array.isArray(body.include) ? body.include.map(String) : EXPORT_DEFAULT, cleanFlows(body.parcours));
           res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Content-Disposition': `attachment; filename="${x.name}"`, 'Cache-Control': 'no-store' });
           res.end(x.html);
         } catch (e) {

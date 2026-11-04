@@ -9,22 +9,22 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { lib, makeProject, scanAndBuild, readGraph, cleanup, openEndpoints } from './helpers.mjs';
 
-const { findIssues, leakyPublicVar } = await lib('health.mjs');
-const find = (src, file, lang, k) => findIssues(src, { path: file, category: 'code', lang }).filter((x) => x.k === k);
+const { trouverProblemes, variablePubliqueFuyante } = await lib('health.mjs');
+const find = (src, file, lang, k) => trouverProblemes(src, { path: file, category: 'code', lang }).filter((x) => x.k === k);
 const FAKE_OPENAI_KEY = ['sk', 'proj', 'Zq8x', 'T3Bl', 'bkFJ', 'k2m9', 'Wv4r', 'Lp7d', 'Hs1n'].join('');
 const NEXT_YEAR = new Date().getUTCFullYear() + 1;
 
 // ---------- secret keys in variables the browser gets ----------
 
 test('public variables named like secret keys are recognised, and keys that are public by design are not', () => {
-  assert.equal(leakyPublicVar('VITE_OPENAI_API_KEY'), 'OpenAI');
-  assert.equal(leakyPublicVar('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'), 'Supabase');
-  assert.equal(leakyPublicVar('NEXT_PUBLIC_STRIPE_SECRET_KEY'), 'Stripe');
-  assert.equal(leakyPublicVar('REACT_APP_ANTHROPIC_KEY'), 'Anthropic');
-  assert.equal(leakyPublicVar('NEXT_PUBLIC_DATABASE_URL'), '');
+  assert.equal(variablePubliqueFuyante('VITE_OPENAI_API_KEY'), 'OpenAI');
+  assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'), 'Supabase');
+  assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_STRIPE_SECRET_KEY'), 'Stripe');
+  assert.equal(variablePubliqueFuyante('REACT_APP_ANTHROPIC_KEY'), 'Anthropic');
+  assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_DATABASE_URL'), '');
   for (const ok of ['NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', 'VITE_FIREBASE_API_KEY',
     'VITE_GOOGLE_MAPS_API_KEY', 'NEXT_PUBLIC_GITHUB_CLIENT_ID', 'NEXT_PUBLIC_RECAPTCHA_SITE_KEY', 'NEXT_PUBLIC_API_KEY', 'OPENAI_API_KEY', 'STRIPE_SECRET_KEY']) {
-    assert.equal(leakyPublicVar(ok), null, ok);
+    assert.equal(variablePubliqueFuyante(ok), null, ok);
   }
 });
 
@@ -106,7 +106,7 @@ test('migrations: tables, row-level security on and off, renames, drops and open
     `create policy "Owners read" on public.profiles for select using (auth.uid() = id);`,
     `create policy "Anyone reads" on public.posts for select using (true);`,
   ].join('\n');
-  const got = findIssues(sql, { path: 'supabase/migrations/1_init.sql', category: 'code', lang: 'sql' }).map(({ k, table, on, to, line, cmd }) => [k, table, on ?? to ?? cmd ?? null, line]);
+  const got = trouverProblemes(sql, { path: 'supabase/migrations/1_init.sql', category: 'code', lang: 'sql' }).map(({ k, table, on, to, line, cmd }) => [k, table, on ?? to ?? cmd ?? null, line]);
   assert.deepEqual(got, [
     ['sql-table', 'public.profiles', null, 1],
     ['sql-rls', 'public.profiles', true, 3],
@@ -142,7 +142,7 @@ function riskyApp() {
     'database.rules.json': `{\n  "rules": {\n    ".read": true,\n    ".write": "auth != null"\n  }\n}\n`,
     'app/api/webhooks/stripe/route.ts': `import Stripe from 'stripe';\nexport async function POST(req: Request) {\n  const event = await req.json();\n  if (event.type === 'checkout.session.completed') await fulfil(event.data.object);\n  return new Response('ok');\n}\nasync function fulfil(s: unknown) {}\n`,
     'server/index.js': `import express from 'express';\nimport cors from 'cors';\nconst app = express();\napp.use(cors({ origin: true, credentials: true }));\napp.listen(3001);\n`,
-  }, { arch: { project: { name: 'Vibe', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
+  }, { arch: { projet: { name: 'Vibe', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
 }
 
 test('a whole app: each mistake becomes one plain-English issue with a fix to paste', () => {
@@ -150,7 +150,7 @@ test('a whole app: each mistake becomes one plain-English issue with a fix to pa
   try {
     scanAndBuild(root);
     const graph = readGraph(root);
-    const issues = graph.health.issues;
+    const issues = graph.sante.problemes;
     const byId = (prefix) => issues.filter((i) => i.id.startsWith(prefix));
 
     // Supabase: only notes is open (profiles was locked later, old_stuff was dropped, waitlist has RLS)
@@ -209,10 +209,10 @@ test('the same app done right raises none of these issues', () => {
     'firestore.rules': `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n    match /products/{id} {\n      allow read: if true;\n    }\n  }\n}\n`,
     'app/api/webhooks/stripe/route.ts': `import Stripe from 'stripe';\nconst stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);\nexport async function POST(req: Request) {\n  const event = stripe.webhooks.constructEvent(await req.text(), req.headers.get('stripe-signature')!, process.env.STRIPE_WEBHOOK_SECRET!);\n  if (event.type === 'checkout.session.completed') await fulfil(event.data.object);\n  return new Response('ok');\n}\nasync function fulfil(s: unknown) {}\n`,
     'server/index.js': `import express from 'express';\nimport cors from 'cors';\nconst app = express();\napp.use(cors({ origin: ['https://tidy.app'], credentials: true }));\napp.listen(3001);\n`,
-  }, { arch: { project: { name: 'Tidy', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
+  }, { arch: { projet: { name: 'Tidy', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
   try {
     scanAndBuild(root);
-    const kinds = readGraph(root).health.issues.map((i) => i.kind);
+    const kinds = readGraph(root).sante.problemes.map((i) => i.kind);
     for (const k of ['database-rules', 'stripe-webhook', 'public-env-secret', 'cors']) assert.ok(!kinds.includes(k), `unexpected ${k}: ${kinds.join(', ')}`);
   } finally { cleanup(root); }
 });
@@ -221,10 +221,10 @@ test('plain Postgres migrations without Supabase are not held to Supabase’s ru
   const root = makeProject({
     'db/schema.sql': `create table users (id serial primary key, email text);\n`,
     'firestore.rules': `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.time < timestamp.date(2020, 1, 1);\n    }\n  }\n}\n`,
-  }, { arch: { project: { name: 'Plain', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['**'] }] } });
+  }, { arch: { projet: { name: 'Plain', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['**'] }] } });
   try {
     scanAndBuild(root);
-    const issues = readGraph(root).health.issues;
+    const issues = readGraph(root).sante.problemes;
     assert.ok(!issues.some((i) => i.id.startsWith('rls:')), 'no row-level security issue without Supabase');
     const [fb] = issues.filter((i) => i.id === 'firebase-rules:firestore.rules');
     assert.equal(fb.severity, 'medium');

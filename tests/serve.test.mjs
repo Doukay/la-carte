@@ -70,7 +70,7 @@ test('requests under any other host name are refused, page included (DNS rebindi
 test('API calls with the token from the map itself work', async () => {
   const r = await api('/api/flows', { headers: { 'x-floorplan-token': token } });
   assert.equal(r.status, 200);
-  assert.deepEqual(await r.json(), { flows: [] });
+  assert.deepEqual(await r.json(), { parcours: [] });
 });
 
 test('files outside the map folder are never served', async () => {

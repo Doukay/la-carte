@@ -8,12 +8,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { REPO, lib, makeProject, run, readGraph, routeKeys, openEndpoints, cleanup } from './helpers.mjs';
 
-const { extract } = await lib('extract.mjs');
+const { extraire } = await lib('extract.mjs');
 
 let root, graph;
 before(() => {
   root = makeProject({}, { arch: {
-    project: { name: 'route-table-keys', summary: 'Test fixture.' },
+    projet: { name: 'route-table-keys', summary: 'Test fixture.' },
     nodes: [
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The website.', paths: ['web/**'] },
       { id: 'api', label: 'Library server', kind: 'service', summary: 'Python server.', paths: ['api/**'] },
@@ -37,14 +37,14 @@ test('the keys of a Python and a JS route table are endpoints; tables of other v
 });
 
 test('each entry names its handler: a function, a module function, a lambda that calls one, a wrapped one', () => {
-  const py = extract(fs.readFileSync(path.join(root, 'api/library/app.py'), 'utf8'), 'python', 'api/library/app.py');
+  const py = extraire(fs.readFileSync(path.join(root, 'api/library/app.py'), 'utf8'), 'python', 'api/library/app.py');
   assert.deepEqual(py.routes.map((r) => `${r.method} ${r.path} ${r.handler}`), [
     'GET /api/books list_books', 'GET /api/books/{book_id} get_book', 'POST /api/books/{book_id}/loans lend',
     'POST /api/login login', 'GET /api/status health',
   ]);
   // the handler's docstring is the route's, not the next def's after the table
   assert.equal(py.routes.find((r) => r.path === '/api/books').doc, 'The whole catalogue, newest first.');
-  const js = extract(fs.readFileSync(path.join(root, 'shop/server.js'), 'utf8'), 'javascript', 'shop/server.js');
+  const js = extraire(fs.readFileSync(path.join(root, 'shop/server.js'), 'utf8'), 'javascript', 'shop/server.js');
   assert.deepEqual(js.routes.map((r) => `${r.method} ${r.path} ${r.handler}`), [
     'GET /api/orders listOrders', 'POST /api/orders createOrder', 'GET /api/orders/:id getOrder',
   ]);

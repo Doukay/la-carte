@@ -2,11 +2,11 @@
 // services it leans on, then one real path traced end to end. Steps come from graph.tour (written by
 // Claude in architecture.json) or are built from the map itself.
 (() => {
-  const SC = window.Floorplan;
-  if (!SC) return;
-  const G = SC.graph;
-  const { h } = SC;
-  const SEEN = 'tour-seen:' + (G.project?.name || G.meta?.rootName || 'map');
+  const CARTE = window.Floorplan;
+  if (!CARTE) return;
+  const G = CARTE.graphe;
+  const { h } = CARTE;
+  const SEEN = 'tour-seen:' + (G.projet?.name || G.meta?.rootName || 'map');
 
   const style = document.createElement('style');
   style.textContent = `
@@ -39,15 +39,15 @@
   const listOf = (names) => names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
   const tops = G.nodes.filter((n) => !n.parent && n.id !== 'unassigned');
   const bySize = (a, b) => (b.stats?.files || 0) - (a.stats?.files || 0);
-  const screensOf = (id) => (G.screens || []).filter((s) => s.app === id).length;
+  const screensOf = (id) => (G.ecrans || []).filter((s) => s.app === id).length;
 
   function flowStep() {
-    const f = (G.flows || []).find((x) => !x.custom) || (G.flows || [])[0];
+    const f = (G.parcours || []).find((x) => !x.custom) || (G.parcours || [])[0];
     if (!f || !f.steps?.length) return null;
     return { ref: 'root', flow: f.id, kicker: 'One real path', title: f.title, note: `${f.description ? clip(f.description, 160) + ' ' : ''}Press Play to follow it through the code, one step at a time.` };
   }
   function autoSteps() {
-    const p = G.project || {};
+    const p = G.projet || {};
     const steps = [{ ref: 'root', kicker: 'The codebase', title: p.name || 'This codebase', note: clip(p.summary) || 'A map of the main parts of this app and how they talk to each other.' }];
     const ui = tops.filter((n) => n.kind === 'ui').sort(bySize).slice(0, 2);
     for (const n of ui) {
@@ -69,11 +69,11 @@
     return steps;
   }
   function buildSteps() {
-    const own = (G.tour || []).filter((s) => s && s.ref && (s.ref === 'root' || SC.exists(s.ref))).map((s) => ({ ref: s.ref, title: s.title || SC.info(s.ref).name, note: s.note || SC.info(s.ref).desc || '', kicker: '' }));
+    const own = (G.visite || []).filter((s) => s && s.ref && (s.ref === 'root' || CARTE.existe(s.ref))).map((s) => ({ ref: s.ref, title: s.title || CARTE.infos(s.ref).name, note: s.note || CARTE.infos(s.ref).desc || '', kicker: '' }));
     const steps = own.length >= 2 ? own : autoSteps();
     const fl = flowStep();
     if (fl && !steps.some((s) => s.flow) && steps.length < 9) steps.push(fl);
-    return steps.filter((s) => s.ref === 'root' || SC.exists(s.ref)).slice(0, 9);
+    return steps.filter((s) => s.ref === 'root' || CARTE.existe(s.ref)).slice(0, 9);
   }
 
   // ---------- card ----------
@@ -88,25 +88,25 @@
   const active = () => at >= 0;
 
   function go(s) {
-    if (!s.ref || s.ref === 'root') { SC.go('root', { select: null }); return; }
-    const parent = SC.parentOf(s.ref) || 'root';
-    if (parent === 'root') SC.go('root', { select: s.ref }); // stay on the overview, just highlight the card
-    else SC.reveal(s.ref);
+    if (!s.ref || s.ref === 'root') { CARTE.aller('root', { select: null }); return; }
+    const parent = CARTE.parentDe(s.ref) || 'root';
+    if (parent === 'root') CARTE.aller('root', { select: s.ref }); // stay on the overview, just highlight the card
+    else CARTE.reveler(s.ref);
   }
   function render() {
     const s = steps[at], last = at === steps.length - 1;
     const tip = last ? `Replay this tour any time from <b>Start here</b> at the top.${window.FloorplanScreens ? ' <b>Screens</b> shows everything behind any page.' : ''}` : '';
-    card.innerHTML = `<button class="btn icon tx" data-x title="Close (Esc)">${SC.iconI('x')}</button>
+    card.innerHTML = `<button class="btn icon tx" data-x title="Close (Esc)">${CARTE.iconeI('x')}</button>
       <div class="tk"><span>Start here</span><i></i><span>${at + 1} of ${steps.length}</span>${s.kicker ? `<i></i><span>${h(s.kicker)}</span>` : ''}</div>
       <div class="tt">${h(s.title)}</div>${s.note ? `<div class="tn">${h(s.note)}</div>` : ''}${tip ? `<div class="tip">${tip}</div>` : ''}
       <div class="tf"><div class="dots">${steps.map((_, k) => `<i class="${k <= at ? 'on' : ''}"></i>`).join('')}</div>
-        ${at > 0 ? `<button class="btn icon soft" data-back title="Back (←)">${SC.iconI('left')}</button>` : `<button class="btn" data-x>Skip</button>`}
-        ${s.flow ? `<button class="btn primary" data-play>${SC.iconI('right')}Play it</button>${last ? '' : '<button class="btn soft" data-next>Next</button>'}` : `<button class="btn primary" data-next>${last ? 'Done' : 'Next'}</button>`}
+        ${at > 0 ? `<button class="btn icon soft" data-back title="Back (←)">${CARTE.iconeI('left')}</button>` : `<button class="btn" data-x>Skip</button>`}
+        ${s.flow ? `<button class="btn primary" data-play>${CARTE.iconeI('right')}Play it</button>${last ? '' : '<button class="btn soft" data-next>Next</button>'}` : `<button class="btn primary" data-next>${last ? 'Done' : 'Next'}</button>`}
       </div>`;
     card.querySelectorAll('[data-x]').forEach((b) => b.onclick = end);
     card.querySelector('[data-back]')?.addEventListener('click', back);
     card.querySelector('[data-next]')?.addEventListener('click', next);
-    card.querySelector('[data-play]')?.addEventListener('click', () => { const id = s.flow; end(); SC.startFlow(id); });
+    card.querySelector('[data-play]')?.addEventListener('click', () => { const id = s.flow; end(); CARTE.demarrerParcours(id); });
   }
   // sit above the zoom controls, and above the Ask bar (and its notices) where they overlap
   function place() {
@@ -126,7 +126,7 @@
     render();
     place();
     go(steps[at]);
-    if (at === 0) setTimeout(() => SC.fit(true), 450);
+    if (at === 0) setTimeout(() => CARTE.ajuster(true), 450);
   }
   function next() { if (at >= steps.length - 1) end(); else show(at + 1); }
   function back() { if (at > 0) show(at - 1); }
@@ -134,38 +134,38 @@
     if (!active()) return;
     at = -1;
     card.hidden = true;
-    SC.store.set(SEEN, true);
-    if (SC.state.container === 'root') SC.select(null);
+    CARTE.stockage.set(SEEN, true);
+    if (CARTE.etat.container === 'root') CARTE.selectionner(null);
   }
   function start() {
     steps = buildSteps();
-    if (steps.length < 2) { SC.toast('There is not enough on this map for a tour yet.'); return; }
-    SC.store.set(SEEN, true);
+    if (steps.length < 2) { CARTE.message('There is not enough on this map for a tour yet.'); return; }
+    CARTE.stockage.set(SEEN, true);
     show(0);
   }
 
-  const tourBtn = SC.addHeaderButton({ id: 'tour-btn', label: 'Start here', icon: 'home', title: 'A one-minute tour of this codebase', onClick: () => (active() ? end() : start()) });
+  const tourBtn = CARTE.ajouterBoutonEntete({ id: 'tour-btn', label: 'Start here', icon: 'home', title: 'A one-minute tour of this codebase', onClick: () => (active() ? end() : start()) });
   const ic = tourBtn.querySelector('svg');
   if (ic) ic.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/>'; // compass
   window.addEventListener('keydown', (ev) => {
     if (!active() || ev.target?.tagName === 'INPUT' || ev.target?.tagName === 'TEXTAREA') return;
     if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); end(); }
-    else if (!SC.state.flow && ev.key === 'ArrowRight') { ev.stopPropagation(); ev.preventDefault(); next(); }
-    else if (!SC.state.flow && ev.key === 'ArrowLeft') { ev.stopPropagation(); ev.preventDefault(); back(); }
+    else if (!CARTE.etat.flow && ev.key === 'ArrowRight') { ev.stopPropagation(); ev.preventDefault(); next(); }
+    else if (!CARTE.etat.flow && ev.key === 'ArrowLeft') { ev.stopPropagation(); ev.preventDefault(); back(); }
   }, true);
   // a guided flow takes over the canvas: step aside
-  SC.on('render', () => { if (active() && SC.state.flow) end(); });
+  CARTE.sur('render', () => { if (active() && CARTE.etat.flow) end(); });
 
   // first visit: start on its own, unless the link points somewhere specific
   let auto = false;
   const maybeAuto = () => {
     if (auto) return;
     auto = true;
-    if (SC.store.get(SEEN, false) || location.hash.length > 1) return;
-    setTimeout(() => { if (!active() && !SC.state.flow && SC.state.container === 'root') start(); }, 700);
+    if (CARTE.stockage.get(SEEN, false) || location.hash.length > 1) return;
+    setTimeout(() => { if (!active() && !CARTE.etat.flow && CARTE.etat.container === 'root') start(); }, 700);
   };
-  SC.on('ready', maybeAuto);
-  if (SC.state.layout) maybeAuto();
+  CARTE.sur('ready', maybeAuto);
+  if (CARTE.etat.layout) maybeAuto();
 
   window.FloorplanTour = { start, end, active };
 })();

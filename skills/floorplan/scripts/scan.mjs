@@ -8,23 +8,23 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { discover, gitFiles, gitInfo, classify, toPosix, parseArgs, fmtNum, HARD_IGNORE_DIRS, MAP_DIR, LEGACY_MAP_DIR, isMapDir, mapDir, keepOutOfGit } from './lib/common.mjs';
-import { extract, callableCallsVia } from './lib/extract.mjs';
-import { findIssues } from './lib/health.mjs';
-import { findScreens } from './lib/screens.mjs';
-import { createResolver } from './lib/resolve.mjs';
-import { resolveRoutes, matchCalls } from './lib/routes.mjs';
+import { decouvrir, fichiersGit, infosGit, classer, versPosix, lireArguments, formaterNombre, DOSSIERS_TOUJOURS_IGNORES, DOSSIER_CARTE, ANCIEN_DOSSIER_CARTE, estDossierCarte, dossierCarte, garderHorsGit } from './lib/common.mjs';
+import { extraire, appelsAppelablesVia } from './lib/extract.mjs';
+import { trouverProblemes } from './lib/health.mjs';
+import { trouverEcrans } from './lib/screens.mjs';
+import { creerResolveur } from './lib/resolve.mjs';
+import { resoudreRoutes, associerAppels } from './lib/routes.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const outDir = args.out ? path.dirname(path.dirname(path.resolve(args.out))) : mapDir(root);
+const outDir = args.out ? path.dirname(path.dirname(path.resolve(args.out))) : dossierCarte(root);
 const outFile = path.resolve(args.out || path.join(outDir, '.cache', 'scan.json'));
 const maxBytes = (Number(args['max-file-kb']) || 2048) * 1024;
 const t0 = Date.now();
 const hash = (s) => createHash('sha1').update(s).digest('hex').slice(0, 12);
 
 // ---------- 1. discover repos and files ----------
-const found = discover(root, { includeWorktrees: !!args['include-worktrees'] });
+const found = decouvrir(root, { includeWorktrees: !!args['include-worktrees'] });
 const repos = [];
 const fileList = []; // { path, repo }
 const seen = new Set();
@@ -33,18 +33,18 @@ const mapDirs = new Map();
 const inMap = (p) => {
   const segs = p.split('/');
   for (let i = 0; i < segs.length - 1; i++) {
-    if (segs[i] !== MAP_DIR && segs[i] !== LEGACY_MAP_DIR) continue;
+    if (segs[i] !== DOSSIER_CARTE && segs[i] !== ANCIEN_DOSSIER_CARTE) continue;
     const d = segs.slice(0, i + 1).join('/');
-    if (!mapDirs.has(d)) mapDirs.set(d, isMapDir(path.join(root, d)));
+    if (!mapDirs.has(d)) mapDirs.set(d, estDossierCarte(path.join(root, d)));
     if (mapDirs.get(d)) return true;
   }
   return false;
 };
-const ignoredByDir = (p) => p.split('/').some((seg) => HARD_IGNORE_DIRS.has(seg)) || inMap(p);
+const ignoredByDir = (p) => p.split('/').some((seg) => DOSSIERS_TOUJOURS_IGNORES.has(seg)) || inMap(p);
 
 for (const r of found.repos) {
-  const listed = gitFiles(r.abs);
-  const info = gitInfo(r.abs);
+  const listed = fichiersGit(r.abs);
+  const info = infosGit(r.abs);
   const prefix = r.path === '.' ? '' : r.path + '/';
   let count = 0;
   for (const f of listed || []) {
@@ -54,7 +54,7 @@ for (const r of found.repos) {
     fileList.push({ path: p, repo: r.path });
     count++;
   }
-  repos.push({ path: r.path, name: path.basename(r.abs), ...info, files: count, ...(r.worktreeOf ? { worktreeOf: toPosix(r.worktreeOf) } : {}) });
+  repos.push({ path: r.path, name: path.basename(r.abs), ...info, files: count, ...(r.worktreeOf ? { worktreeOf: versPosix(r.worktreeOf) } : {}) });
 }
 for (const p of found.loose) if (!seen.has(p) && !inMap(p)) { seen.add(p); fileList.push({ path: p, repo: null }); }
 
@@ -65,7 +65,7 @@ for (const { path: p, repo } of fileList) {
   let st;
   try { st = fs.statSync(abs); } catch { continue; }
   if (!st.isFile()) continue;
-  const { category, lang } = classify(p, st.size);
+  const { category, lang } = classer(p, st.size);
   const f = { path: p, repo, category, lang, bytes: st.size, loc: 0 };
   if ((category === 'code' || category === 'config' || category === 'docs') && st.size <= maxBytes) {
     let src;
@@ -73,7 +73,7 @@ for (const { path: p, repo } of fileList) {
     if (src.includes('\u0000')) { f.category = 'asset'; files.push(f); continue; }
     f.loc = src.split('\n').filter((l) => l.trim()).length;
     if (category === 'code' && src.length) {
-      try { Object.assign(f, extract(src, lang, p)); } catch (e) { f.extractError = String(e.message || e); }
+      try { Object.assign(f, extraire(src, lang, p)); } catch (e) { f.extractError = String(e.message || e); }
       // h: exact content. sig: the parts a description depends on (exports, routes, docstring),
       // so edits inside function bodies don't mark a file's description as stale.
       f.h = hash(src);
@@ -81,8 +81,8 @@ for (const { path: p, repo } of fileList) {
     }
     // extension hooks: per-file health findings (lib/health.mjs) and app screens (lib/screens.mjs)
     if (src.length) {
-      try { const iss = findIssues(src, f); if (iss?.length) f.issues = iss; } catch (e) { f.healthError = String(e.message || e); }
-      try { const scr = findScreens(src, f); if (scr?.length) f.screens = scr; } catch (e) { f.screensError = String(e.message || e); }
+      try { const iss = trouverProblemes(src, f); if (iss?.length) f.problemes = iss; } catch (e) { f.healthError = String(e.message || e); }
+      try { const scr = trouverEcrans(src, f); if (scr?.length) f.ecrans = scr; } catch (e) { f.screensError = String(e.message || e); }
     }
   } else if (category === 'code' || category === 'config' || category === 'docs') {
     // too big to read and parse, but still on the map: count its lines without loading it all
@@ -107,7 +107,7 @@ function countLines(abs) {
 }
 
 // ---------- 3. resolve imports ----------
-const resolve = createResolver(root, files);
+const resolve = creerResolveur(root, files);
 const edges = [];
 const externals = new Map(); // `${eco}:${name}` -> { eco, name, count, files:Set }
 const extEdges = [];
@@ -150,12 +150,12 @@ if (wrappers.size) for (const f of files) {
   if (!via.length) continue;
   let src;
   try { src = fs.readFileSync(path.join(root, f.path), 'utf8'); } catch { continue; }
-  for (const local of via) f.calls = [...(f.calls || []), ...callableCallsVia(src, local)];
+  for (const local of via) f.calls = [...(f.calls || []), ...appelsAppelablesVia(src, local)];
 }
 
 // ---------- 4. routes and HTTP calls ----------
-const routes = resolveRoutes(files);
-const http = matchCalls(files, routes);
+const routes = resoudreRoutes(files);
+const http = associerAppels(files, routes);
 const hosts = [];
 for (const f of files) for (const h of f.hosts || []) hosts.push({ from: f.path, host: h.host, line: h.line });
 
@@ -163,7 +163,7 @@ for (const f of files) for (const h of f.hosts || []) hosts.push({ from: f.path,
 const scan = {
   version: 1,
   generatedAt: new Date().toISOString(),
-  root: toPosix(root),
+  root: versPosix(root),
   rootName: path.basename(root),
   repos,
   skipped: found.skipped,
@@ -173,8 +173,8 @@ const scan = {
     ...(f.h ? { h: f.h, sig: f.sig } : {}),
     ...(f.symbols?.length ? { symbols: f.symbols } : {}),
     ...(f.tooLarge ? { tooLarge: true } : {}),
-    ...(f.issues ? { issues: f.issues } : {}),
-    ...(f.screens ? { screens: f.screens } : {}),
+    ...(f.problemes ? { problemes: f.problemes } : {}),
+    ...(f.ecrans ? { ecrans: f.ecrans } : {}),
     ...(f.triggers ? { triggers: f.triggers } : {}),
   })),
   edges: [...edgeMap.values()].map(({ from, to, names, count, dynamic }) => ({ from, to, ...(names.length ? { names } : {}), ...(count > 1 ? { count } : {}), ...(dynamic ? { dynamic } : {}) })),
@@ -186,7 +186,7 @@ const scan = {
 };
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, JSON.stringify(scan));
-if (!args.out) keepOutOfGit(outDir);
+if (!args.out) garderHorsGit(outDir);
 
 function dedupeExt(list) {
   const m = new Map();
@@ -198,7 +198,7 @@ function dedupeExt(list) {
 const code = scan.files.filter((f) => f.category === 'code');
 const out = [];
 const line = (s = '') => out.push(s);
-line(`Floorplan scan of ${scan.rootName}  (${((Date.now() - t0) / 1000).toFixed(1)}s) -> ${toPosix(path.relative(root, outFile))}`);
+line(`Floorplan scan of ${scan.rootName}  (${((Date.now() - t0) / 1000).toFixed(1)}s) -> ${versPosix(path.relative(root, outFile))}`);
 line();
 line(`REPOS (${repos.length})`);
 for (const r of repos) line(`  ${r.path.padEnd(40)} ${String(r.files).padStart(6)} files  ${r.branch || '-'}@${(r.head || '').slice(0, 8)}${r.worktreeOf ? '  (worktree)' : ''}`);
@@ -215,7 +215,7 @@ for (const f of scan.files) byCat[f.category] = (byCat[f.category] || 0) + 1;
 line(`FILES  ${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`);
 const byLang = {};
 for (const f of code) { byLang[f.lang] ??= { files: 0, loc: 0 }; byLang[f.lang].files++; byLang[f.lang].loc += f.loc; }
-line(`CODE   ${Object.entries(byLang).sort((a, b) => b[1].loc - a[1].loc).slice(0, 10).map(([k, v]) => `${k} ${v.files} files/${fmtNum(v.loc)} loc`).join(' · ')}`);
+line(`CODE   ${Object.entries(byLang).sort((a, b) => b[1].loc - a[1].loc).slice(0, 10).map(([k, v]) => `${k} ${v.files} files/${formaterNombre(v.loc)} loc`).join(' · ')}`);
 line();
 
 // directory tree of code, collapsing small dirs
@@ -236,7 +236,7 @@ const printTree = (node, prefix, depth) => {
   const kids = [...node.children.entries()].sort((a, b) => b[1].loc - a[1].loc);
   const shown = kids.filter(([, n]) => n.loc >= minLoc);
   for (const [name, n] of shown) {
-    line(`${prefix}${name}/`.padEnd(64) + `${String(n.files).padStart(5)}  ${fmtNum(n.loc).padStart(6)}`);
+    line(`${prefix}${name}/`.padEnd(64) + `${String(n.files).padStart(5)}  ${formaterNombre(n.loc).padStart(6)}`);
     if (depth < 5) printTree(n, prefix + '  ', depth + 1);
   }
   const rest = kids.length - shown.length;
@@ -304,11 +304,11 @@ if (hostCounts.size) {
 }
 line();
 const big = code.filter((f) => f.loc > 1500).sort((a, b) => b.loc - a.loc).slice(0, 10);
-if (big.length) { line('LARGEST FILES'); for (const f of big) line(`  ${fmtNum(f.loc).padStart(6)}  ${f.path}`); line(); }
+if (big.length) { line('LARGEST FILES'); for (const f of big) line(`  ${formaterNombre(f.loc).padStart(6)}  ${f.path}`); line(); }
 const unread = files.filter((f) => f.tooLarge).sort((a, b) => b.bytes - a.bytes);
 if (unread.length) {
-  line(`NOT READ  ${unread.length} file(s) over ${fmtNum(maxBytes / 1024)} KB: on the map, but their imports, endpoints, requests and secrets weren't checked. Re-run scan.mjs with --max-file-kb <bigger> to read them.`);
-  for (const f of unread.slice(0, 15)) line(`  ${fmtNum(Math.round(f.bytes / 1024)).padStart(6)} KB  ${f.path}`);
+  line(`NOT READ  ${unread.length} file(s) over ${formaterNombre(maxBytes / 1024)} KB: on the map, but their imports, endpoints, requests and secrets weren't checked. Re-run scan.mjs with --max-file-kb <bigger> to read them.`);
+  for (const f of unread.slice(0, 15)) line(`  ${formaterNombre(Math.round(f.bytes / 1024)).padStart(6)} KB  ${f.path}`);
   if (unread.length > 15) line(`  … ${unread.length - 15} more`);
   line();
 }

@@ -10,12 +10,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs, fmtNum, mapDir } from './lib/common.mjs';
-import { fallbackFileName, fallbackRouteName, routeKey } from './lib/names.mjs';
+import { lireArguments, formaterNombre, dossierCarte } from './lib/common.mjs';
+import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/names.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const outDir = mapDir(root);
+const outDir = dossierCarte(root);
 const graphFile = path.join(outDir, 'graph.json');
 if (!fs.existsSync(graphFile)) { console.error('✗ No floorplan/graph.json. Run build.mjs first.'); process.exit(1); }
 const g = JSON.parse(fs.readFileSync(graphFile, 'utf8'));
@@ -87,7 +87,7 @@ for (const [nid, list] of byNode) {
     out.push('');
     let routeCount = 0;
     for (const f of chunk) {
-      out.push(`## ${f.p}  (${fmtNum(f.loc)} loc, ${f.l})${f.review ? '  REVIEW' : !needs(f) ? '  (already described; only its routes need work)' : ''}`);
+      out.push(`## ${f.p}  (${formaterNombre(f.loc)} loc, ${f.l})${f.review ? '  REVIEW' : !needs(f) ? '  (already described; only its routes need work)' : ''}`);
       if (f.review) out.push(`current: ${f.name} — ${f.d}
 changed: ${f.review}`);
       if (f.doc) out.push(`doc: ${f.doc}`);
@@ -101,7 +101,7 @@ changed: ${f.review}`);
       for (const r of routesByFile.get(f.p) || []) {
         routeCount++;
         const mark = r.review ? `  REVIEW (${r.review}); current: ${r.name} — ${r.d}` : r.auto ? '  NEW' : '  (described)';
-        out.push(`route: ${routeKey({ method: r.m, path: r.p })}  handler ${r.h || '?'}${r.doc ? ` (${r.doc})` : ''}${mark}`);
+        out.push(`route: ${cleRoute({ method: r.m, path: r.p })}  handler ${r.h || '?'}${r.doc ? ` (${r.doc})` : ''}${mark}`);
       }
       out.push('');
     }
@@ -112,10 +112,10 @@ changed: ${f.review}`);
     try { existing = JSON.parse(fs.readFileSync(descFile, 'utf8')); } catch {}
     const skel = { files: { ...(existing.files || {}) }, routes: { ...(existing.routes || {}) } };
     for (const f of chunk) {
-      if (!skel.files[f.p]) skel.files[f.p] = { name: f.auto ? fallbackFileName(f.p) : f.name, description: f.auto ? '' : f.d };
+      if (!skel.files[f.p]) skel.files[f.p] = { name: f.auto ? nomFichierParDefaut(f.p) : f.name, description: f.auto ? '' : f.d };
       for (const r of routesByFile.get(f.p) || []) {
-        const k = routeKey({ method: r.m, path: r.p });
-        if (!skel.routes[k]) skel.routes[k] = { name: r.auto ? fallbackRouteName({ handler: r.h, method: r.m, path: r.p }) : r.name, description: r.auto ? '' : r.d };
+        const k = cleRoute({ method: r.m, path: r.p });
+        if (!skel.routes[k]) skel.routes[k] = { name: r.auto ? nomRouteParDefaut({ handler: r.h, method: r.m, path: r.p }) : r.name, description: r.auto ? '' : r.d };
       }
     }
     if (!Object.keys(skel.routes).length) delete skel.routes;
@@ -130,4 +130,4 @@ console.log(`${index.length} worksheet(s) in floorplan/.cache/worksheets/ coveri
 console.log('Each has a matching skeleton in floorplan/descriptions/<key>.json. Fill those in, then run build.mjs.');
 console.log(`Audience: ${audience}. Write in ${STYLE}\n`);
 console.log('key'.padEnd(34) + 'files'.padStart(6) + 'routes'.padStart(8) + 'loc'.padStart(8) + '  module');
-for (const w of index.sort((a, b) => b.files - a.files)) console.log(w.key.padEnd(34) + String(w.files).padStart(6) + String(w.routes).padStart(8) + fmtNum(w.loc).padStart(8) + '  ' + w.node);
+for (const w of index.sort((a, b) => b.files - a.files)) console.log(w.key.padEnd(34) + String(w.files).padStart(6) + String(w.routes).padStart(8) + formaterNombre(w.loc).padStart(8) + '  ' + w.node);

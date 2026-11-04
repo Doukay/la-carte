@@ -622,7 +622,7 @@ const AGENT = (window.FLOORPLAN_SERVER?.engine || window.FLOORPLAN_SERVER?.want 
 const Cap = (t) => t[0].toUpperCase() + t.slice(1);
 if (!G) { document.body.innerHTML = '<p style="padding:2rem">No data. Run build.mjs.</p>'; return; }
 // a blueprint: planned from a PRD, so its files don't exist yet (no line counts, nothing to open in an editor)
-const PLAN = !!G.meta.blueprint;
+const PLAN = !!G.meta.ebauche;
 // an exported copy (serve.mjs --export, or the Export button): read-only, for people without Claude or Codex
 const EXPORTED = G.meta.exported || null;
 if (typeof ELK === 'undefined') { document.body.innerHTML = '<p style="padding:2rem">Could not load the ELK layout engine. Rebuild the map with build.mjs.</p>'; return; }
@@ -756,14 +756,14 @@ let recentShown = !!store.get('recent-hl', true);
 const setRecentShown = (on) => { recentShown = on; store.set('recent-hl', on); document.body.classList.toggle('no-recent', !on); };
 document.body.classList.toggle('no-recent', !recentShown);
 const symOf = (item) => { const m = /^s:(.*)#(\d+)$/.exec(item); const f = files.get(m[1]); return { f, s: f.s[+m[2]] }; };
-function humanize(s) { s = s.replace(/[_\-.]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+function humaniser(s) { s = s.replace(/[_\-.]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function info(item) {
-  if (item === 'root') return { type: 'root', name: G.project.name, desc: G.project.summary || '', kind: 'root' };
+  if (item === 'root') return { type: 'root', name: G.projet.name, desc: G.projet.summary || '', kind: 'root' };
   if (item === 'q:answer') return { type: 'answer', name: state.answer?.title || 'Answer', desc: state.answer?.question || '', kind: 'answer' };
   const t = item.slice(0, 2);
   if (t === 'n:') { const n = nodes.get(item.slice(2)); return { type: 'node', name: n.label, desc: n.summary, kind: n.kind, n }; }
-  if (t === 'd:') { const d = dirs.get(item); return { type: 'dir', name: humanize(d.path.split('/').pop()), desc: `${plural(d.files.length, 'file')} in ${d.path}/`, kind: 'dir', d, path: d.path + '/' }; }
+  if (t === 'd:') { const d = dirs.get(item); return { type: 'dir', name: humaniser(d.path.split('/').pop()), desc: `${plural(d.files.length, 'file')} in ${d.path}/`, kind: 'dir', d, path: d.path + '/' }; }
   if (t === 'f:') { const f = files.get(item.slice(2)); return { type: 'file', name: f.name, desc: f.d, kind: 'file', f, path: f.p }; }
   if (t === 'm:') { const f = files.get(item.slice(2)); return { type: 'module', name: f.name, desc: f.d, kind: 'module', f, path: f.p }; }
   if (t === 'r:') { const r = routes[+item.slice(2)]; return { type: 'route', name: r.name, desc: r.d, kind: 'route', r, f: files.get(r.f), path: `${r.m} ${r.p}` }; }
@@ -1578,14 +1578,14 @@ function systemsSection(tops) {
 }
 
 function overviewPanel() {
-  const p = G.project;
+  const p = G.projet;
   const tops = kids.get('root') || [];
   const undescribed = G.files.filter((f) => f.auto).length + routes.filter((r) => r.auto).length;
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--accent)">${icon('feature')}</span><span class="kind">${PLAN ? 'Blueprint' : 'Codebase'}</span></div><h2 class="pt">${h(p.name)}</h2>${p.summary ? `<p class="pd">${h(p.summary)}</p>` : ''}
-      <div class="stats" style="margin-top:14px"><div><b>${fmt(G.meta.counts.files)}</b><span>${PLAN ? 'planned files' : 'files'}</span></div>${PLAN ? `<div><b>${fmt((G.screens || []).length)}</b><span>screens</span></div>` : `<div><b>${fmt(G.meta.counts.loc)}</b><span>lines</span></div>`}<div><b>${fmt(routes.length)}</b><span>endpoints</span></div></div>
+      <div class="stats" style="margin-top:14px"><div><b>${fmt(G.meta.counts.files)}</b><span>${PLAN ? 'planned files' : 'files'}</span></div>${PLAN ? `<div><b>${fmt((G.ecrans || []).length)}</b><span>screens</span></div>` : `<div><b>${fmt(G.meta.counts.loc)}</b><span>lines</span></div>`}<div><b>${fmt(routes.length)}</b><span>endpoints</span></div></div>
       ${undescribed ? `<div class="callout">${undescribed} files and endpoints still use generated names. Run the skill again to describe them.</div>` : ''}</div>
     ${systemsSection(tops)}
-    ${listSec('Guided flows', G.flows.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} steps</span></a>`))}
+    ${listSec('Guided flows', G.parcours.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} steps</span></a>`))}
     ${listSec('Repositories', G.meta.repos.map((r) => `<div class="row" style="cursor:default"><span class="dot" style="background:var(--text-4)"></span><span class="rt"><div class="rn">${h(r.name)}</div><div class="rp">${h(r.branch || '')} @ ${h((r.head || '').slice(0, 7))}</div></span></div>`))}
     ${p.entrypoints?.length ? listSec('Entrypoints', p.entrypoints.filter((e) => files.has(e)).map((e) => rowFor('f:' + e))) : ''}
     <div class="sec" style="color:var(--text-3);line-height:1.7;font-size:12px">Click a card to inspect it · double-click to open it<br><span class="kbd">/</span> search · <span class="kbd">⌫</span> up · <span class="kbd">F</span> fit · <span class="kbd">P</span> inspector</div>`;
@@ -1742,10 +1742,10 @@ $('#search-btn').onclick = openPalette;
 const fm = $('#flowmenu');
 fm.addEventListener('click', (ev) => ev.stopPropagation());
 function renderFlowMenu() {
-  fm.innerHTML = G.flows.map((f) => f.custom && !EXPORTED
+  fm.innerHTML = G.parcours.map((f) => f.custom && !EXPORTED
     ? `<div class="r custom" data-flow="${h(f.id)}"><div class="rt"><b>${h(f.title)}<span class="yours">yours</span></b><span>${f.steps.length} steps${f.description ? ' · ' + h(f.description) : ''}</span></div><button class="del" data-del="${h(f.id)}" title="Delete flow">${iconI('x')}</button></div>`
     : `<div class="r" data-flow="${h(f.id)}"><b>${h(f.title)}</b><span>${f.steps.length} steps${f.description ? ' · ' + h(f.description) : ''}</span></div>`).join('')
-    + (EXPORTED ? (G.flows.length ? '' : '<div class="r" style="cursor:default"><span>No flows in this copy.</span></div>') : (G.flows.length ? '<div class="mi-sep"></div>' : '')
+    + (EXPORTED ? (G.parcours.length ? '' : '<div class="r" style="cursor:default"><span>No flows in this copy.</span></div>') : (G.parcours.length ? '<div class="mi-sep"></div>' : '')
     + `<div class="r new" data-new>${iconI('spark')}<b>Request a new flow…</b></div>`);
   fm.querySelectorAll('[data-flow]').forEach((r) => r.onclick = () => { fm.classList.remove('open'); startFlow(r.dataset.flow); });
   fm.querySelectorAll('[data-del]').forEach((b) => b.onclick = (ev) => { ev.stopPropagation(); deleteCustomFlow(b.dataset.del); });
@@ -1765,7 +1765,7 @@ function showFlowForm() {
 
 // Custom flows persist next to the map when served (custom-flows.json, folded in by build.mjs),
 // otherwise in this browser. Steps are saved with stable refs so they survive rebuilds.
-const FLOWS_KEY = `flows:${G.project.name}`;
+const FLOWS_KEY = `flows:${G.projet.name}`;
 const stableRef = (id) => id.startsWith('r:') ? `route:${routes[+id.slice(2)].m} ${routes[+id.slice(2)].p}` : id.startsWith('s:') ? `sym:${symOf(id).f.p}#${symOf(id).s[0]}` : id;
 function liveRef(ref) {
   if (ref.startsWith('route:')) { const i = routes.findIndex((r) => `${r.m} ${r.p}` === ref.slice(6)); return i < 0 ? null : 'r:' + i; }
@@ -1774,11 +1774,11 @@ function liveRef(ref) {
 }
 const toStored = (fl) => ({ id: fl.id, title: fl.title, description: fl.description, steps: fl.steps.map((s) => ({ ref: stableRef(s.ref), note: s.note })) });
 function addFlow(stored) {
-  if (G.flows.some((x) => x.id === stored.id)) return null;
+  if (G.parcours.some((x) => x.id === stored.id)) return null;
   const steps = (stored.steps || []).map((s) => ({ ref: liveRef(s.ref), note: s.note || '' })).filter((s) => s.ref);
   if (steps.length < 2) return null;
   const fl = { id: stored.id, title: stored.title || 'Flow', description: stored.description || '', steps, custom: true };
-  G.flows.push(fl);
+  G.parcours.push(fl);
   return fl;
 }
 const serverApi = (method, body) => fetch('/api/flows', { method, headers: { 'content-type': 'application/json', 'x-floorplan-token': window.FLOORPLAN_SERVER.token }, ...(body ? { body: JSON.stringify(body) } : {}) }).then((r) => r.json());
@@ -1787,7 +1787,7 @@ async function saveCustomFlow(fl) {
   store.set(FLOWS_KEY, [...store.get(FLOWS_KEY, []).filter((x) => x.id !== fl.id), toStored(fl)]);
 }
 async function deleteCustomFlow(id) {
-  G.flows = G.flows.filter((x) => x.id !== id);
+  G.parcours = G.parcours.filter((x) => x.id !== id);
   if (state.flow?.f.id === id) stopFlow();
   if (window.FLOORPLAN_SERVER) { try { await serverApi('DELETE', { id }); } catch {} }
   store.set(FLOWS_KEY, store.get(FLOWS_KEY, []).filter((x) => x.id !== id));
@@ -1795,7 +1795,7 @@ async function deleteCustomFlow(id) {
 }
 async function loadCustomFlows() {
   for (const s of store.get(FLOWS_KEY, [])) addFlow(s);
-  if (window.FLOORPLAN_SERVER) { try { for (const s of (await serverApi('GET')).flows || []) addFlow(s); } catch {} }
+  if (window.FLOORPLAN_SERVER) { try { for (const s of (await serverApi('GET')).parcours || []) addFlow(s); } catch {} }
   renderFlowMenu();
 }
 
@@ -1831,7 +1831,7 @@ async function requestFlow(prompt) {
     const steps = (raw.steps || []).map((s) => ({ ref: String(s.id || ''), note: String(s.note || '') })).filter((s) => Q.exists(s.ref));
     if (steps.length < 2) throw { code: 'flow_empty', message: `${AGENT.name} couldn't find enough connected steps for that. Try naming where it starts or ends.` };
     const fl = { id: 'custom-' + Date.now().toString(36), title: String(raw.title || prompt).slice(0, 80), description: String(raw.description || ''), steps, custom: true };
-    G.flows.push(fl);
+    G.parcours.push(fl);
     await saveCustomFlow(fl);
     renderFlowMenu();
     sheetShell(label, `<p>Added <strong>${h(fl.title)}</strong> to Flows, ${plural(fl.steps.length, 'step')}.${fl.description ? ' ' + h(fl.description) : ''}</p>
@@ -1848,7 +1848,7 @@ $('#flows-btn').onclick = (ev) => { ev.stopPropagation(); legendEl.classList.rem
 $('#filters-btn').onclick = (ev) => { ev.stopPropagation(); fm.classList.remove('open'); legendEl.classList.toggle('open'); };
 legendEl.addEventListener('click', (ev) => ev.stopPropagation());
 window.addEventListener('click', () => { fm.classList.remove('open'); legendEl.classList.remove('open'); });
-function startFlow(id) { const f = G.flows.find((x) => x.id === id); if (!f) return; state.flow = { f, i: 0 }; flowStep(); }
+function startFlow(id) { const f = G.parcours.find((x) => x.id === id); if (!f) return; state.flow = { f, i: 0 }; flowStep(); }
 function stopFlow() { state.flow = null; document.body.classList.remove('in-flow'); $('#flowbar').hidden = true; vp.querySelectorAll('.flowfx').forEach((x) => x.remove()); select(null); }
 function lcaContainer(a, b) {
   const cb = new Set(chain(b));
@@ -1894,7 +1894,7 @@ function highlightFlow(a, b) {
 }
 
 // ======================= ask (Claude Code CLI or Codex via serve.mjs, or the Claude app) =======================
-const Q = createGraphQuery(G);
+const Q = creerRequetesGraphe(G);
 const askState = { engine: null, sample: null, busy: false, ctl: null, session: null, turns: [], last: null };
 const askInput = $('#ask-input'), askSend = $('#ask-send'), sheet = $('#ask-sheet'), warn = $('#ask-warn');
 const DOCS = 'https://docs.claude.com/en/docs/claude-code/overview'; // the Claude app's tip: install the CLI
@@ -1923,7 +1923,7 @@ function setEngine(engine, label, warning) {
   tag.title = engine === 'cli' ? `Answers come from ${AGENT.cli} on this computer, which can read the source` : engine === 'app' ? 'Answers come from Claude in the Claude app, using the map (not the source files)' : '';
   askInput.disabled = !engine;
   askSend.disabled = !engine;
-  askInput.placeholder = engine ? `Ask anything about ${G.project.name}…` : 'Asking is unavailable';
+  askInput.placeholder = engine ? `Ask anything about ${G.projet.name}…` : 'Asking is unavailable';
   if (typeof renderChips === 'function' && askState.context) renderChips();
   setWarning(warning || null);
   addModeSwitch();
@@ -2032,7 +2032,7 @@ const canChange = () => PLAN && askState.engine === 'cli' && window.FLOORPLAN_SE
 function setAskMode(m) {
   askState.mode = canChange() && m === 'change' ? 'change' : 'ask';
   $('#ask-mode')?.querySelectorAll('button').forEach((b) => { b.classList.toggle('on', b.dataset.m === askState.mode); b.setAttribute('aria-pressed', String(b.dataset.m === askState.mode)); });
-  if (askState.engine) askInput.placeholder = askState.mode === 'change' ? 'Ask for a change, e.g. “also plan out refunds”…' : `Ask anything about ${G.project.name}…`;
+  if (askState.engine) askInput.placeholder = askState.mode === 'change' ? 'Ask for a change, e.g. “also plan out refunds”…' : `Ask anything about ${G.projet.name}…`;
   askSend.title = askState.busy ? 'Stop' : askState.mode === 'change' ? 'Make this change' : 'Ask';
 }
 function addModeSwitch() {
@@ -2125,7 +2125,7 @@ async function askViaApp(question, progress, mode = 'ask') {
       execute: ({ from, to }) => { progress('Tracing a dependency path'); return clip(Q.path(String(from), String(to))); } },
   ];
   const flow = mode === 'flow';
-  const rules = `${flow ? floorplanFlowInstructions(G, 'app') : floorplanAskInstructions(G, 'app')}\nThe JSON must match this schema:\n${JSON.stringify(flow ? FLOORPLAN_FLOW_SCHEMA : FLOORPLAN_ANSWER_SCHEMA)}\n\nMap overview:\n${clip(Q.overview())}`;
+  const rules = `${flow ? floorplanConsignesParcours(G, 'app') : floorplanConsignesQuestion(G, 'app')}\nThe JSON must match this schema:\n${JSON.stringify(flow ? FLOORPLAN_SCHEMA_PARCOURS : FLOORPLAN_SCHEMA_REPONSE)}\n\nMap overview:\n${clip(Q.overview())}`;
   const turns = [{ role: 'user', content: rules }, ...(flow ? [] : askState.turns.slice(-6)), { role: 'user', content: question }];
   const answer = await askState.sample.json(turns, { tools, signal: askState.ctl.signal });
   if (flow) return answer || {};
@@ -2145,7 +2145,7 @@ function renderChips() {
   const box = $('#ask-chips');
   box.innerHTML = askState.context.map((id) => { const i = info(id); return `<span class="chip" title="${h(i.path || '')}"><span class="ico" style="--c:${colorOf(i)}">${icon(iconKey(i))}</span><span>${h(i.name)}</span><button type="button" data-rm="${h(id)}" aria-label="Remove">${iconI('x')}</button></span>`; }).join('');
   box.querySelectorAll('[data-rm]').forEach((b) => b.onclick = () => { askState.context = askState.context.filter((x) => x !== b.dataset.rm); renderChips(); askInput.focus(); });
-  askInput.placeholder = !askState.engine ? 'Asking is unavailable' : askState.mode === 'change' ? (askState.context.length ? 'What should change here?' : 'Ask for a change, e.g. “also plan out refunds”…') : askState.context.length ? 'Ask about this…' : `Ask anything about ${G.project.name}…`;
+  askInput.placeholder = !askState.engine ? 'Asking is unavailable' : askState.mode === 'change' ? (askState.context.length ? 'What should change here?' : 'Ask for a change, e.g. “also plan out refunds”…') : askState.context.length ? 'Ask about this…' : `Ask anything about ${G.projet.name}…`;
   askSend.disabled = !askState.engine;
 }
 askInput.addEventListener('keydown', (ev) => { if (ev.key === 'Backspace' && !askInput.value && askState.context.length) { askState.context.pop(); renderChips(); } });
@@ -2182,7 +2182,7 @@ renderFlowMenu();
 if (!EXPORTED) loadCustomFlows();
 
 // ======================= boot =======================
-$('#proj-name').textContent = G.project.name;
+$('#proj-name').textContent = G.projet.name;
 if (EXPORTED) {
   document.body.classList.add('exported');
   const at = new Date(EXPORTED.at);
@@ -2202,7 +2202,7 @@ if (EXPORTED) {
   made.append('Made with', logo, name, free);
   $('#stage').appendChild(made);
 }
-document.title = `${G.project.name} map`;
+document.title = `${G.projet.name} map`;
 $('#btn-up').onclick = up;
 // drag the panel's left edge to resize it; the width sticks between visits
 const setPanelWidth = (w) => { document.documentElement.style.setProperty('--panel-w', `${clamp(Math.round(w), 300, Math.min(720, innerWidth - 360))}px`); };
@@ -2330,22 +2330,22 @@ const custom = { panel: null };
 function emit(event, data) { for (const fn of ext.listeners[event] || []) { try { fn(data); } catch (e) { console.error('floorplan extension', e); } } }
 window.Floorplan = Object.freeze({
   version: 1,
-  graph: G, query: Q, state, agent: AGENT, exported: EXPORTED,
+  graphe: G, requetes: Q, etat: state, agent: AGENT, exporte: EXPORTED,
   // model helpers
-  info, chain, children: (id) => visibleKids(id), parentOf: (id) => parentOf.get(id), exists: (id) => Q.exists(id),
-  files, nodes, routes, colorOf, iconKey,
+  infos: info, chaine: chain, enfants: (id) => visibleKids(id), parentDe: (id) => parentOf.get(id), existe: (id) => Q.exists(id),
+  fichiers: files, noeuds: nodes, routes, couleurDe: colorOf, cleIcone: iconKey,
   // html helpers
-  h, icon, iconI, fmt, plural, md,
+  h, icone: icon, iconeI: iconI, fmt, pluriel: plural, md,
   // navigation
-  go, reveal, select, open, up, fit, render: (o) => render({ keepTransform: true, ...o }), refreshPanel: () => renderPanel(),
-  showBoard, playFlow, startFlow, stopFlow: () => { if (state.flow) stopFlow(); },
-  freeArea: () => freeArea(),
-  closeMenus: () => { closeMenu(); fm.classList.remove('open'); legendEl.classList.remove('open'); },
+  aller: go, reveler: reveal, selectionner: select, ouvrir: open, monter: up, ajuster: fit, afficher: (o) => render({ keepTransform: true, ...o }), actualiserPanneau: () => renderPanel(),
+  montrerTableau: showBoard, jouerParcours: playFlow, demarrerParcours: startFlow, arreterParcours: () => { if (state.flow) stopFlow(); },
+  zoneLibre: () => freeArea(),
+  fermerMenus: () => { closeMenu(); fm.classList.remove('open'); legendEl.classList.remove('open'); },
   // asking
-  addAskContext, ask: (text) => { closeSheet(); askInput.value = text; submitAsk(); }, askEngine: () => askState.engine,
+  ajouterContexteQuestion: addAskContext, demander: (text) => { closeSheet(); askInput.value = text; submitAsk(); }, moteurQuestion: () => askState.engine,
   // a blueprint's Change mode: whether it's available here, and putting a request in the Ask bar to finish and send
-  canChange: () => canChange(),
-  draftChange(text) {
+  peutChanger: () => canChange(),
+  preparerChangement(text) {
     if (!canChange()) return false;
     closeSheet(); // on a phone the open details sheet hides the ask bar, so the request would be typed where nobody can see it
     setAskMode('change');
@@ -2355,7 +2355,7 @@ window.Floorplan = Object.freeze({
     return true;
   },
   // chrome
-  addHeaderButton({ id, label = '', icon: ic, svg, title = '', onClick }) {
+  ajouterBoutonEntete({ id, label = '', icon: ic, svg, title = '', onClick }) {
     const b = document.createElement('button');
     b.className = 'btn' + (label ? '' : ' icon'); if (id) b.id = id; b.title = title || label; if (label) b.setAttribute('aria-label', label);
     b.innerHTML = `${svg ? `<svg class="i" viewBox="0 0 24 24">${svg}</svg>` : ic ? iconI(ic) : ''}${label ? `<span class="bl">${h(label)}</span>` : ''}`;
@@ -2364,14 +2364,14 @@ window.Floorplan = Object.freeze({
     syncHeader(); // a new button can make the bar a row taller
     return b;
   },
-  addPanelSection(where, fn) { (ext.sections[where] ||= []).push(fn); },
-  showPanel(html, bind) { custom.panel = { html, bind }; setPanel(true); renderPanel(); },
-  closePanel() { custom.panel = null; renderPanel(); },
-  modal: showModal, toast, copy: (text) => copy(text),
-  icons: P,
-  technical, setTechnical,
-  store,
-  on(event, fn) { (ext.listeners[event] ||= []).push(fn); },
+  ajouterSectionPanneau(where, fn) { (ext.sections[where] ||= []).push(fn); },
+  montrerPanneau(html, bind) { custom.panel = { html, bind }; setPanel(true); renderPanel(); },
+  fermerPanneau() { custom.panel = null; renderPanel(); },
+  fenetre: showModal, message: toast, copier: (text) => copy(text),
+  icones: P,
+  technique: technical, reglerTechnique: setTechnical,
+  stockage: store,
+  sur(event, fn) { (ext.listeners[event] ||= []).push(fn); },
 });
 technicalFlag = !!store.get('technical', false);
 

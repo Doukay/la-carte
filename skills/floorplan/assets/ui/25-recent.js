@@ -3,15 +3,15 @@
 // button that lays the changed cards out on one board, and the panel sections. Talks to the viewer only
 // through window.Floorplan.
 (() => {
-  const SC = window.Floorplan;
-  const R = SC && SC.graph.recent;
+  const CARTE = window.Floorplan;
+  const R = CARTE && CARTE.graphe.recent;
   if (!R || !R.items || !R.items.length) return;
-  const { h } = SC;
+  const { h } = CARTE;
   const tasks = R.tasks || [];
-  const items = R.items.filter((it) => SC.exists(it.id));
+  const items = R.items.filter((it) => CARTE.existe(it.id));
   if (!items.length) return;
 
-  SC.icons.recent = '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>';
+  CARTE.icones.recent = '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -42,7 +42,7 @@
   /** One board with just the changed cards (and how they connect), each with its note. */
   function showRecent(ti) {
     const one = ti != null ? tasks[ti] : tasks.length === 1 ? tasks[0] : null;
-    SC.showBoard({
+    CARTE.montrerTableau({
       kind: 'Recent work', icon: 'recent',
       title: one ? one.title : 'Recent work',
       question: one ? (one.request ? `You asked: ${one.request}` : '') : tasks.map((t) => t.title).join(' · '),
@@ -51,32 +51,32 @@
     });
   }
 
-  const btn = SC.addHeaderButton({ id: 'btn-recent', label: 'Recent work', icon: 'recent', title: 'What was just worked on, on one board', onClick: () => showRecent() });
+  const btn = CARTE.ajouterBoutonEntete({ id: 'btn-recent', label: 'Recent work', icon: 'recent', title: 'What was just worked on, on one board', onClick: () => showRecent() });
   const b = document.createElement('span');
   b.className = 'badge';
   b.textContent = String(items.length);
   btn.appendChild(b);
 
   // codebase panel: each task, what was asked, what was done, and a way to see its cards
-  SC.addPanelSection('overview', () => ({
+  CARTE.ajouterSectionPanneau('overview', () => ({
     top: true,
     html: `<div class="sec"><h3>Recent work <span class="c">${items.length}</span></h3>${R.updatedAt ? `<div class="rw-when">Updated ${h(ago(R.updatedAt))}</div>` : ''}<div style="margin-top:10px">${tasks.map((t, i) => itemsOf(i).length ? `
       <div class="rw-task"><div class="rw-tt">${h(t.title)}</div>
         ${t.request ? `<div class="rw-q"><b>You asked:</b> ${h(t.request)}</div>` : ''}
         ${t.summary ? `<div class="rw-s">${h(t.summary)}</div>` : ''}
-        <div class="rw-a"><button class="btn soft" data-rw="${i}">${SC.iconI('recent')}Show ${SC.plural(itemsOf(i).length, 'card')}</button></div></div>` : '').join('')}</div></div>`,
+        <div class="rw-a"><button class="btn soft" data-rw="${i}">${CARTE.iconeI('recent')}Show ${CARTE.pluriel(itemsOf(i).length, 'card')}</button></div></div>` : '').join('')}</div></div>`,
     bind: (el) => el.querySelectorAll('[data-rw]').forEach((x) => x.addEventListener('click', () => showRecent(+x.dataset.rw))),
   }));
 
   // a selected card that changed: the full note, and which request it was for. A part that
   // contains changes: what changed inside it, each a click away.
-  SC.addPanelSection('item', (id) => {
+  CARTE.ajouterSectionPanneau('item', (id) => {
     const key = id.startsWith('m:') ? 'f:' + id.slice(2) : id;
     const mine = items.filter((it) => it.id === key);
-    const inside = items.filter((it) => it.id !== key && SC.chain(it.id).includes(key));
+    const inside = items.filter((it) => it.id !== key && CARTE.chaine(it.id).includes(key));
     if (!mine.length && !inside.length) return '';
     if (!mine.length) return { top: true, html: `<div class="sec"><h3>Recent work inside <span class="c">${inside.length}</span></h3><div class="list">${inside.map((it) => {
-      const i = SC.info(it.id);
+      const i = CARTE.infos(it.id);
       return `<a class="row" data-go="${h(it.id)}"><span class="dot" style="background:var(--recent)"></span><span class="rt"><div class="rn">${h(i.name)}</div>${it.note ? `<div class="rd">${h(it.note)}</div>` : ''}</span></a>`;
     }).join('')}</div></div>` };
     return { top: true, html: `<div class="sec">${mine.map((it) => {

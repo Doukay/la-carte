@@ -3,8 +3,8 @@
 // dotted underline; hovering or focusing it shows a one-sentence explanation. Off while
 // "Show technical detail" is on. Talks to the viewer only through window.Floorplan.
 (() => {
-  const SC = window.Floorplan;
-  if (!SC) return;
+  const CARTE = window.Floorplan;
+  if (!CARTE) return;
 
   // [display name, plain explanation, aliases...]. Aliases are matched as whole words, ignoring case,
   // except those marked with a leading "=" (matched exactly, so "REST" doesn't fire on "the rest").
@@ -79,7 +79,7 @@
   const isMono = (el) => /mono|monospace/i.test(el.style?.fontFamily || '');
 
   function annotate(scope, targets) {
-    if (!scope || SC.technical()) return;
+    if (!scope || CARTE.technique()) return;
     const used = new Set([...scope.querySelectorAll('.sc-term')].map((s) => +s.dataset.term)); // max one per term per scope
     const skipped = (from, stop) => { for (let p = from; p && p !== stop; p = p.parentElement) if (p.matches(SKIP) || isMono(p)) return true; return false; };
     for (const el of targets) {
@@ -126,9 +126,9 @@
   const doContext = () => { const c = contextEl(); if (c) annotate(c, c.querySelectorAll('p, .callout')); };
 
   // Run after the viewer and any other extension listeners have finished filling the DOM.
-  SC.on('panel', () => { hide(true); queueMicrotask(doPanel); });
-  SC.on('render', () => { hide(true); queueMicrotask(doContext); });
-  SC.on('technical', (on) => {
+  CARTE.sur('panel', () => { hide(true); queueMicrotask(doPanel); });
+  CARTE.sur('render', () => { hide(true); queueMicrotask(doContext); });
+  CARTE.sur('technical', (on) => {
     hide(true);
     if (on) { strip(panelEl()); strip(contextEl()); }
     else { queueMicrotask(() => { strip(panelEl()); strip(contextEl()); doPanel(); doContext(); }); }
@@ -165,7 +165,7 @@
     current = el;
     el.classList.add('on');
     el.setAttribute('aria-describedby', 'sc-gloss');
-    pop.innerHTML = `<b>${SC.h(term[0])}</b>${SC.h(term[1])}`;
+    pop.innerHTML = `<b>${CARTE.h(term[0])}</b>${CARTE.h(term[1])}`;
     const r = el.getClientRects()[0] || el.getBoundingClientRect();
     const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 8;
     const x = Math.max(12, Math.min(r.left, innerWidth - pw - 12));

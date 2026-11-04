@@ -1,7 +1,7 @@
 // Resolve import specifiers to files in the codebase, or to named external packages.
 import fs from 'node:fs';
 import path from 'node:path';
-import { readJsonLoose } from './common.mjs';
+import { lireJsonSouple } from './common.mjs';
 
 const P = path.posix;
 
@@ -11,7 +11,7 @@ const RUST_STD = new Set(['std', 'core', 'alloc', 'crate', 'self', 'super']);
 
 const JS_EXTS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.mts', '.cts', '.vue', '.svelte', '.d.ts', '.json'];
 
-export function createResolver(root, files) {
+export function creerResolveur(root, files) {
   const fileSet = new Set(files.map((f) => f.path));
   const byPath = new Map(files.map((f) => [f.path, f]));
   const dirsWith = (name) => files.filter((f) => P.basename(f.path) === name).map((f) => P.dirname(f.path));
@@ -21,7 +21,7 @@ export function createResolver(root, files) {
   const loadTsconfig = (file) => {
     if (tsconfigCache.has(file)) return tsconfigCache.get(file);
     let cfg = null;
-    const json = readJsonLoose(path.join(root, file));
+    const json = lireJsonSouple(path.join(root, file));
     if (json) {
       const dir = P.dirname(file);
       let opts = json.compilerOptions || {};
@@ -51,7 +51,7 @@ export function createResolver(root, files) {
   };
   const workspacePkgs = new Map();
   for (const dir of dirsWith('package.json')) {
-    const pj = readJsonLoose(path.join(root, dir, 'package.json'));
+    const pj = lireJsonSouple(path.join(root, dir, 'package.json'));
     if (pj?.name) workspacePkgs.set(pj.name, { dir, pj });
   }
 

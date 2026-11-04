@@ -27,7 +27,7 @@ before(async () => {
   writeJson(path.join(root, 'floorplan', 'architecture.json'), {
     ...arch,
     annotations: [{ path: 'shop-api/config.js', note: 'Moving to the secrets manager next sprint.' }],
-    flows: [{ id: 'refund', title: 'Refund', description: 'A customer asks for a refund.', steps: [{ node: 'web', note: 'The website asks.' }, { node: 'api', note: 'The server refunds.' }] }],
+    parcours: [{ id: 'refund', title: 'Refund', description: 'A customer asks for a refund.', steps: [{ node: 'web', note: 'The website asks.' }, { node: 'api', note: 'The server refunds.' }] }],
   });
   writeJson(path.join(root, 'floorplan', 'recent-work.json'), { tasks: [{ title: 'Refunds', summary: 'Added refunds.', items: [{ ref: 'shop-api/routes/orders.js', change: 'changed', note: 'Refund endpoint.' }] }] });
   run('scan.mjs', root);
@@ -52,10 +52,10 @@ after(async () => {
 
 test('the map has health, recent work, a note, a flow and a remote to leave out', () => {
   const g = dataOf(fs.readFileSync(path.join(root, 'floorplan', 'index.html'), 'utf8'));
-  assert.ok(g.health.issues.length > 0);
+  assert.ok(g.sante.problemes.length > 0);
   assert.equal(g.recent.items.length, 1);
   assert.ok(g.files.some((f) => f.note));
-  assert.equal(g.flows.length, 1);
+  assert.equal(g.parcours.length, 1);
   assert.ok(g.meta.root);
 });
 
@@ -66,9 +66,9 @@ test('by default the export keeps flows and notes, and leaves out health, recent
   const g = dataOf(html);
   assert.match(g.meta.exported.at, /^\d{4}-\d\d-\d\dT/);
   assert.deepEqual(g.meta.exported.include, ['flows', 'notes']);
-  assert.equal(g.health, undefined);
+  assert.equal(g.sante, undefined);
   assert.equal(g.recent, undefined);
-  assert.equal(g.flows.length, 1);
+  assert.equal(g.parcours.length, 1);
   assert.ok(g.files.some((f) => f.note));
   assert.equal(g.meta.root, null);
   assert.ok(g.meta.repos.every((r) => !('remote' in r)));
@@ -84,7 +84,7 @@ test('health and recent work go in only when asked for, with a warning about hea
   const { html, out } = exportCli(path.join(root, 'all.html'), '--include', 'flows,notes,recent,health');
   const g = dataOf(html);
   assert.deepEqual(g.meta.exported.include, ['flows', 'notes', 'recent', 'health']);
-  assert.ok(g.health.issues.length > 0);
+  assert.ok(g.sante.problemes.length > 0);
   assert.equal(g.recent.items.length, 1);
   assert.match(out, /Share it only with people you trust/);
   // where a secret sits, never the secret itself
@@ -95,8 +95,8 @@ test('flows, the tour and notes can be left out too', () => {
   const { html } = exportCli(path.join(root, 'bare.html'), '--include', 'none');
   const g = dataOf(html);
   assert.deepEqual(g.meta.exported.include, []);
-  assert.deepEqual(g.flows, []);
-  assert.deepEqual(g.tour, []);
+  assert.deepEqual(g.parcours, []);
+  assert.deepEqual(g.visite, []);
   assert.ok(g.files.every((f) => !('note' in f)));
 });
 
@@ -120,15 +120,15 @@ test('the Export button needs the map page’s token', async () => {
 
 test('the Export button downloads the copy, with flows requested since the last build', async () => {
   const extra = { id: 'custom-1', title: 'Admin deletes a user', description: '', steps: [{ ref: 'web', note: 'First.' }, { ref: 'api', note: 'Then.' }] };
-  const r = await api({ include: ['flows', 'health'], flows: [extra, { id: 'bad', steps: 'nope' }] }, { 'x-floorplan-token': token });
+  const r = await api({ include: ['flows', 'health'], parcours: [extra, { id: 'bad', steps: 'nope' }] }, { 'x-floorplan-token': token });
   assert.equal(r.status, 200);
   assert.match(r.headers.get('content-type'), /text\/html/);
   assert.equal(r.headers.get('content-disposition'), 'attachment; filename="shop-map.html"');
   const g = dataOf(await r.text());
   assert.deepEqual(g.meta.exported.include, ['flows', 'health']);
-  assert.deepEqual(g.flows.map((f) => f.id), ['refund', 'custom-1']);
-  assert.equal(g.flows[1].custom, true);
+  assert.deepEqual(g.parcours.map((f) => f.id), ['refund', 'custom-1']);
+  assert.equal(g.parcours[1].custom, true);
   assert.ok(g.files.every((f) => !('note' in f)), 'notes weren’t ticked');
   assert.equal(g.recent, undefined);
-  assert.ok(g.health);
+  assert.ok(g.sante);
 });

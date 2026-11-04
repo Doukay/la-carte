@@ -2,13 +2,13 @@
 // the parts on it, the requests it makes, the server code that answers them, the data and outside
 // services involved. Data comes from graph.screens (scripts/lib/screens.mjs).
 (() => {
-  const SC = window.Floorplan;
-  if (!SC) return;
-  const G = SC.graph;
+  const CARTE = window.Floorplan;
+  if (!CARTE) return;
+  const G = CARTE.graphe;
   // pages that only bounce you elsewhere have nothing behind them worth a board
-  const screens = (G.screens || []).filter((s) => s && s.url && Array.isArray(s.behind) && s.behind.length && !(s.behind.length < 2 && /redirect/i.test(`${s.name} ${s.description}`)));
+  const screens = (G.ecrans || []).filter((s) => s && s.url && Array.isArray(s.behind) && s.behind.length && !(s.behind.length < 2 && /redirect/i.test(`${s.name} ${s.description}`)));
   if (!screens.length) return;
-  const { h } = SC;
+  const { h } = CARTE;
 
   const style = document.createElement('style');
   style.textContent = `
@@ -42,11 +42,11 @@
 
   function showScreen(s) {
     closeMenu();
-    const items = s.behind.filter((b) => SC.exists(b.id));
+    const items = s.behind.filter((b) => CARTE.existe(b.id));
     // a short walkthrough: the screen → its first request → the server code → where it ends up
     const firstOf = (kind) => items.find((b) => b.kind === kind);
     const steps = [firstOf('screen'), firstOf('request'), firstOf('server'), firstOf('data') || firstOf('outside')].filter(Boolean);
-    SC.showBoard({ kind: 'Screen', icon: 'ui', title: s.name, question: 'Everything behind ' + s.url, items, steps: steps.length >= 3 ? steps : [] });
+    CARTE.montrerTableau({ kind: 'Screen', icon: 'ui', title: s.name, question: 'Everything behind ' + s.url, items, steps: steps.length >= 3 ? steps : [] });
   }
 
   // ---------- header menu ----------
@@ -109,7 +109,7 @@
   function closeMenu() { menu.classList.remove('open'); }
   const isOpen = () => menu.classList.contains('open');
 
-  btn = SC.addHeaderButton({ id: 'screens-btn', label: 'Screens', icon: 'ui', title: 'Pick a screen of the app to see everything behind it', onClick: () => (isOpen() ? closeMenu() : openMenu()) });
+  btn = CARTE.ajouterBoutonEntete({ id: 'screens-btn', label: 'Screens', icon: 'ui', title: 'Pick a screen of the app to see everything behind it', onClick: () => (isOpen() ? closeMenu() : openMenu()) });
   window.addEventListener('pointerdown', (ev) => { if (isOpen() && !menu.contains(ev.target) && !btn.contains(ev.target)) closeMenu(); }, true);
   window.addEventListener('keydown', (ev) => {
     if (!isOpen()) return;
@@ -121,7 +121,7 @@
   // ---------- details panel ----------
   const row = (s, label) => `<a class="row" data-sc="${h(s.id)}"><span class="dot" style="background:var(--n-ui)"></span><span class="rt"><div class="rn">${h(label || s.name)}</div><div class="rp">${h(s.url)}</div></span></a>`;
   const bindRows = (el) => el?.querySelectorAll('[data-sc]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); showScreen(screens.find((s) => s.id === a.dataset.sc)); }));
-  SC.addPanelSection('item', (id) => {
+  CARTE.ajouterSectionPanneau('item', (id) => {
     if (typeof id !== 'string') return null;
     const own = id.startsWith('f:') ? byFile.get(id.slice(2)) || [] : [];
     const on = (usedBy.get(id) || []).filter((s) => !own.includes(s));
@@ -131,7 +131,7 @@
     if (on.length) html += `<div class="sec"><h3>Behind these screens <span class="c">${on.length}</span></h3><div class="list">${on.slice(0, 8).map((s) => row(s)).join('')}</div></div>`;
     return { html, bind: bindRows };
   });
-  SC.addPanelSection('overview', () => ({
+  CARTE.ajouterSectionPanneau('overview', () => ({
     html: `<div class="sec"><h3>Screens <span class="c">${screens.length}</span></h3><div class="list"><a class="row" data-sc-open><span class="dot" style="background:var(--n-ui)"></span><span class="rt"><div class="rn">Start from a screen</div><div class="rd">Pick a page of the app to see the parts on it, the requests it makes and the server code behind them.</div></span></a></div></div>`,
     bind: (el) => el?.querySelector('[data-sc-open]')?.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); openMenu(); }),
   }));

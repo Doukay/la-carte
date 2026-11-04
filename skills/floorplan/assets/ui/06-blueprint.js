@@ -3,13 +3,13 @@
 // overview says what it was planned from, and every planned part offers "Build this with Claude": a
 // ready prompt to build just that part, following the plan. Talks to the viewer only through window.Floorplan.
 (() => {
-  const SC = window.Floorplan;
-  const BP = SC && SC.graph.meta.blueprint;
+  const CARTE = window.Floorplan;
+  const BP = CARTE && CARTE.graphe.meta.ebauche;
   if (!BP) return;
-  const { h } = SC;
+  const { h } = CARTE;
   const Cap = (t) => t[0].toUpperCase() + t.slice(1);
-  const A = SC.agent || { name: 'Claude', app: 'Claude Code' };
-  const G = SC.graph;
+  const A = CARTE.agent || { name: 'Claude', app: 'Claude Code' };
+  const G = CARTE.graphe;
 
   document.documentElement.classList.add('blueprint');
   const style = document.createElement('style');
@@ -28,40 +28,40 @@
     if (!k || k.querySelector('.bp-pill')) return;
     k.insertAdjacentHTML('beforeend', '<span class="bp-pill" title="Planned, not built yet: every card is a part the system would need.">Blueprint</span>');
   };
-  SC.on('render', addPill);
-  SC.on('ready', addPill);
+  CARTE.sur('render', addPill);
+  CARTE.sur('ready', addPill);
 
-  const ACCESS = { public: 'anyone', 'signed-in': 'signed-in users', team: 'only the team that runs the service', webhook: 'the service that sends it, which must prove it', internal: 'only our own services' };
+  const ACCES = { public: 'anyone', 'signed-in': 'signed-in users', team: 'only the team that runs the service', webhook: 'the service that sends it, which must prove it', internal: 'only our own services' };
   /** "for signed-in users: managers of that location", or the open question when nobody decided. */
   const whoMay = (r) => !r.access ? 'who may use it isn’t decided yet: ask me'
-    : `for ${r.access === 'signed-in' && r.who ? r.who : ACCESS[r.access] || r.access}${r.publicBecause ? `, because ${r.publicBecause.replace(/\.$/, '')}` : ''}`;
+    : `for ${r.access === 'signed-in' && r.who ? r.who : ACCES[r.access] || r.access}${r.publicBecause ? `, because ${r.publicBecause.replace(/\.$/, '')}` : ''}`;
 
-  SC.addPanelSection('overview', () => ({
+  CARTE.ajouterSectionPanneau('overview', () => ({
     html: `<div class="sec"><h3>Blueprint</h3>
-      <p class="pd">Planned${BP.source ? ` from <b>${h(BP.source)}</b>` : ''}, not built yet. Every dashed card is a part the system would need.${SC.exported ? '' : ` Pick one and choose <b>Build this with ${h(A.name)}</b> to start on it.`}</p>
+      <p class="pd">Planned${BP.source ? ` from <b>${h(BP.source)}</b>` : ''}, not built yet. Every dashed card is a part the system would need.${CARTE.exporte ? '' : ` Pick one and choose <b>Build this with ${h(A.name)}</b> to start on it.`}</p>
       ${BP.stack?.length ? `<div class="tags" style="margin-top:10px">${BP.stack.map((s) => `<span class="tag">${h(s)}</span>`).join('')}</div>` : ''}
       ${BP.assumptions?.length ? `<h3 style="margin-top:14px">Assumptions</h3><ul class="bp-list">${BP.assumptions.map((a) => `<li>${h(a)}</li>`).join('')}</ul>` : ''}
     </div>`,
   }));
 
   /** The planned files inside an item (a part, a folder or one file). */
-  const filesIn = (id) => G.files.filter((f) => id === 'f:' + f.p || SC.chain('f:' + f.p).includes(id));
+  const filesIn = (id) => G.files.filter((f) => id === 'f:' + f.p || CARTE.chaine('f:' + f.p).includes(id));
   function buildPrompt(id) {
-    const i = SC.info(id);
+    const i = CARTE.infos(id);
     const fl = filesIn(id);
     const paths = new Set(fl.map((f) => 'f:' + f.p));
-    const eps = SC.routes.filter((r) => paths.has('f:' + r.f));
+    const eps = CARTE.routes.filter((r) => paths.has('f:' + r.f));
     const deps = new Map();
     for (const l of G.links) {
       if (!paths.has(l.a) || paths.has(l.b)) continue;
-      const o = SC.info(l.b);
+      const o = CARTE.infos(l.b);
       if (o) deps.set(l.b, `${o.name}${l.b.startsWith('f:') ? ` (${l.b.slice(2)})` : ''}`);
     }
     // open questions from the PRD that touch this part
-    const inside = (x) => x === id || paths.has(x) || (x.startsWith('r:') && paths.has('f:' + SC.routes[+x.slice(2)]?.f)) || (SC.exists(x) && SC.chain(x).includes(id));
-    const questions = (G.health?.issues || []).filter((q) => q.kind === 'question' && (q.items || []).some(inside)).map((q) => q.title);
+    const inside = (x) => x === id || paths.has(x) || (x.startsWith('r:') && paths.has('f:' + CARTE.routes[+x.slice(2)]?.f)) || (CARTE.existe(x) && CARTE.chaine(x).includes(id));
+    const questions = (G.sante?.problemes || []).filter((q) => q.kind === 'question' && (q.items || []).some(inside)).map((q) => q.title);
     return [
-      `Build "${i.name}" from the ${G.project.name} blueprint: floorplan/plan.json and floorplan/architecture.json${BP.source ? `, planned from ${BP.source}` : ''}.`,
+      `Build "${i.name}" from the ${G.projet.name} blueprint: floorplan/plan.json and floorplan/architecture.json${BP.source ? `, planned from ${BP.source}` : ''}.`,
       i.desc ? `\nWhat it's for: ${i.desc}` : '',
       BP.stack?.length ? `\nStack: ${BP.stack.join('; ')}.` : '',
       `\nFiles to create:`,
@@ -74,27 +74,27 @@
     ].filter((x) => x !== '').join('\n');
   }
 
-  SC.addPanelSection('item', (id) => {
+  CARTE.ajouterSectionPanneau('item', (id) => {
     if (!id || typeof id !== 'string') return '';
     // an endpoint: who the plan lets use it
     if (id.startsWith('r:')) {
-      const r = SC.routes[+id.slice(2)];
+      const r = CARTE.routes[+id.slice(2)];
       if (!r) return '';
-      const text = !r.access ? `Not decided yet.${SC.graph.health ? ' The design review lists it.' : ''}` : `${Cap(r.access === 'signed-in' && r.who ? r.who : ACCESS[r.access] || r.access)}.${r.publicBecause ? ` Open on purpose: ${r.publicBecause}` : ''}`;
+      const text = !r.access ? `Not decided yet.${CARTE.graphe.sante ? ' The design review lists it.' : ''}` : `${Cap(r.access === 'signed-in' && r.who ? r.who : ACCES[r.access] || r.access)}.${r.publicBecause ? ` Open on purpose: ${r.publicBecause}` : ''}`;
       return `<div class="sec"><h3>Who may use it</h3><p class="pd">${h(text)}</p></div>`;
     }
-    const i = SC.info(id);
-    if (SC.exported || !i || (i.type === 'node' && i.n.kind === 'external') || !filesIn(id).length) return '';
+    const i = CARTE.infos(id);
+    if (CARTE.exporte || !i || (i.type === 'node' && i.n.kind === 'external') || !filesIn(id).length) return '';
     return {
       html: `<div class="sec"><h3>Build it</h3><p class="pd">A ready request for ${h(A.app)} to build ${i.type === 'file' ? 'this file' : 'this part'} the way the plan describes.</p>
-        <div class="actions"><button class="btn soft" data-bp-build>${SC.iconI('spark')}Build this with ${h(A.name)}</button></div></div>`,
+        <div class="actions"><button class="btn soft" data-bp-build>${CARTE.iconeI('spark')}Build this with ${h(A.name)}</button></div></div>`,
       bind: (el) => el.querySelector('[data-bp-build]')?.addEventListener('click', (ev) => {
         ev.stopPropagation();
         const prompt = buildPrompt(id);
-        SC.modal({
+        CARTE.fenetre({
           title: `Build this with ${A.name}`,
           html: `<p class="hc-hint">Copy this request and paste it into <b>${h(A.app)}</b>, opened in your project folder.</p><pre>${h(prompt)}</pre>`,
-          actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { SC.copy(prompt); SC.toast(`Copied. Paste it into ${A.app}.`); } }],
+          actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { CARTE.copier(prompt); CARTE.message(`Copied. Paste it into ${A.app}.`); } }],
         });
       }),
     };

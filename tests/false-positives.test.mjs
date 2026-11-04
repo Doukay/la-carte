@@ -9,11 +9,11 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { lib, makeProject, shopApp, run, scanAndBuild, readGraph, cleanup, FAKE_PASSWORD } from './helpers.mjs';
 
-const { findIssues, leakyPublicVar, protectedValue, dismissalFor, withDismissed } = await lib('health.mjs');
-const secrets = (src, p = 'app/config.py', lang = 'python') => findIssues(src, { path: p, category: 'code', lang }).filter((x) => x.k === 'secret');
+const { trouverProblemes, variablePubliqueFuyante, valeurProtegee, rejetPour, avecRejets } = await lib('health.mjs');
+const secrets = (src, p = 'app/config.py', lang = 'python') => trouverProblemes(src, { path: p, category: 'code', lang }).filter((x) => x.k === 'secret');
 const BCRYPT = '$2b$12$' + 'aBcD1e2F3g4H5i6J7k8L9m'.repeat(2) + 'n0P3q4R5s6';
 const ARGON = '$argon2id$v=19$m=65536,t=3,p=4$' + 'c2FsdHNhbHQ' + '$' + 'aGFzaGhhc2hoYXNo';
-const ARCH = { project: { name: 'App', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] };
+const ARCH = { projet: { name: 'App', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] };
 const FAKE_GITHUB_TOKEN = 'ghp_' + 'aBcD' + '1e2F3g4H5i6J7k8L9m0N1o2P3q4R5s6T7u8V';
 const BLOB = 'Zm9vYmFyYmF6cXV4'.repeat(4);
 const ENCRYPTED = { dotenvx: 'encrypted:' + BLOB, sops: `ENC[AES256_GCM,data:${BLOB},iv:abc,tag:def,type:str]`, openssl: 'U2FsdGVkX1' + BLOB, fernet: 'gAAAAA' + BLOB, vault: 'vault:v1:' + BLOB };
@@ -35,8 +35,8 @@ test('a name only excuses a hash, not the secret that makes one, and never a rea
 });
 
 test('a hash in a browser variable is not a leaked secret, and a password there still is', () => {
-  assert.equal(leakyPublicVar('VITE_ADMIN_PASSWORD_HASH'), null);
-  assert.notEqual(leakyPublicVar('VITE_ADMIN_PASSWORD'), null);
+  assert.equal(variablePubliqueFuyante('VITE_ADMIN_PASSWORD_HASH'), null);
+  assert.notEqual(variablePubliqueFuyante('VITE_ADMIN_PASSWORD'), null);
 });
 
 const browserVarIssues = (value) => {
@@ -47,7 +47,7 @@ const browserVarIssues = (value) => {
   }, { repos: ['app'], arch: ARCH });
   try {
     scanAndBuild(root);
-    return readGraph(root).health.issues.filter((i) => i.kind === 'public-env-secret');
+    return readGraph(root).sante.problemes.filter((i) => i.kind === 'public-env-secret');
   } finally { cleanup(root); }
 };
 
@@ -58,16 +58,16 @@ test('a browser variable whose value is a hash raises nothing, and the same vari
 
 // ---------- 2. an encrypted backup isn't exposed ----------
 test('encrypted values are recognised in every common format', () => {
-  for (const [what, v] of Object.entries(ENCRYPTED)) assert.ok(protectedValue(v), what);
-  assert.ok(!protectedValue(FAKE_PASSWORD));
-  assert.ok(!protectedValue(BLOB), 'random-looking text is not proof of encryption');
+  for (const [what, v] of Object.entries(ENCRYPTED)) assert.ok(valeurProtegee(v), what);
+  assert.ok(!valeurProtegee(FAKE_PASSWORD));
+  assert.ok(!valeurProtegee(BLOB), 'random-looking text is not proof of encryption');
 });
 
 const envIssues = (body, name = '.env.backup') => {
   const root = makeProject({ [`app/${name}`]: body, 'app/index.js': 'console.log(1);\n' }, { repos: ['app'], arch: ARCH });
   try {
     scanAndBuild(root);
-    return readGraph(root).health.issues.filter((i) => i.kind === 'env-file');
+    return readGraph(root).sante.problemes.filter((i) => i.kind === 'env-file');
   } finally { cleanup(root); }
 };
 
@@ -93,30 +93,30 @@ const issue = { id: 'secret:a.py', severity: 'high', locations: [{ file: 'a.py',
 const mark = (over = {}) => [{ id: issue.id, severity: 'high', locations: ['a.py:10', 'b.py:3'], ...over }];
 
 test('a dismissal covers the issue it was made for', () => {
-  assert.ok(dismissalFor(issue, mark()));
-  assert.equal(dismissalFor({ ...issue, id: 'secret:other.py' }, mark()), null);
-  assert.equal(dismissalFor(issue, []), null);
-  assert.equal(dismissalFor(issue, undefined), null);
+  assert.ok(rejetPour(issue, mark()));
+  assert.equal(rejetPour({ ...issue, id: 'secret:other.py' }, mark()), null);
+  assert.equal(rejetPour(issue, []), null);
+  assert.equal(rejetPour(issue, undefined), null);
 });
 
 test('an edit higher up the file, which only moves the line, does not bring it back', () => {
-  assert.ok(dismissalFor({ ...issue, locations: [{ file: 'a.py', line: 42 }, { file: 'b.py', line: 3 }] }, mark()));
+  assert.ok(rejetPour({ ...issue, locations: [{ file: 'a.py', line: 42 }, { file: 'b.py', line: 3 }] }, mark()));
 });
 
 test('it comes back when there is something new: another file, another finding in the file, or a change in severity', () => {
-  assert.equal(dismissalFor({ ...issue, locations: [...issue.locations, { file: 'c.py', line: 1 }] }, mark()), null);
-  assert.equal(dismissalFor({ ...issue, locations: [...issue.locations, { file: 'a.py', line: 99 }] }, mark()), null);
-  assert.equal(dismissalFor({ ...issue, severity: 'medium' }, mark()), null);
-  assert.ok(dismissalFor({ ...issue, locations: [issue.locations[0]] }, mark()), 'one going away is not new');
+  assert.equal(rejetPour({ ...issue, locations: [...issue.locations, { file: 'c.py', line: 1 }] }, mark()), null);
+  assert.equal(rejetPour({ ...issue, locations: [...issue.locations, { file: 'a.py', line: 99 }] }, mark()), null);
+  assert.equal(rejetPour({ ...issue, severity: 'medium' }, mark()), null);
+  assert.ok(rejetPour({ ...issue, locations: [issue.locations[0]] }, mark()), 'one going away is not new');
 });
 
 test('the summary leaves dismissed issues out but the issues stay listed', () => {
-  const health = { summary: { high: 2, medium: 0, low: 0 }, issues: [issue, { id: 'other', severity: 'high', locations: [] }] };
-  const out = withDismissed(health, mark());
+  const health = { summary: { high: 2, medium: 0, low: 0 }, problemes: [issue, { id: 'other', severity: 'high', locations: [] }] };
+  const out = avecRejets(health, mark());
   assert.deepEqual(out.summary, { high: 1, medium: 0, low: 0 });
-  assert.equal(out.issues.length, 2);
+  assert.equal(out.problemes.length, 2);
   assert.equal(out.dismissed.length, 1);
-  assert.deepEqual(withDismissed(health, 'nonsense').summary, { high: 2, medium: 0, low: 0 });
+  assert.deepEqual(avecRejets(health, 'nonsense').summary, { high: 2, medium: 0, low: 0 });
 });
 
 test('the page applies the same rule as the build', () => {
@@ -160,17 +160,17 @@ test('saving a dismissal needs the token', async () => {
 });
 
 test('a dismissal saved on the map survives a rebuild and leaves the counts; undoing it restores them', async () => {
-  const first = readGraph(root).health;
-  const target = first.issues.find((i) => i.kind === 'secret');
+  const first = readGraph(root).sante;
+  const target = first.problemes.find((i) => i.kind === 'secret');
   assert.ok(target && first.summary.high > 0);
   const rec = { id: target.id, severity: target.severity, locations: target.locations.map((l) => `${l.file}:${l.line}`), reason: NOTE };
   assert.equal((await (await call('POST', rec)).json()).dismissed.length, 1);
   assert.equal((await (await call('POST', rec)).json()).dismissed.length, 1, 'saving twice replaces it');
 
   const printed = run('build.mjs', root, '--no-claude-md', '--artifact');
-  const health = readGraph(root).health;
+  const health = readGraph(root).sante;
   assert.equal(health.summary.high, first.summary.high - 1);
-  assert.equal(health.issues.length, first.issues.length, 'it stays listed');
+  assert.equal(health.problemes.length, first.problemes.length, 'it stays listed');
   assert.equal(health.dismissed[0].reason, NOTE);
   assert.ok(!printed.includes(`[high] ${target.title}`), 'and the build report leaves it out');
 
@@ -178,18 +178,18 @@ test('a dismissal saved on the map survives a rebuild and leaves the counts; und
   assert.ok(!fs.readFileSync(mapFile('artifact.html'), 'utf8').includes(NOTE), 'not in the copy for the Claude app');
   const exported = await exportPage(['health']);
   assert.ok(!exported.includes(NOTE), 'not in an exported copy');
-  assert.equal(dataOf(exported).health.dismissed[0].id, target.id, 'though the copy still sets the issue apart');
-  assert.equal(dataOf(await exportPage([])).health, undefined);
+  assert.equal(dataOf(exported).sante.dismissed[0].id, target.id, 'though the copy still sets the issue apart');
+  assert.equal(dataOf(await exportPage([])).sante, undefined);
 
   assert.deepEqual((await (await call('DELETE', { id: target.id })).json()).dismissed, []);
   run('build.mjs', root, '--no-claude-md');
-  assert.deepEqual(readGraph(root).health.summary, first.summary);
-  assert.equal(readGraph(root).health.dismissed, undefined);
+  assert.deepEqual(readGraph(root).sante.summary, first.summary);
+  assert.equal(readGraph(root).sante.dismissed, undefined);
 });
 
 test('a hand-broken dismissal file warns and does not break the map', () => {
   fs.writeFileSync(mapFile('health-dismissed.json'), '{ not json');
   assert.ok(run('build.mjs', root, '--no-claude-md').includes('wrote'));
-  assert.ok(readGraph(root).health.issues.length > 0);
+  assert.ok(readGraph(root).sante.problemes.length > 0);
   fs.rmSync(mapFile('health-dismissed.json'));
 });

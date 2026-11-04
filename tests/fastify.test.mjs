@@ -6,12 +6,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { REPO, lib, makeProject, run, readGraph, routeKeys, cleanup } from './helpers.mjs';
 
-const { extract } = await lib('extract.mjs');
+const { extraire } = await lib('extract.mjs');
 
 let root, graph;
 before(() => {
   root = makeProject({}, { arch: {
-    project: { name: 'fastify-app', summary: 'Test fixture.' },
+    projet: { name: 'fastify-app', summary: 'Test fixture.' },
     nodes: [
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The website.', paths: ['web/**'] },
       { id: 'api', label: 'Server', kind: 'service', summary: 'The Fastify server.', paths: ['api/**'] },
@@ -25,7 +25,7 @@ before(() => {
 after(() => cleanup(root));
 
 test('register(plugin, { prefix }) is a mount: imported by name, by import() or by require()', () => {
-  const r = extract([
+  const r = extraire([
     `import ticketRoutes from './routes/tickets.js';`,
     `import { inviteRoutes as invites } from './routes/invites.js';`,
     `const legacy = require('./routes/legacy');`,

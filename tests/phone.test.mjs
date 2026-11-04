@@ -62,7 +62,7 @@ test('touch targets are at least 44 px on small and touch screens, and the zoom 
 });
 
 test('on a phone, asking or drafting a change closes the details sheet first, and so does the summary after a change, so nothing hides the ask bar or the summary', () => {
-  assert.match(html, /ask: \(text\) => \{ closeSheet\(\); askInput\.value = text; submitAsk\(\); \}/);
+  assert.match(html, /demander: \(text\) => \{ closeSheet\(\); askInput\.value = text; submitAsk\(\); \}/);
   assert.match(html, /draftChange\(text\) \{\s*if \(!canChange\(\)\) return false;\s*closeSheet\(\);/);
   assert.match(html, /function showChangeResult\(\) \{[\s\S]*?closeSheet\(\);[\s\S]*?sheetShell\(c\.question,/);
 });

@@ -7,12 +7,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs, toPosix, mapDir, keepOutOfGit } from './lib/common.mjs';
-import { planToScan } from './lib/blueprint.mjs';
+import { lireArguments, versPosix, dossierCarte, garderHorsGit } from './lib/common.mjs';
+import { planVersAnalyse } from './lib/blueprint.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const outDir = mapDir(root);
+const outDir = dossierCarte(root);
 const planFile = path.resolve(args.plan || path.join(outDir, 'plan.json'));
 const outFile = path.join(outDir, '.cache', 'scan.json');
 
@@ -21,7 +21,7 @@ if (!fs.existsSync(planFile)) fail(`No plan at ${planFile}. Write it first (see 
 let plan;
 try { plan = JSON.parse(fs.readFileSync(planFile, 'utf8')); } catch (e) { fail(`plan.json is not valid JSON: ${e.message}`); }
 
-const { scan, errors, warnings } = planToScan(plan, root);
+const { scan, errors, warnings } = planVersAnalyse(plan, root);
 // "services" and "data" name nodes in architecture.json: check them now if it's written
 const archFile = path.join(outDir, 'architecture.json');
 if (scan && fs.existsSync(archFile)) {
@@ -33,23 +33,23 @@ if (scan && fs.existsSync(archFile)) {
   }
 }
 const out = [];
-if (errors.length) { out.push(`✗ ${errors.length} error(s) in ${toPosix(path.relative(root, planFile))}:`); for (const e of errors) out.push(`  - ${e}`); }
+if (errors.length) { out.push(`✗ ${errors.length} error(s) in ${versPosix(path.relative(root, planFile))}:`); for (const e of errors) out.push(`  - ${e}`); }
 if (warnings.length) { out.push(`! ${warnings.length} warning(s):`); for (const w of warnings.slice(0, 40)) out.push(`  - ${w}`); }
 if (errors.length) { console.log(out.join('\n')); console.log('\nFix the errors above and run plan.mjs again.'); process.exit(1); }
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, JSON.stringify(scan));
-keepOutOfGit(outDir);
+garderHorsGit(outDir);
 
-const bp = scan.blueprint;
+const bp = scan.ebauche;
 const byDir = new Map();
 for (const f of scan.files) { const d = f.path.split('/').slice(0, -1).slice(0, 2).join('/') || '.'; byDir.set(d, (byDir.get(d) || 0) + 1); }
 if (out.length) out.push('');
 out.push(`BLUEPRINT  ${scan.files.length} planned files · ${scan.routes.length} endpoints · ${scan.http.length} calls to planned endpoints · ${scan.nodeLinks.length} links to services and data`);
 for (const [d, n] of [...byDir].sort((a, b) => b[1] - a[1]).slice(0, 15)) out.push(`  ${String(n).padStart(4)}  ${d}/`);
-const screens = scan.files.filter((f) => f.screens).length;
+const screens = scan.files.filter((f) => f.ecrans).length;
 if (screens) out.push(`SCREENS  ${screens} planned`);
 if (bp.questions.length) out.push(`OPEN QUESTIONS  ${bp.questions.length} (shown in Health until answered)`);
 out.push('');
-out.push(`✓ wrote ${toPosix(path.relative(root, outFile))}. Next: run build.mjs${fs.existsSync(archFile) ? '' : ' once floorplan/architecture.json is written'}.`);
+out.push(`✓ wrote ${versPosix(path.relative(root, outFile))}. Next: run build.mjs${fs.existsSync(archFile) ? '' : ' once floorplan/architecture.json is written'}.`);
 console.log(out.join('\n'));

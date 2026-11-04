@@ -5,8 +5,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib, FAKE_PASSWORD } from './helpers.mjs';
 
-const { findIssues } = await lib('health.mjs');
-const secrets = (src, path = 'app/config.py', lang = 'python') => findIssues(src, { path, category: 'code', lang }).filter((x) => x.k === 'secret');
+const { trouverProblemes } = await lib('health.mjs');
+const secrets = (src, path = 'app/config.py', lang = 'python') => trouverProblemes(src, { path, category: 'code', lang }).filter((x) => x.k === 'secret');
 const FAKE_GITHUB_TOKEN = 'ghp_' + 'aBcD' + '1e2F3g4H5i6J7k8L9m0N1o2P3q4R5s6T7u8V';
 
 test('a hard-coded password is found, with its line, and masked', () => {
@@ -19,8 +19,8 @@ test('a hard-coded password is found, with its line, and masked', () => {
 });
 
 test('a password inside an address never reaches the list of outside sites', async () => {
-  const { extract } = await lib('extract.mjs');
-  const { hosts } = extract(`fetch("https://bob:${FAKE_PASSWORD}@api.stripe.com/x")`, 'javascript', 'a.js');
+  const { extraire } = await lib('extract.mjs');
+  const { hosts } = extraire(`fetch("https://bob:${FAKE_PASSWORD}@api.stripe.com/x")`, 'javascript', 'a.js');
   assert.deepEqual(hosts.map((h) => h.host), ['api.stripe.com']);
 });
 

@@ -11,7 +11,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { git, compileGlob } from './common.mjs';
+import { git, compilerMotif } from './common.mjs';
 
 const lineIndex = (src) => {
   const starts = [0];
@@ -103,11 +103,11 @@ const HASHED_NAME = /(^|_)(hash|hashed|hashes|digest|bcrypt|argon2?|scrypt|pbkdf
 // "Salted__" (U2FsdGVkX1…) and Python's Fernet (gAAAAA…).
 const ENCRYPTED_VALUE = /^encrypted:[A-Za-z0-9+/=_-]{20,}|^ENC\[[A-Z0-9_]+,data:|^\$ANSIBLE_VAULT;|^!vault\b|^AQICAH[A-Za-z0-9+/=]{40,}$|^vault:v\d+:|^-----BEGIN (AGE ENCRYPTED FILE|PGP MESSAGE)-----|^U2FsdGVkX1[A-Za-z0-9+/=]{10,}|^gAAAAA[A-Za-z0-9_=-]{40,}/;
 /** A value that's a password hash or ciphertext rather than the secret itself. */
-export const protectedValue = (v, name = '') => ENCRYPTED_VALUE.test(v) || HASHED_VALUE.test(v) || HASHED_NAME.test(snake(name));
+export const valeurProtegee = (v, name = '') => ENCRYPTED_VALUE.test(v) || HASHED_VALUE.test(v) || HASHED_NAME.test(snake(name));
 
 function valueLooksReal(v, name) {
   if (/\s/.test(v) || PLACEHOLDER.test(v)) return false;
-  if (protectedValue(v, name)) return false;
+  if (valeurProtegee(v, name)) return false;
   if (/^(none|null|nil|undefined|true|false|string|number|text|required|optional|bearer|basic|secret|token|password|test|dev|development|local|admin)$/i.test(v)) return false;
   if (/^[A-Z][A-Z0-9_]+$/.test(v)) return false;                 // the NAME of an env var
   if (/^env\([A-Za-z_][\w]*\)$/.test(v)) return false;           // Supabase config.toml reading one: "env(S3_SECRET_KEY)"
@@ -480,7 +480,7 @@ const PUBLIC_BY_DESIGN = /(^|_)(PUBLISHABLE|ANON|PK|PUBLIC|SITE|CLIENT_ID|APP_ID
 const SERVICE_LABEL = { OPENAI: 'OpenAI', ANTHROPIC: 'Anthropic', CLAUDE: 'Anthropic', GEMINI: 'Google Gemini', GROQ: 'Groq', GROK: 'xAI', XAI: 'xAI', ELEVENLABS: 'ElevenLabs', ELEVEN_LABS: 'ElevenLabs', SENDGRID: 'SendGrid', OPENROUTER: 'OpenRouter', DEEPSEEK: 'DeepSeek', HF: 'Hugging Face', HUGGINGFACE: 'Hugging Face', HUGGING_FACE: 'Hugging Face', ASSEMBLYAI: 'AssemblyAI', ASSEMBLY_AI: 'AssemblyAI', SERPAPI: 'SerpApi', GITHUB: 'GitHub' };
 
 /** For a variable like VITE_OPENAI_API_KEY: the service it unlocks ('OpenAI', or '' for a generic secret), or null when it's fine to be public. */
-export function leakyPublicVar(name) {
+export function variablePubliqueFuyante(name) {
   const m = PUBLIC_PREFIX.exec(name);
   if (!m) return null;
   const rest = name.slice(m[0].length);
@@ -494,7 +494,7 @@ export function leakyPublicVar(name) {
 function findPublicEnv(src, f, out) {
   const at = lineIndex(src);
   const seen = new Set();
-  const add = (name, idx) => { if (leakyPublicVar(name) === null || seen.has(name)) return; seen.add(name); out.push({ k: 'public-env', name, line: at(idx) }); };
+  const add = (name, idx) => { if (variablePubliqueFuyante(name) === null || seen.has(name)) return; seen.add(name); out.push({ k: 'public-env', name, line: at(idx) }); };
   for (const m of src.matchAll(/\b(process\.env\.|process\.env\[\s*['"]|import\.meta\.env\.)([A-Z][A-Z0-9_]*)/g)) {
     if (/^PUBLIC_/.test(m[2]) && m[1].startsWith('process')) continue; // PUBLIC_ means nothing to Node
     add(m[2], m.index);
@@ -593,7 +593,7 @@ const USES_SUPABASE = /@supabase\/(?:supabase-js|ssr|auth-helpers[\w-]*)|from\s+
 
 // ---------- per-file entry point ----------
 
-export function findIssues(src, f) {
+export function trouverProblemes(src, f) {
   const out = [];
   findSecrets(src, f, out);
   if (f.category !== 'code') return out;
@@ -639,7 +639,7 @@ const LOADED_BY_NAME = /^\s*(?:\/\/|\/?\*|#|<!--|"""|''')[^\n]*(?:\b(?:cli|tool|
 const USED_LANGS = new Set(['typescript', 'javascript', 'python', 'vue', 'svelte', 'astro']);
 const plural = (n, w, ws) => `${n} ${n === 1 ? w : ws || w + 's'}`;
 
-export function buildHealth({ graph, scan, arch, root }) {
+export function construireSante({ graph, scan, arch, root }) {
   const issues = [];
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
   const fileByPath = new Map(graph.files.map((f) => [f.p, f]));
@@ -651,7 +651,7 @@ export function buildHealth({ graph, scan, arch, root }) {
   const label = (id) => nodeById.get(id)?.label || id;
   // Files outside the map (config, .env, Firebase rules) point at the module that owns their folder, or
   // failing that the most specific part of the map whose paths name them.
-  const archGlobs = (arch?.nodes || []).filter((n) => n?.id && nodeById.has(n.id) && Array.isArray(n.paths)).flatMap((n) => n.paths.map((p) => ({ id: n.id, g: compileGlob(p) })));
+  const archGlobs = (arch?.nodes || []).filter((n) => n?.id && nodeById.has(n.id) && Array.isArray(n.paths)).flatMap((n) => n.paths.map((p) => ({ id: n.id, g: compilerMotif(p) })));
   const globOwner = (p) => archGlobs.filter((x) => x.g.test(p)).sort((a, b) => b.g.specificity - a.g.specificity)[0]?.id;
   const dirOwner = new Map();
   for (const f of graph.files) { let d = f.p; while (d.includes('/')) { d = d.slice(0, d.lastIndexOf('/')); if (!dirOwner.has(d)) dirOwner.set(d, new Map()); const m = dirOwner.get(d); m.set(f.n, (m.get(f.n) || 0) + 1); } }
@@ -667,7 +667,7 @@ export function buildHealth({ graph, scan, arch, root }) {
     const owner = globOwner(p);
     return owner ? 'n:' + owner : null;
   };
-  const findings = (p) => scanByPath.get(p)?.issues || [];
+  const findings = (p) => scanByPath.get(p)?.problemes || [];
 
   // ---------- secrets in code and config ----------
   const secretFiles = [];
@@ -772,7 +772,7 @@ export function buildHealth({ graph, scan, arch, root }) {
   // ---------- secret keys in variables the browser gets (NEXT_PUBLIC_, VITE_ …) ----------
   const live = (p) => !TEST_FILE.test(p) && !EXAMPLE_FILE.test(p);
   const publicVars = new Map(); // name -> { svc, refs: [{file, line}], defs: [{file, line}] }
-  const publicVar = (name) => { if (!publicVars.has(name)) publicVars.set(name, { name, svc: leakyPublicVar(name), refs: [], defs: [] }); return publicVars.get(name); };
+  const publicVar = (name) => { if (!publicVars.has(name)) publicVars.set(name, { name, svc: variablePubliqueFuyante(name), refs: [], defs: [] }); return publicVars.get(name); };
   for (const f of scan.files) if (live(f.path)) for (const x of findings(f.path)) if (x.k === 'public-env') publicVar(x.name).refs.push({ file: f.path, line: x.line });
   for (const f of scan.files) {
     const base = f.path.split('/').pop();
@@ -781,9 +781,9 @@ export function buildHealth({ graph, scan, arch, root }) {
     try { src = readHead(path.join(root, f.path), 262144); } catch { continue; }
     src.split('\n').forEach((t, i) => {
       const m = /^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=\s*["']?([^"'#\s]*)/.exec(t);
-      if (!m || !m[2] || leakyPublicVar(m[1]) === null) return;
+      if (!m || !m[2] || variablePubliqueFuyante(m[1]) === null) return;
       // VITE_ADMIN_PASSWORD=$2b$12$… is a hash (or ciphertext), not the password
-      if (protectedValue(m[2], m[1])) publicVar(m[1]).protected = true;
+      if (valeurProtegee(m[2], m[1])) publicVar(m[1]).protected = true;
       else if (!PLACEHOLDER.test(m[2]) && !/^\$/.test(m[2])) publicVar(m[1]).defs.push({ file: f.path, line: i + 1 });
     });
   }
@@ -1236,9 +1236,9 @@ export function buildHealth({ graph, scan, arch, root }) {
   // ---------- unused files ----------
   const incoming = new Set();
   for (const l of graph.links) if (l.a !== l.b && l.b.startsWith('f:')) incoming.add(l.b.slice(2));
-  const entry = new Set(graph.project?.entrypoints || []);
+  const entry = new Set(graph.projet?.entrypoints || []);
   const routeFiles = new Set(graph.routes.map((r) => r.f));
-  for (const fl of graph.flows || []) for (const s of fl.steps || []) if (s.ref?.startsWith('f:')) entry.add(s.ref.slice(2));
+  for (const fl of graph.parcours || []) for (const s of fl.steps || []) if (s.ref?.startsWith('f:')) entry.add(s.ref.slice(2));
   const candidates = graph.files.filter((f) => {
     if (incoming.has(f.p) || entry.has(f.p) || routeFiles.has(f.p) || !USED_LANGS.has(f.l)) return false;
     if (TEST_FILE.test(f.p) || SPECIAL_FILE.test(f.p) || /(^|\/)app\/.*\/(page|layout|route|loading|error|template|default)\.[jt]sx?$/.test(f.p)) return false;
@@ -1316,7 +1316,7 @@ export function buildHealth({ graph, scan, arch, root }) {
   const kept = issues.slice(0, 40);
   const summary = { high: 0, medium: 0, low: 0 };
   for (const i of kept) summary[i.severity]++;
-  return { summary, issues: kept };
+  return { summary, problemes: kept };
 }
 
 // ---------- "not a problem": issues people dismissed from the Health panel ----------
@@ -1324,7 +1324,7 @@ export function buildHealth({ graph, scan, arch, root }) {
 // A dismissal covers the issue as it was: it shows again if it gets more or less serious, or finds something new
 // in a file. It counts per file, not per line, so an edit higher up the file doesn't bring it back.
 // (assets/ui/20-health.js has the same rule for the page.)
-export function dismissalFor(issue, list) {
+export function rejetPour(issue, list) {
   const d = (list || []).find((x) => x && x.id === issue.id);
   if (!d || (d.severity && d.severity !== issue.severity)) return null;
   const left = new Map();
@@ -1333,10 +1333,10 @@ export function dismissalFor(issue, list) {
   return d;
 }
 /** Folds a dismissal list into a built health result: keeps the list, recounts the summary without them. */
-export function withDismissed(health, list) {
+export function avecRejets(health, list) {
   const dismissed = (Array.isArray(list) ? list : []).filter((x) => x && typeof x.id === 'string');
   const summary = { high: 0, medium: 0, low: 0 };
-  for (const i of health.issues) if (!dismissalFor(i, dismissed)) summary[i.severity]++;
+  for (const i of health.problemes) if (!rejetPour(i, dismissed)) summary[i.severity]++;
   return { ...health, summary, ...(dismissed.length ? { dismissed } : {}) };
 }
 

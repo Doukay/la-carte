@@ -13,7 +13,7 @@ before(() => {
   root = makeProject({
     'app/main.py': 'from app import rules\n\nprint(rules.step_1(1))\n',
     'app/rules.py': big,
-  }, { arch: { project: { name: 'Sample', summary: 'A small sample.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['app/**'] }] } });
+  }, { arch: { projet: { name: 'Sample', summary: 'A small sample.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['app/**'] }] } });
   scanOut = run('scan.mjs', root, '--max-file-kb', '8');
   run('build.mjs', root, '--no-claude-md');
   graph = readGraph(root);
@@ -38,7 +38,7 @@ test('the scan says which files it did not read and how to include them', () => 
 });
 
 test('Health lists it as a large file and says it was not checked', () => {
-  const big = graph.health.issues.find((i) => i.id === 'large-files');
+  const big = graph.sante.problemes.find((i) => i.id === 'large-files');
   assert.ok(big, 'expected a large-files item');
   assert.match(big.notes['f:app/rules.py'], /^1,500 lines: too big for Floorplan to read/);
 });

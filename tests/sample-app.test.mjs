@@ -30,7 +30,7 @@ test("the website's requests are matched to the server's endpoints across repos"
 test('Health flags only the endpoint with no login check, and the hard-coded password', () => {
   // orders use requireAuth on the route, admin is checked where it's mounted, notes has nothing
   assert.deepEqual(openEndpoints(graph), ['POST /api/notes']);
-  const secret = graph.health.issues.find((i) => i.kind === 'secret');
+  const secret = graph.sante.problemes.find((i) => i.kind === 'secret');
   assert.ok(secret, 'the password in config.js is reported');
   assert.deepEqual(secret.locations, [{ file: 'shop-api/config.js', line: 1 }]);
 });

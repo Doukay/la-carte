@@ -3,11 +3,11 @@
 // usage: node status.mjs [root]
 import fs from 'node:fs';
 import path from 'node:path';
-import { git, mapDir, isMapDir } from './lib/common.mjs';
+import { git, dossierCarte, estDossierCarte } from './lib/common.mjs';
 
 try {
   const root = path.resolve(process.argv[2] || '.');
-  const dir = mapDir(root);
+  const dir = dossierCarte(root);
   const graphFile = path.join(dir, 'graph.json');
   const hasArch = fs.existsSync(path.join(dir, 'architecture.json'));
   if (!fs.existsSync(graphFile)) {
@@ -16,8 +16,8 @@ try {
     process.exit(0);
   }
   const g = JSON.parse(fs.readFileSync(graphFile, 'utf8'));
-  if (g.meta.blueprint) {
-    console.log(`a blueprint (planned, not built${g.meta.blueprint.source ? `, from ${g.meta.blueprint.source}` : ''}) built ${g.meta.generatedAt}: ${g.meta.counts.files} planned files, ${g.nodes.length} nodes.\nTo change the plan, edit floorplan/plan.json and architecture.json, then run refresh.mjs (it redraws from plan.json). If the code now exists and the user wants a map of it, run refresh.mjs --from-code.`);
+  if (g.meta.ebauche) {
+    console.log(`a blueprint (planned, not built${g.meta.ebauche.source ? `, from ${g.meta.ebauche.source}` : ''}) built ${g.meta.generatedAt}: ${g.meta.counts.files} planned files, ${g.nodes.length} nodes.\nTo change the plan, edit floorplan/plan.json and architecture.json, then run refresh.mjs (it redraws from plan.json). If the code now exists and the user wants a map of it, run refresh.mjs --from-code.`);
     process.exit(0);
   }
   const lines = [`map built ${g.meta.generatedAt} covering ${g.meta.counts.files} files, ${g.nodes.length} nodes.`];

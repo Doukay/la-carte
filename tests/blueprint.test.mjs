@@ -38,8 +38,8 @@ test('the planned files and endpoints are on the map, named as the plan names th
   const book = graph.routes.find((r) => r.m === 'POST' && r.p === '/api/bookings');
   assert.equal(book.name, 'Book a walk');
   assert.equal(book.access, 'signed-in');
-  assert.deepEqual(graph.meta.blueprint.stack.slice(0, 2), ['Next.js websites for owners and walkers', 'Node.js + Express server']);
-  assert.equal(graph.meta.blueprint.source, 'docs/prd.md');
+  assert.deepEqual(graph.meta.ebauche.stack.slice(0, 2), ['Next.js websites for owners and walkers', 'Node.js + Express server']);
+  assert.equal(graph.meta.ebauche.source, 'docs/prd.md');
   assert.match(buildOut, /DESCRIPTIONS {2}files 21\/21 · routes 11\/11/);
   assert.match(buildOut, /BLUEPRINT {2}planned, not built yet/);
 });
@@ -73,15 +73,15 @@ test('blueprint builds report that files are planned under both coding agents', 
 });
 
 test('Screens show what each planned page relies on, down to Stripe', () => {
-  assert.deepEqual(graph.screens.map((s) => s.url).sort(), ['/', '/book/:walkerId', '/bookings', '/login', '/schedule']);
-  const book = graph.screens.find((s) => s.url === '/book/:walkerId');
+  assert.deepEqual(graph.ecrans.map((s) => s.url).sort(), ['/', '/book/:walkerId', '/bookings', '/login', '/schedule']);
+  const book = graph.ecrans.find((s) => s.url === '/book/:walkerId');
   const behind = book.behind.map((b) => `${b.kind} ${b.id}`);
   assert.ok(behind.includes('server f:api/src/routes/bookings.ts'));
   assert.ok(behind.includes('outside n:stripe'));
 });
 
 test('Health is a design review of the plan', () => {
-  const issues = graph.health.issues;
+  const issues = graph.sante.problemes;
   const titles = issues.map((i) => `${i.severity} ${i.title}`);
   assert.deepEqual(titles, [
     'medium Anyone could change data through one planned endpoint',
@@ -112,7 +112,7 @@ test('Health is a design review of the plan', () => {
 test('the map page marks it as a blueprint, and Ask knows there is no code to read', () => {
   const html = fs.readFileSync(path.join(root, 'floorplan', 'index.html'), 'utf8');
   assert.ok(html.includes('/* ui/06-blueprint.js */'));
-  assert.ok(html.includes('"blueprint":{"source":"docs/prd.md"'));
+  assert.ok(html.includes('"ebauche":{"source":"docs/prd.md"'));
   const query = fs.readFileSync(path.join(root, 'floorplan', 'query.mjs'), 'utf8');
   assert.ok(query.includes('This map is a blueprint'));
   assert.ok(!fs.existsSync(path.join(root, 'CLAUDE.local.md')));
@@ -186,10 +186,10 @@ test('refresh redraws a blueprint from plan.json, and --from-code maps the real 
     fs.mkdirSync(path.join(r, 'api', 'src'), { recursive: true });
     fs.writeFileSync(path.join(r, 'api', 'src', 'server.ts'), `import express from 'express';\nconst app = express();\napp.get('/api/health', (req, res) => res.send('ok'));\napp.listen(3000);\n`);
     // the blueprint's flows point at files that aren't written yet, so the map of the code gets its own
-    writeJson(path.join(r, 'floorplan', 'architecture.json'), { project: { name: 'Pawprint', summary: 'Being built.' }, nodes: [{ id: 'api', label: 'Main server', kind: 'service', summary: 'The server.', paths: ['api/**'] }] });
+    writeJson(path.join(r, 'floorplan', 'architecture.json'), { projet: { name: 'Pawprint', summary: 'Being built.' }, nodes: [{ id: 'api', label: 'Main server', kind: 'service', summary: 'The server.', paths: ['api/**'] }] });
     run('refresh.mjs', r, '--from-code', '--no-claude-md');
     const g = readGraph(r);
-    assert.equal(g.meta.blueprint, undefined);
+    assert.equal(g.meta.ebauche, undefined);
     assert.deepEqual(routeKeys(g), ['GET /api/health']);
     assert.ok(fs.existsSync(path.join(r, 'floorplan', 'plan.json')), 'the plan is kept');
   } finally { cleanup(r); }

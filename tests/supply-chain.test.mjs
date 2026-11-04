@@ -16,13 +16,13 @@ const allFiles = (dir) => fs.readdirSync(dir, { recursive: true, withFileTypes: 
   .map((e) => path.relative(dir, path.join(e.parentPath ?? e.path, e.name)).replace(/\\/g, '/'))
   .filter((f) => !/^(\.git|node_modules)\//.test(f));
 const UPDATE = 'If this is intended, update tests/supply-chain.test.mjs and docs/is-it-safe.md together.';
-const rel = (f) => path.relative(SKILL, f).replace(/\\/g, '/');
+const cheminRelatif = (f) => path.relative(SKILL, f).replace(/\\/g, '/');
 const read = (f) => fs.readFileSync(f, 'utf8');
 const json = (p) => JSON.parse(read(path.join(REPO, p)));
 const sha256 = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 
 const shipped = allFiles(SKILL).map((f) => path.join(SKILL, f));
-const isVendor = (f) => rel(f).startsWith('assets/vendor/');
+const isVendor = (f) => cheminRelatif(f).startsWith('assets/vendor/');
 // the code that runs: scripts, the map's server, the page and its add-ons (not the vendored layout engine)
 const code = shipped.filter((f) => /\.(mjs|js|html)$/.test(f) && !isVendor(f));
 /** Every match of `re` in the shipped code, as { file, text, line }, skipping comment lines. */
@@ -32,7 +32,7 @@ function find(re) {
     read(f).split('\n').forEach((line, i) => {
       const t = line.trim();
       if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return;
-      for (const m of line.matchAll(new RegExp(re, 'g'))) out.push({ file: rel(f), text: m[0], line: i + 1, m });
+      for (const m of line.matchAll(new RegExp(re, 'g'))) out.push({ file: cheminRelatif(f), text: m[0], line: i + 1, m });
     });
   }
   return out;

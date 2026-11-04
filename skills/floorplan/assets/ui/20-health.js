@@ -2,14 +2,14 @@
 // endpoints anyone can call, unused and oversized files — each with "Show on map" and a ready
 // prompt to paste into Claude Code or Codex. Talks to the viewer only through window.Floorplan.
 (() => {
-  const SC = window.Floorplan;
+  const CARTE = window.Floorplan;
   // an exported copy without Health leaves the button out: an empty list would read as "all clear"
-  if (!SC || (SC.exported && !SC.graph.health)) return;
-  const { h } = SC;
-  const A = SC.agent || { name: 'Claude', app: 'Claude Code' };
-  const issues = (SC.graph.health && SC.graph.health.issues) || [];
+  if (!CARTE || (CARTE.exporte && !CARTE.graphe.sante)) return;
+  const { h } = CARTE;
+  const A = CARTE.agent || { name: 'Claude', app: 'Claude Code' };
+  const issues = (CARTE.graphe.sante && CARTE.graphe.sante.problemes) || [];
   // a blueprint (planned, not built) gets a design review of the plan instead of a code check
-  const PLAN = !!SC.graph.meta.blueprint;
+  const PLAN = !!CARTE.graphe.meta.ebauche;
   const FIX = PLAN ? 'Resolve' : 'Fix';
   const CHECK = PLAN ? 'design review' : 'health check';
 
@@ -19,9 +19,9 @@
   // shows again if it gets more or less serious or finds something new in a file (counted per file, so an
   // edit higher up doesn't bring it back; the same rule as dismissalFor in lib/health.mjs).
   const SERVER = window.FLOORPLAN_SERVER;
-  const STORE_KEY = 'health-dismissed:' + (SC.graph.meta.rootName || '');
-  const built = (SC.graph.health && SC.graph.health.dismissed) || [];
-  let dismissed = SC.exported || SERVER ? built : SC.store.get(STORE_KEY, built);
+  const STORE_KEY = 'health-dismissed:' + (CARTE.graphe.meta.rootName || '');
+  const built = (CARTE.graphe.sante && CARTE.graphe.sante.dismissed) || [];
+  let dismissed = CARTE.exporte || SERVER ? built : CARTE.stockage.get(STORE_KEY, built);
   const locsOf = (issue) => (issue.locations || []).map((l) => `${l.file}:${l.line}`);
   const dismissalOf = (issue) => {
     const d = dismissed.find((x) => x.id === issue.id);
@@ -31,27 +31,27 @@
     for (const l of issue.locations || []) { const n = left.get(l.file) || 0; if (!n) return null; left.set(l.file, n - 1); }
     return d;
   };
-  const canDismiss = !SC.exported;
+  const canDismiss = !CARTE.exporte;
   async function saveDismissal(issue, reason) {
     const rec = { id: issue.id, severity: issue.severity, locations: locsOf(issue), ...(reason ? { reason } : {}) };
     if (SERVER) {
       const r = await fetch('/api/health/dismissed', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVER.token }, body: JSON.stringify(rec) }).then((x) => x.json()).catch(() => null);
-      if (!r) { SC.toast('Couldn’t reach the map server, so this wasn’t saved.'); return false; }
+      if (!r) { CARTE.message('Couldn’t reach the map server, so this wasn’t saved.'); return false; }
       dismissed = r.dismissed;
     } else {
       dismissed = [...dismissed.filter((x) => x.id !== issue.id), { ...rec, at: new Date().toISOString() }];
-      SC.store.set(STORE_KEY, dismissed);
+      CARTE.stockage.set(STORE_KEY, dismissed);
     }
     return true;
   }
   async function undoDismissal(issue) {
     if (SERVER) {
       const r = await fetch('/api/health/dismissed', { method: 'DELETE', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVER.token }, body: JSON.stringify({ id: issue.id }) }).then((x) => x.json()).catch(() => null);
-      if (!r) { SC.toast('Couldn’t reach the map server.'); return; }
+      if (!r) { CARTE.message('Couldn’t reach the map server.'); return; }
       dismissed = r.dismissed;
     } else {
       dismissed = dismissed.filter((x) => x.id !== issue.id);
-      SC.store.set(STORE_KEY, dismissed);
+      CARTE.stockage.set(STORE_KEY, dismissed);
     }
     refresh();
   }
@@ -66,8 +66,8 @@
   const count = (sev) => active().filter((i) => i.severity === sev).length;
   const urgent = () => count('high') + count('medium');
 
-  SC.icons.health = '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>';
-  SC.icons.check = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
+  CARTE.icones.sante = '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>';
+  CARTE.icones.check = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -97,31 +97,31 @@
 
   // ---------- actions ----------
   let isOpen = false, openedAt = null;
-  const where = () => JSON.stringify([SC.state.selected, SC.state.container]);
-  function closeList() { isOpen = false; SC.closePanel(); }
+  const where = () => JSON.stringify([CARTE.etat.selected, CARTE.etat.container]);
+  function closeList() { isOpen = false; CARTE.fermerPanneau(); }
   function showOnMap(issue) {
-    const items = (issue.items || []).filter((id) => SC.exists(id)).map((id) => ({ id, note: (issue.notes && issue.notes[id]) || '' }));
-    if (!items.length) { SC.toast(`This one isn’t on the map. Use “${FIX} with ${A.name}” instead.`); return; }
+    const items = (issue.items || []).filter((id) => CARTE.existe(id)).map((id) => ({ id, note: (issue.notes && issue.notes[id]) || '' }));
+    if (!items.length) { CARTE.message(`This one isn’t on the map. Use “${FIX} with ${A.name}” instead.`); return; }
     if (isOpen) closeList();
-    SC.showBoard({ title: issue.title, question: issue.detail, items });
+    CARTE.montrerTableau({ title: issue.title, question: issue.detail, items });
   }
   // a served blueprint settles review items on the map: the request goes into the Ask bar's Change mode,
   // for the person to finish (an open question needs their answer) or edit, then send
-  const here = (issue) => PLAN && !!issue.change && !!SC.canChange?.();
+  const here = (issue) => PLAN && !!issue.change && !!CARTE.peutChanger?.();
   function resolveHere(issue) {
     if (isOpen) closeList();
-    if (!SC.draftChange(issue.change)) { fixWith(issue); return; }
-    SC.toast(issue.kind === 'question' ? 'Type your answer, then press Enter' : 'Edit the request if you like, then press Enter');
+    if (!CARTE.preparerChangement(issue.change)) { fixWith(issue); return; }
+    CARTE.message(issue.kind === 'question' ? 'Type your answer, then press Enter' : 'Edit the request if you like, then press Enter');
   }
   function fixWith(issue) {
-    SC.modal({
+    CARTE.fenetre({
       title: `${FIX} with ${A.name}`,
       html: `<p class="hc-hint">Copy this request and paste it into <b>${A.app}</b>, opened in your project folder. It explains what to change and asks before anything risky.</p><pre>${h(issue.fix)}</pre>`,
-      actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { SC.copy(issue.fix); SC.toast(`Copied. Paste it into ${A.app}.`); } }],
+      actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { CARTE.copier(issue.fix); CARTE.message(`Copied. Paste it into ${A.app}.`); } }],
     });
   }
   function notAProblem(issue) {
-    const m = SC.modal({
+    const m = CARTE.fenetre({
       title: 'Not a problem?',
       html: `<p class="hc-hint">Mark “${h(issue.title)}” as a false alarm and it moves to the bottom of the ${CHECK}, out of the count. It comes back if this check finds something new there.</p>
         <textarea class="hc-why" placeholder="Why not? (optional) e.g. that value is a bcrypt hash, not the password" spellcheck="true"></textarea>`,
@@ -130,18 +130,18 @@
         if (!(await saveDismissal(issue, reason))) return;
         close();
         refresh();
-        SC.toast('Marked as not a problem.');
+        CARTE.message('Marked as not a problem.');
       } }],
     });
     const why = m.el.querySelector('.hc-why');
     why.focus();
   }
-  const onMap = (issue) => (issue.items || []).some((id) => SC.exists(id));
+  const onMap = (issue) => (issue.items || []).some((id) => CARTE.existe(id));
 
   // ---------- html ----------
   const locText = (issue) => {
     const locs = issue.locations || [];
-    if (!SC.technical() || !locs.length) return '';
+    if (!CARTE.technique() || !locs.length) return '';
     const shown = locs.slice(0, 3).map((l) => `${l.file}${l.line > 1 ? ':' + l.line : ''}`);
     return `<div class="hc-w">${shown.map(h).join('<br>')}${locs.length > 3 ? `<br>+${locs.length - 3} more` : ''}</div>`;
   };
@@ -157,9 +157,9 @@
       ${note ? `<div class="hc-n">${h(note)}</div>` : `<div class="hc-d">${h(issue.detail)}</div>`}
       ${locText(issue)}
       <div class="hc-a">
-        ${onMap(issue) ? `<button class="btn soft" data-hc-show="${idx}">${SC.iconI('search')}Show on map</button>` : ''}
-        ${SC.exported ? '' : here(issue) ? `<button class="btn soft" data-hc-here="${idx}">${SC.iconI('spark')}Resolve on the map</button>` : `<button class="btn soft" data-hc-fix="${idx}">${SC.iconI('spark')}${FIX} with ${A.name}</button>`}
-        ${canDismiss ? `<button class="btn soft" data-hc-dismiss="${idx}">${SC.iconI('check')}Not a problem</button>` : ''}
+        ${onMap(issue) ? `<button class="btn soft" data-hc-show="${idx}">${CARTE.iconeI('search')}Show on map</button>` : ''}
+        ${CARTE.exporte ? '' : here(issue) ? `<button class="btn soft" data-hc-here="${idx}">${CARTE.iconeI('spark')}Resolve on the map</button>` : `<button class="btn soft" data-hc-fix="${idx}">${CARTE.iconeI('spark')}${FIX} with ${A.name}</button>`}
+        ${canDismiss ? `<button class="btn soft" data-hc-dismiss="${idx}">${CARTE.iconeI('check')}Not a problem</button>` : ''}
       </div>
     </div>`;
   };
@@ -167,25 +167,25 @@
     const on = (attr, fn) => el.querySelectorAll(`[data-hc-${attr}]`).forEach((b) => b.addEventListener('click', (ev) => { ev.stopPropagation(); fn(issues[+b.getAttribute(`data-hc-${attr}`)]); }));
     on('show', showOnMap); on('fix', fixWith); on('here', resolveHere); on('dismiss', notAProblem); on('undo', undoDismissal);
   };
-  const headline = () => urgent() ? `${SC.plural(urgent(), 'thing')} need${urgent() === 1 ? 's' : ''} attention` : active().length ? 'Nothing urgent' : 'No problems found';
+  const headline = () => urgent() ? `${CARTE.pluriel(urgent(), 'thing')} need${urgent() === 1 ? 's' : ''} attention` : active().length ? 'Nothing urgent' : 'No problems found';
   const breakdown = () => `<div class="hc-sub">${ORDER.filter(count).map((s) => `<span><i class="dot" style="background:${SEV[s].color}"></i>${count(s)} ${SEV[s].word}</span>`).join('')}</div>`;
   const headColor = () => urgent() ? SEV[count('high') ? 'high' : 'medium'].color : 'var(--ok)';
 
   function listHtml() {
     const live = active(), off = issues.filter(dismissalOf);
     const top = `<div class="sec">
-        <div class="ph"><span class="ico" style="--c:${headColor()}">${SC.icon('health')}</span><span class="kindlabel">${PLAN ? 'Design review' : 'Health check'}</span></div>
+        <div class="ph"><span class="ico" style="--c:${headColor()}">${CARTE.icone('health')}</span><span class="kindlabel">${PLAN ? 'Design review' : 'Health check'}</span></div>
         <h2 class="pt">${h(headline())}</h2>
         <p class="pd">${PLAN ? 'We checked the plan for parts anyone on the internet could use, decisions the PRD leaves open, and pieces nothing connects to. Settling these now is cheaper than after it’s built.' : 'We looked for keys left in the code or sent to the browser, data and parts of your app anyone on the internet can reach (Supabase tables, Firebase rules, Stripe webhooks, endpoints), leftover files and files too big to edit safely. It’s a quick check, not a security audit.'}</p>
-        ${live.length ? breakdown() : `<div class="hc-calm">${off.length ? `Nothing left to look at: you marked ${SC.plural(off.length, 'item')} as not a problem.` : `Nothing stood out.`} This is a quick automatic check, not a full ${PLAN ? 'design' : 'security'} review.</div>`}
-        <div class="actions"><button class="btn soft" data-hc-back>${SC.iconI('left')}Back</button></div>
+        ${live.length ? breakdown() : `<div class="hc-calm">${off.length ? `Nothing left to look at: you marked ${CARTE.pluriel(off.length, 'item')} as not a problem.` : `Nothing stood out.`} This is a quick automatic check, not a full ${PLAN ? 'design' : 'security'} review.</div>`}
+        <div class="actions"><button class="btn soft" data-hc-back>${CARTE.iconeI('left')}Back</button></div>
       </div>`;
     const groups = ORDER.map((sev) => {
       const list = issues.map((i, idx) => [i, idx]).filter(([i]) => i.severity === sev && !dismissalOf(i));
       return list.length ? `<div class="sec"><h3>${h(SEV[sev].group)} <span class="c">${list.length}</span></h3>${list.map(([i, idx]) => issueHtml(i, idx)).join('')}</div>` : '';
     }).join('');
     const offHtml = off.length ? `<div class="sec"><h3>Marked as not a problem <span class="c">${off.length}</span></h3>${issues.map((i, idx) => [i, idx]).filter(([i]) => dismissalOf(i)).map(([i, idx]) => issueHtml(i, idx)).join('')}</div>` : '';
-    const foot = !live.length ? '' : SC.exported ? `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints from when this copy was exported.</div>` : `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints. ${live.some(here)
+    const foot = !live.length ? '' : CARTE.exporte ? `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints from when this copy was exported.</div>` : `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints. ${live.some(here)
       ? `“Resolve on the map” puts a request in the Ask bar’s Change mode: finish or edit it, press Enter, and ${A.name} updates the plan and redraws the map. Undo puts it back.`
       : `“${FIX} with ${A.name}” gives you a request to paste into ${A.app}; ${PLAN ? 'it explains the choice and updates the plan once you decide' : 'it checks the code before changing anything'}.`} If one is wrong, “Not a problem” sets it aside.</div>`;
     return top + groups + offHtml + foot;
@@ -193,14 +193,14 @@
   function openList() {
     isOpen = true;
     openedAt = where();
-    SC.showPanel(listHtml(), (panel) => {
+    CARTE.montrerPanneau(listHtml(), (panel) => {
       panel.querySelector('[data-hc-back]')?.addEventListener('click', closeList);
       bindIssues(panel);
     });
   }
 
   // ---------- chrome ----------
-  const btn = SC.addHeaderButton({
+  const btn = CARTE.ajouterBoutonEntete({
     id: 'btn-health', label: PLAN ? 'Review' : 'Health', icon: 'health',
     onClick: () => (isOpen ? closeList() : openList()),
   });
@@ -209,7 +209,7 @@
   function updateButton() {
     const n = urgent();
     btn.title = `${PLAN ? 'Design review' : 'Health check'}: ${n ? headline() : 'nothing urgent'}`;
-    btn.querySelector('svg.i').innerHTML = SC.icons[n ? 'health' : 'check'];
+    btn.querySelector('svg.i').innerHTML = CARTE.icones[n ? 'health' : 'check'];
     if (n) {
       badge.textContent = n > 99 ? '99+' : String(n);
       btn.style.setProperty('--hc-badge', count('high') ? SEV.high.color : SEV.medium.color);
@@ -221,32 +221,32 @@
   }
   function refresh() {
     updateButton();
-    if (isOpen) openList(); else SC.refreshPanel();
+    if (isOpen) openList(); else CARTE.actualiserPanneau();
   }
   updateButton();
   // the server's list is the saved one: it may have changed since this map was built
   if (SERVER && canDismiss) fetch('/api/health/dismissed', { headers: { 'x-floorplan-token': SERVER.token } }).then((r) => r.json()).then((r) => { if (Array.isArray(r.dismissed)) { dismissed = r.dismissed; refresh(); } }).catch(() => {});
 
   // Selecting something else on the map while the list is open shows that item instead.
-  SC.on('panel', () => { if (isOpen && openedAt && where() !== openedAt) { isOpen = false; SC.closePanel(); } });
+  CARTE.sur('panel', () => { if (isOpen && openedAt && where() !== openedAt) { isOpen = false; CARTE.fermerPanneau(); } });
 
-  SC.addPanelSection('overview', () => ({
+  CARTE.ajouterSectionPanneau('overview', () => ({
     html: `<div class="sec"><h3>${PLAN ? 'Design review' : 'Health'}</h3><div class="list"><a class="row" data-hc-open>
         <span class="dot" style="background:${headColor()}"></span>
         <span class="rt"><div class="rn">${h(headline())}</div><div class="rd">${active().length ? ORDER.filter(count).map((s) => `${count(s)} ${SEV[s].word}`).join(' · ') : PLAN ? 'Quick automatic check of the plan' : 'Quick automatic check of secrets, open endpoints and leftover files'}</div></span>
-        <span class="rc">${SC.iconI('right')}</span></a></div></div>`,
+        <span class="rc">${CARTE.iconeI('right')}</span></a></div></div>`,
     bind: (el) => el.querySelector('[data-hc-open]')?.addEventListener('click', (ev) => { ev.preventDefault(); openList(); }),
   }));
 
-  SC.addPanelSection('item', (itemId) => {
+  CARTE.ajouterSectionPanneau('item', (itemId) => {
     if (!itemId || typeof itemId !== 'string' || !issues.length) return '';
     const hits = [];
     issues.forEach((issue, idx) => {
       if (dismissalOf(issue)) return;
-      const inside = (issue.items || []).filter((id) => id === itemId || (SC.exists(id) && SC.chain(id).includes(itemId)));
+      const inside = (issue.items || []).filter((id) => id === itemId || (CARTE.existe(id) && CARTE.chaine(id).includes(itemId)));
       if (!inside.length) return;
       const exact = issue.notes && inside.includes(itemId) ? issue.notes[itemId] : '';
-      hits.push(issueHtml(issue, idx, exact || (inside.length > 1 || inside[0] !== itemId ? `Affects ${SC.plural(inside.length, 'place')} in here` : '')));
+      hits.push(issueHtml(issue, idx, exact || (inside.length > 1 || inside[0] !== itemId ? `Affects ${CARTE.pluriel(inside.length, 'place')} in here` : '')));
     });
     if (!hits.length) return '';
     return { html: `<div class="sec"><h3>${PLAN ? 'Design review' : 'Health'} <span class="c">${hits.length}</span></h3>${hits.slice(0, 6).join('')}${hits.length > 6 ? `<div class="more" data-hc-open style="cursor:pointer">+${hits.length - 6} more in the ${CHECK}</div>` : ''}</div>`, bind: (el) => { bindIssues(el); el.querySelector('[data-hc-open]')?.addEventListener('click', openList); } };

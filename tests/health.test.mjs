@@ -17,7 +17,7 @@ function buildFixture(name) {
   fs.cpSync(path.join(here, 'fixtures', name), root, { recursive: true });
   fs.mkdirSync(path.join(root, 'floorplan'));
   fs.writeFileSync(path.join(root, 'floorplan', 'architecture.json'), JSON.stringify({
-    project: { name, summary: 'Test fixture.' },
+    projet: { name, summary: 'Test fixture.' },
     nodes: [{ id: 'api', label: 'Server', kind: 'service', summary: 'The sample server.', paths: ['**'] }],
   }));
   for (const s of ['scan.mjs', 'build.mjs']) execFileSync(process.execPath, [path.join(scripts, s), root, '--no-claude-md'], { stdio: 'pipe' });
@@ -28,7 +28,7 @@ function buildFixture(name) {
 
 /** "METHOD /path" for every endpoint Health reports as callable by anyone. */
 function openEndpoints(graph) {
-  return graph.health.issues
+  return graph.sante.problemes
     .filter((i) => i.kind === 'unprotected-endpoint')
     .flatMap((i) => i.items.filter((id) => id.startsWith('r:')).map((id) => graph.routes[+id.slice(2)]))
     .map((r) => `${r.m} ${r.p}`)

@@ -7,24 +7,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileGlob, parseArgs, fmtNum, mapDir, keepOutOfGit } from './lib/common.mjs';
-import { fallbackFileName, fallbackRouteName, routeKey } from './lib/names.mjs';
-import { buildHealth, withDismissed, dismissalFor } from './lib/health.mjs';
-import { buildPlanHealth } from './lib/blueprint.mjs';
-import { buildScreens } from './lib/screens.mjs';
-import { detectAgent } from './lib/agent.mjs';
+import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderHorsGit } from './lib/common.mjs';
+import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/names.mjs';
+import { construireSante, avecRejets, rejetPour } from './lib/health.mjs';
+import { construireSantePlan } from './lib/blueprint.mjs';
+import { construireEcrans } from './lib/screens.mjs';
+import { detecterAgent } from './lib/agent.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SKILL_DIR = path.resolve(HERE, '..');
-const args = parseArgs(process.argv.slice(2));
-const agent = detectAgent(args);
+const args = lireArguments(process.argv.slice(2));
+const agent = detecterAgent(args);
 const root = path.resolve(args._[0] || '.');
-const outDir = path.resolve(args.out || mapDir(root));
+const outDir = path.resolve(args.out || dossierCarte(root));
 const archFile = path.resolve(args.arch || path.join(outDir, 'architecture.json'));
 const scanFile = path.resolve(args.scan || path.join(outDir, '.cache', 'scan.json'));
 
-export const NODE_KINDS = ['ui', 'service', 'worker', 'library', 'feature', 'data', 'config', 'test', 'script', 'infra', 'external'];
-export const EDGE_KINDS = ['import', 'call', 'http', 'rpc', 'event', 'queue', 'data', 'config'];
+export const TYPES_NOEUDS = ['ui', 'service', 'worker', 'library', 'feature', 'data', 'config', 'test', 'script', 'infra', 'external'];
+export const TYPES_LIENS = ['import', 'call', 'http', 'rpc', 'event', 'queue', 'data', 'config'];
 
 const errors = [];
 const warnings = [];
@@ -60,14 +60,14 @@ function lev(a, b) {
 const didYouMean = (w, opts) => { const c = closest(w, opts); return c ? ` — did you mean "${c}"?` : ''; };
 
 if (!arch || typeof arch !== 'object') fail('architecture.json must be an object');
-if (!arch.project || !isStr(arch.project.name)) err('project.name is required');
+if (!arch.projet || !isStr(arch.projet.name)) err('project.name is required');
 if (!Array.isArray(arch.nodes) || !arch.nodes.length) err('nodes must be a non-empty array');
 const nodes = Array.isArray(arch.nodes) ? arch.nodes : [];
 const archEdges = Array.isArray(arch.edges) ? arch.edges : [];
-const flows = Array.isArray(arch.flows) ? arch.flows : [];
+const flows = Array.isArray(arch.parcours) ? arch.parcours : [];
 const annotations = Array.isArray(arch.annotations) ? arch.annotations : [];
 const include = isStrArr(arch.include) ? arch.include : ['code'];
-const ignoreGlobs = (isStrArr(arch.ignore) ? arch.ignore : []).map(compileGlob);
+const ignoreGlobs = (isStrArr(arch.ignore) ? arch.ignore : []).map(compilerMotif);
 // who the descriptions are written for: "everyone" (plain language, default) or "developers"
 const AUDIENCES = ['everyone', 'developers'];
 if (arch.audience !== undefined && !AUDIENCES.includes(arch.audience)) err(`audience "${arch.audience}" must be one of ${AUDIENCES.join(', ')}${didYouMean(String(arch.audience), AUDIENCES)}`);
@@ -83,7 +83,7 @@ nodes.forEach((n, i) => {
   if (byId.has(n.id)) err(`${where}.id duplicates an earlier node`);
   byId.set(n.id, n);
   if (!isStr(n.label)) err(`${where}.label is required`);
-  if (!NODE_KINDS.includes(n.kind)) err(`${where}.kind "${n.kind}" must be one of ${NODE_KINDS.join(', ')}${didYouMean(String(n.kind), NODE_KINDS)}`);
+  if (!TYPES_NOEUDS.includes(n.kind)) err(`${where}.kind "${n.kind}" must be one of ${TYPES_NOEUDS.join(', ')}${didYouMean(String(n.kind), TYPES_NOEUDS)}`);
   for (const k of ['paths', 'exclude', 'packages', 'hosts', 'tags']) if (n[k] !== undefined && !isStrArr(n[k])) err(`${where}.${k} must be an array of strings`);
   if (n.kind === 'external' && n.paths?.length) warn(`${where} is external but has paths; external nodes normally own no files`);
 });
@@ -120,7 +120,7 @@ const inheritedExcludes = (n, seen = new Set()) => {
 };
 const matchers = nodes.filter((n) => n?.id && isStrArr(n.paths ?? [])).map((n, order) => ({
   id: n.id, order, depth: depthOf.get(n.id) || 0,
-  paths: (n.paths || []).map(compileGlob), exclude: inheritedExcludes(n).map(compileGlob), hits: new Array((n.paths || []).length).fill(0),
+  paths: (n.paths || []).map(compilerMotif), exclude: inheritedExcludes(n).map(compilerMotif), hits: new Array((n.paths || []).length).fill(0),
 }));
 const owner = new Map();
 let ambiguous = 0;
@@ -178,8 +178,8 @@ for (const h of scan.http) if (includedSet.has(h.from) && includedSet.has(h.to))
 
 // externals: packages / hosts claimed by nodes
 const extIds = scan.externals.map((e) => e.id);
-const pkgMatchers = nodes.filter((n) => n?.packages?.length).map((n) => ({ id: n.id, globs: n.packages.map((p) => compileGlob(p.includes(':') ? p : `*:${p}`)), hits: 0 }));
-const hostMatchers = nodes.filter((n) => n?.hosts?.length).map((n) => ({ id: n.id, globs: n.hosts.map((h) => compileGlob(h.toLowerCase())), hits: 0 }));
+const pkgMatchers = nodes.filter((n) => n?.packages?.length).map((n) => ({ id: n.id, globs: n.packages.map((p) => compilerMotif(p.includes(':') ? p : `*:${p}`)), hits: 0 }));
+const hostMatchers = nodes.filter((n) => n?.hosts?.length).map((n) => ({ id: n.id, globs: n.hosts.map((h) => compilerMotif(h.toLowerCase())), hits: 0 }));
 for (const e of scan.extEdges) {
   if (!includedSet.has(e.from)) continue;
   const m = pkgMatchers.find((pm) => pm.globs.some((g) => g.test(e.pkg)));
@@ -197,15 +197,15 @@ for (const hm of hostMatchers) if (!hm.hits) warn(`node "${hm.id}" hosts match n
 for (const e of scan.nodeLinks || []) {
   if (!includedSet.has(e.from)) continue;
   if (!byId.has(e.to)) { err(`plan.json: "${e.from}" names "${e.to}" in its ${e.kind === 'data' ? 'data' : 'services'}, which is not a node id in architecture.json${didYouMean(e.to, ids)}`); continue; }
-  addLink(`f:${e.from}`, `n:${e.to}`, EDGE_KINDS.includes(e.kind) ? e.kind : 'call', { label: e.label });
+  addLink(`f:${e.from}`, `n:${e.to}`, TYPES_LIENS.includes(e.kind) ? e.kind : 'call', { label: e.label });
 }
 
 archEdges.forEach((e, i) => {
   const where = `edges[${i}]`;
-  if (!EDGE_KINDS.includes(e?.kind)) err(`${where}.kind "${e?.kind}" must be one of ${EDGE_KINDS.join(', ')}${didYouMean(String(e?.kind), EDGE_KINDS)}`);
+  if (!TYPES_LIENS.includes(e?.kind)) err(`${where}.kind "${e?.kind}" must be one of ${TYPES_LIENS.join(', ')}${didYouMean(String(e?.kind), TYPES_LIENS)}`);
   const a = resolveEndpoint(e?.from, `${where}.from`);
   const b = resolveEndpoint(e?.to, `${where}.to`);
-  if (a && b && EDGE_KINDS.includes(e.kind)) addLink(a, b, e.kind, { label: e.label, desc: e.description, w: 1 });
+  if (a && b && TYPES_LIENS.includes(e.kind)) addLink(a, b, e.kind, { label: e.label, desc: e.description, w: 1 });
 });
 
 // ---------- flows + annotations ----------
@@ -222,8 +222,8 @@ flows.forEach((fl, i) => {
 const customFile = path.join(outDir, 'custom-flows.json');
 if (fs.existsSync(customFile)) {
   let custom = [];
-  try { custom = JSON.parse(fs.readFileSync(customFile, 'utf8')).flows || []; } catch (e) { warn(`custom-flows.json is not valid JSON: ${e.message}`); }
-  const routeAt = new Map(routesIn.map((r, i) => [routeKey(r), i]));
+  try { custom = JSON.parse(fs.readFileSync(customFile, 'utf8')).parcours || []; } catch (e) { warn(`custom-flows.json is not valid JSON: ${e.message}`); }
+  const routeAt = new Map(routesIn.map((r, i) => [cleRoute(r), i]));
   const resolveStep = (ref) => {
     if (typeof ref !== 'string') return null;
     if (ref.startsWith('route:')) { const i = routeAt.get(ref.slice(6)); return i == null ? null : `r:${i}`; }
@@ -246,9 +246,9 @@ if (fs.existsSync(customFile)) {
 }
 // "Start here" tour: 3-8 narrated stops (node id or file path), written by Claude in architecture.json
 const outTour = [];
-if (arch.tour !== undefined) {
-  if (!Array.isArray(arch.tour)) err('tour must be an array of { node, title, note }');
-  else arch.tour.forEach((s, i) => {
+if (arch.visite !== undefined) {
+  if (!Array.isArray(arch.visite)) err('tour must be an array of { node, title, note }');
+  else arch.visite.forEach((s, i) => {
     const ref = resolveEndpoint(s?.node, `tour[${i}].node`);
     if (ref) outTour.push({ ref, title: isStr(s.title) ? s.title : '', note: isStr(s.note) ? s.note : '' });
   });
@@ -260,7 +260,7 @@ const recentFile = path.join(outDir, 'recent-work.json');
 if (fs.existsSync(recentFile)) {
   let rw = null;
   try { rw = JSON.parse(fs.readFileSync(recentFile, 'utf8')); } catch (e) { warn(`recent-work.json is not valid JSON: ${e.message}`); }
-  const routeIdx = new Map(routesIn.map((r, i) => [routeKey(r), i]));
+  const routeIdx = new Map(routesIn.map((r, i) => [cleRoute(r), i]));
   const resolveRecent = (ref) => {
     if (!isStr(ref)) return null;
     const s = ref.trim().replace(/^\.\//, '').replace(/^(route:|file:)/, '');
@@ -294,12 +294,12 @@ annotations.forEach((a, i) => {
   if (!includedSet.has(a.path)) return err(`annotations[${i}].path "${a.path}" is not an included file`);
   notes.set(a.path, { note: a.note, tags: isStrArr(a.tags) ? a.tags : undefined });
 });
-for (const ep of arch.project?.entrypoints || []) if (!includedSet.has(ep)) warn(`project.entrypoints "${ep}" is not an included file`);
+for (const ep of arch.projet?.entrypoints || []) if (!includedSet.has(ep)) warn(`project.entrypoints "${ep}" is not an included file`);
 
 // ---------- names + descriptions (floorplan/descriptions/*.json) ----------
 const descDir = path.join(outDir, 'descriptions');
 const fileDesc = new Map(), routeDesc = new Map();
-const routeKeys = new Set(routesIn.map(routeKey));
+const routeKeys = new Set(routesIn.map(cleRoute));
 let staleFiles = 0, staleRoutes = 0;
 const staleEx = [];
 if (fs.existsSync(descDir)) {
@@ -338,7 +338,7 @@ for (const f of included) {
 const pct = included.length ? (unassigned.length / included.length) * 100 : 0;
 const report = [];
 if (errors.length) {
-  report.push(`✗ ${errors.length} error(s) in ${path.relative(root, archFile)}${scan.blueprint ? ' or plan.json' : ''}:`);
+  report.push(`✗ ${errors.length} error(s) in ${path.relative(root, archFile)}${scan.ebauche ? ' or plan.json' : ''}:`);
   for (const e of errors) report.push(`  - ${e}`);
 }
 if (warnings.length) {
@@ -349,7 +349,7 @@ report.push('');
 report.push(`ASSIGNMENT  ${included.length} files (${include.join('+')}), ${unassigned.length} unassigned (${pct.toFixed(1)}%)`);
 for (const n of nodes.filter((n) => n?.id && !n.parent)) {
   const s = stats.get(n.id);
-  report.push(`  ${n.id.padEnd(28)} ${String(s.files).padStart(5)} files ${scan.blueprint ? '' : `${fmtNum(s.loc).padStart(6)} loc  `}[${n.kind}]`);
+  report.push(`  ${n.id.padEnd(28)} ${String(s.files).padStart(5)} files ${scan.ebauche ? '' : `${formaterNombre(s.loc).padStart(6)} loc  `}[${n.kind}]`);
 }
 if (unassigned.length) {
   const byDir = new Map();
@@ -361,7 +361,7 @@ const byKind = {};
 for (const l of links.values()) byKind[l.k] = (byKind[l.k] || 0) + 1;
 report.push(`LINKS  ${[...links.values()].length} (${Object.entries(byKind).map(([k, v]) => `${k} ${v}`).join(', ')})`);
 const describedFiles = included.filter((f) => fileDesc.get(f.path)?.d || f.desc).length;
-const describedRoutes = routesIn.filter((r) => routeDesc.get(routeKey(r))?.d || r.desc).length;
+const describedRoutes = routesIn.filter((r) => routeDesc.get(cleRoute(r))?.d || r.desc).length;
 const noSummary = nodes.filter((n) => n?.id && !isStr(n.summary)).map((n) => n.id);
 const reviewCount = [...fileDesc.values(), ...routeDesc.values()].filter((d) => d.review).length;
 report.push(`DESCRIPTIONS  files ${describedFiles}/${included.length} · routes ${describedRoutes}/${routesIn.length} · modules ${nodes.length - noSummary.length}/${nodes.length}${reviewCount ? ` · ${reviewCount} need review (code changed)` : ''}`);
@@ -377,11 +377,11 @@ const graph = {
   meta: {
     generatedAt: new Date().toISOString(), scanAt: scan.generatedAt, rootName: scan.rootName, root: scan.root,
     audience, agent,
-    ...(scan.blueprint ? { blueprint: { source: scan.blueprint.source, stack: scan.blueprint.stack, assumptions: scan.blueprint.assumptions } } : {}),
+    ...(scan.ebauche ? { ebauche: { source: scan.ebauche.source, stack: scan.ebauche.stack, assumptions: scan.ebauche.assumptions } } : {}),
     repos: scan.repos.map(({ path: p, name, branch, head, remote }) => ({ path: p, name, branch, head, remote })),
     counts: { files: included.length, loc: included.reduce((s, f) => s + f.loc, 0), unassigned: unassigned.length },
   },
-  project: arch.project,
+  projet: arch.projet,
   nodes: [
     ...nodes.map((n) => ({
       id: n.id, parent: n.parent || null, label: n.label, kind: n.kind, summary: n.summary || '', details: n.details || '',
@@ -394,7 +394,7 @@ const graph = {
     const d = fileDesc.get(f.path);
     return {
       p: f.path, n: owner.get(f.path), r: f.repo, l: f.lang || f.category, loc: f.loc,
-      name: d?.name || f.name || fallbackFileName(f.path), d: d?.d || f.desc || f.doc || '', ...(d?.d || f.desc ? {} : { auto: true }),
+      name: d?.name || f.name || nomFichierParDefaut(f.path), d: d?.d || f.desc || f.doc || '', ...(d?.d || f.desc ? {} : { auto: true }),
       ...(f.doc ? { doc: f.doc } : {}),
       ...(f.tooLarge ? { tooLarge: true } : {}),
       ...(d?.review ? { review: d.review } : {}),
@@ -404,26 +404,26 @@ const graph = {
     };
   }),
   routes: routesIn.map((r) => {
-    const d = routeDesc.get(routeKey(r));
-    return { f: r.file, m: r.method, p: r.path, l: r.line, h: r.handler || null, name: d?.name || r.name || fallbackRouteName(r), d: d?.d || r.desc || r.doc || '', ...(d?.d || r.desc ? {} : { auto: true }), ...(d?.review ? { review: d.review } : {}), ...(r.doc ? { doc: r.doc } : {}), ...(r.access ? { access: r.access } : {}), ...(r.who ? { who: r.who } : {}), ...(r.publicBecause ? { publicBecause: r.publicBecause } : {}) };
+    const d = routeDesc.get(cleRoute(r));
+    return { f: r.file, m: r.method, p: r.path, l: r.line, h: r.handler || null, name: d?.name || r.name || nomRouteParDefaut(r), d: d?.d || r.desc || r.doc || '', ...(d?.d || r.desc ? {} : { auto: true }), ...(d?.review ? { review: d.review } : {}), ...(r.doc ? { doc: r.doc } : {}), ...(r.access ? { access: r.access } : {}), ...(r.who ? { who: r.who } : {}), ...(r.publicBecause ? { publicBecause: r.publicBecause } : {}) };
   }),
   links: [...links.values()],
-  flows: outFlows,
-  tour: outTour,
+  parcours: outFlows,
+  visite: outTour,
   ...(outRecent?.items.length ? { recent: outRecent } : {}),
 };
 // extension hooks, computed from the finished graph plus the raw scan
 // a blueprint has no code to check, so its Health is a design review of the plan (computed after screens)
-if (!scan.blueprint) try { graph.health = buildHealth({ graph, scan, arch, root }); } catch (e) { warn(`health check failed: ${e.message}`); graph.health = { issues: [] }; }
-try { graph.screens = buildScreens({ graph, scan, arch, root }); } catch (e) { warn(`screen detection failed: ${e.message}`); graph.screens = []; }
-if (scan.blueprint) try { graph.health = buildPlanHealth({ graph, scan }); } catch (e) { warn(`design review failed: ${e.message}`); graph.health = { issues: [] }; }
+if (!scan.ebauche) try { graph.sante = construireSante({ graph, scan, arch, root }); } catch (e) { warn(`health check failed: ${e.message}`); graph.sante = { problemes: [] }; }
+try { graph.ecrans = construireEcrans({ graph, scan, arch, root }); } catch (e) { warn(`screen detection failed: ${e.message}`); graph.ecrans = []; }
+if (scan.ebauche) try { graph.sante = construireSantePlan({ graph, scan }); } catch (e) { warn(`design review failed: ${e.message}`); graph.sante = { problemes: [] }; }
 // issues people marked "not a problem" on the map (saved by serve.mjs) stay listed, set apart, and leave the counts
 const dismissedFile = path.join(outDir, 'health-dismissed.json');
-if (graph.health?.issues && fs.existsSync(dismissedFile)) {
-  try { graph.health = withDismissed(graph.health, JSON.parse(fs.readFileSync(dismissedFile, 'utf8')).dismissed); } catch (e) { warn(`health-dismissed.json is not valid JSON: ${e.message}`); }
+if (graph.sante?.problemes && fs.existsSync(dismissedFile)) {
+  try { graph.sante = avecRejets(graph.sante, JSON.parse(fs.readFileSync(dismissedFile, 'utf8')).dismissed); } catch (e) { warn(`health-dismissed.json is not valid JSON: ${e.message}`); }
 }
 fs.mkdirSync(outDir, { recursive: true });
-const trackedWarning = keepOutOfGit(outDir);
+const trackedWarning = garderHorsGit(outDir);
 fs.writeFileSync(path.join(outDir, 'graph.json'), JSON.stringify(graph, null, 0));
 
 const template = fs.readFileSync(path.join(SKILL_DIR, 'assets', 'viewer.html'), 'utf8');
@@ -443,7 +443,7 @@ const page = (g) => template
   .replace('<!--__ELK_SCRIPT__-->', () => elkTag)
   .replace('/*__FONTS__*/', () => fontCss)
   .replace('/*__FLOORPLAN_DATA__*/null', () => JSON.stringify(g).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'))
-  .replace(/__FLOORPLAN_TITLE__/g, () => escapeHtml(`${arch.project.name} map`))
+  .replace(/__FLOORPLAN_TITLE__/g, () => escapeHtml(`${arch.projet.name} map`))
   .replace(/__FLOORPLAN_LOGO__/g, () => dataUri('logo.png'))
   .replace(/__FLOORPLAN_FAVICON__/g, () => dataUri('favicon.png'))
   .replace('<!--__UI_EXTENSIONS__-->', () => uiScripts);
@@ -453,8 +453,8 @@ const html = page(graph);
 fs.writeFileSync(path.join(outDir, 'index.html'), html);
 // --artifact: a copy to publish to the Claude app, without this machine's absolute path (editor links)
 // (and without the reasons on dismissed health issues, which are notes to self)
-const sharedHealth = graph.health?.dismissed ? { ...graph.health, dismissed: graph.health.dismissed.map(({ reason, ...d }) => d) } : graph.health;
-if (args.artifact) fs.writeFileSync(path.join(outDir, 'artifact.html'), page({ ...graph, ...(sharedHealth ? { health: sharedHealth } : {}), meta: { ...graph.meta, root: null, agent: 'claude' } }));
+const sharedHealth = graph.sante?.dismissed ? { ...graph.sante, dismissed: graph.sante.dismissed.map(({ reason, ...d }) => d) } : graph.sante;
+if (args.artifact) fs.writeFileSync(path.join(outDir, 'artifact.html'), page({ ...graph, ...(sharedHealth ? { sante: sharedHealth } : {}), meta: { ...graph.meta, root: null, agent: 'claude' } }));
 // Self-contained helpers next to the map: ask questions through the Claude Code CLI or Codex (serve.mjs)
 // and the graph lookups it hands to them (query.mjs). They need only Node, not this skill.
 fs.writeFileSync(path.join(outDir, 'query.mjs'), `${graphQuery}
@@ -462,26 +462,26 @@ fs.writeFileSync(path.join(outDir, 'query.mjs'), `${graphQuery}
 ${fs.readFileSync(path.join(SKILL_DIR, 'assets', 'query-cli.mjs'), 'utf8')}`);
 fs.copyFileSync(path.join(SKILL_DIR, 'assets', 'serve.mjs'), path.join(outDir, 'serve.mjs'));
 // a blueprint can be changed from the map: serve.mjs redraws it with this skill's plan.mjs and build.mjs
-if (scan.blueprint) { fs.mkdirSync(path.join(outDir, '.cache'), { recursive: true }); fs.writeFileSync(path.join(outDir, '.cache', 'skill.json'), JSON.stringify({ dir: SKILL_DIR })); }
+if (scan.ebauche) { fs.mkdirSync(path.join(outDir, '.cache'), { recursive: true }); fs.writeFileSync(path.join(outDir, '.cache', 'skill.json'), JSON.stringify({ dir: SKILL_DIR })); }
 // the logo and tab icon are inlined so the map stays one self-contained file
 function dataUri(name) { return 'data:image/png;base64,' + fs.readFileSync(path.join(SKILL_DIR, 'assets', name)).toString('base64'); }
 function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
-const hs = graph.health?.summary;
+const hs = graph.sante?.summary;
 if (hs && (hs.high || hs.medium || hs.low)) {
-  report.push(`${scan.blueprint ? 'DESIGN REVIEW' : 'HEALTH'}  ${hs.high} important · ${hs.medium} worth fixing · ${hs.low} minor`);
-  for (const i of graph.health.issues.filter((x) => x.severity !== 'low' && !dismissalFor(x, graph.health.dismissed)).slice(0, 8)) report.push(`  [${i.severity}] ${i.title}`);
+  report.push(`${scan.ebauche ? 'DESIGN REVIEW' : 'HEALTH'}  ${hs.high} important · ${hs.medium} worth fixing · ${hs.low} minor`);
+  for (const i of graph.sante.problemes.filter((x) => x.severity !== 'low' && !rejetPour(x, graph.sante.dismissed)).slice(0, 8)) report.push(`  [${i.severity}] ${i.title}`);
 }
-if (graph.screens?.length) report.push(`SCREENS  ${graph.screens.length} detected`);
+if (graph.ecrans?.length) report.push(`SCREENS  ${graph.ecrans.length} detected`);
 report.push(graph.recent
   ? `RECENT WORK  ${graph.recent.items.length} card(s) highlighted across ${graph.recent.tasks.length} task(s)`
   : `RECENT WORK  none highlighted${fs.existsSync(recentFile) ? '' : ' (no recent-work.json)'}`);
 // point future Claude Code sessions in this project at the map. Codex has no personal, uncommitted
 // equivalent (AGENTS.md is shared with the team), so a map built by Codex leaves the project's notes alone.
 if (agent === 'codex') report.push('AGENT  Codex: questions on the map run through Codex');
-if (scan.blueprint) report.push('BLUEPRINT  planned, not built yet: drawn from floorplan/plan.json');
+if (scan.ebauche) report.push('BLUEPRINT  planned, not built yet: drawn from floorplan/plan.json');
 report.push(trackedWarning ? `GIT  ! ${trackedWarning}` : 'GIT  floorplan/ is kept out of git (it ignores itself)');
 report.push('');
-report.push(`✓ wrote ${path.relative(root, path.join(outDir, 'index.html'))} (${fmtNum(Math.round(html.length / 1024))} KB) and graph.json`);
+report.push(`✓ wrote ${path.relative(root, path.join(outDir, 'index.html'))} (${formaterNombre(Math.round(html.length / 1024))} KB) and graph.json`);
 if (pct > 10) report.push(`  Unassigned is ${pct.toFixed(0)}%: add nodes or globs for the directories above (or "ignore" them) and rebuild.`);
 console.log(report.join('\n'));

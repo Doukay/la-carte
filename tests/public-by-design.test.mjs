@@ -6,8 +6,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib, makeProject, scanAndBuild, readGraph, openEndpoints, cleanup } from './helpers.mjs';
 
-const { findIssues } = await lib('health.mjs');
-const ARCH = { project: { name: 'Site', summary: 'A sample site.' }, nodes: [{ id: 'site', label: 'Site', kind: 'service', summary: 'The site.', paths: ['**'] }] };
+const { trouverProblemes } = await lib('health.mjs');
+const ARCH = { projet: { name: 'Site', summary: 'A sample site.' }, nodes: [{ id: 'site', label: 'Site', kind: 'service', summary: 'The site.', paths: ['**'] }] };
 const route = (path) => `src/app/${path}/route.ts`;
 const STATIC_JSON = `export async function GET() { return Response.json({ name: 'Sample', plans: ['free', 'pro'] }); }\n`;
 // one protected endpoint, so these tests look at the per-file issues rather than "nothing here checks logins"
@@ -154,7 +154,7 @@ const PAYLOAD_API = `/* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */\n/*
 test('Payload CMS API routes check access themselves', () => {
   const graph = build({ [route('(payload)/api/[...slug]')]: PAYLOAD_API, [route('(payload)/api/graphql')]: `import config from '@payload-config';\nimport { GRAPHQL_POST } from '@payloadcms/next/routes';\nexport const POST = GRAPHQL_POST(config);\n` });
   assert.deepEqual(openEndpoints(graph), []);
-  assert.deepEqual(graph.health.issues.filter((i) => i.kind === 'unprotected-endpoint'), []);
+  assert.deepEqual(graph.sante.problemes.filter((i) => i.kind === 'unprotected-endpoint'), []);
 });
 
 test('a route that only has a variable called payload is not Payload CMS', () => {
@@ -194,7 +194,7 @@ test('a webhook that does nothing to check its sender is still reported', () => 
 
 // ---------- a browser tracker's site token (#40) ----------
 const SITE_TOKEN = ['a1b2c3d4', 'e5f6a7b8', 'c9d0e1f2'].join('');
-const secrets = (src, p = 'src/components/Widget.tsx') => findIssues(src, { path: p, category: 'code', lang: 'typescript' }).filter((x) => x.k === 'secret');
+const secrets = (src, p = 'src/components/Widget.tsx') => trouverProblemes(src, { path: p, category: 'code', lang: 'typescript' }).filter((x) => x.k === 'secret');
 
 test('a token handed to a browser tracker script is public by design', () => {
   const forms = [
@@ -219,7 +219,7 @@ test('a token near a script tag but not given to it, or a secret by name, is sti
 });
 
 // ---------- files a tool opens by name (#50) ----------
-const unused = (files) => build(files).health.issues.filter((i) => i.kind === 'unused-file').flatMap((i) => i.items);
+const unused = (files) => build(files).sante.problemes.filter((i) => i.kind === 'unused-file').flatMap((i) => i.items);
 
 test('a file whose comment says a tool opens it, or that it is generated, is not unused', () => {
   const heads = [

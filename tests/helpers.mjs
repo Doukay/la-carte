@@ -52,7 +52,7 @@ export const routeKeys = (graph) => graph.routes.map((r) => `${r.m} ${r.p}`).sor
 
 /** "METHOD /path" for every endpoint Health reports as callable by anyone. */
 export function openEndpoints(graph) {
-  return graph.health.issues
+  return graph.sante.problemes
     .filter((i) => i.kind === 'unprotected-endpoint')
     .flatMap((i) => i.items.filter((id) => id.startsWith('r:')).map((id) => graph.routes[+id.slice(2)]))
     .map((r) => `${r.m} ${r.p}`)
@@ -125,7 +125,7 @@ export function shopApp() {
     ].join('\n'),
   };
   const arch = {
-    project: { name: 'Shop', summary: 'A sample shop.' },
+    projet: { name: 'Shop', summary: 'A sample shop.' },
     nodes: [
       { id: 'api', label: 'Server', kind: 'service', summary: 'The shop server.', paths: ['shop-api/**'] },
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The shop website.', paths: ['shop-web/**'] },

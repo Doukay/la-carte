@@ -6,20 +6,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { lib, shopApp, run, readGraph, readJson, cleanup } from './helpers.mjs';
 
-const { detectAgent } = await lib('agent.mjs');
+const { detecterAgent } = await lib('agent.mjs');
 
 test('Codex is recognised by the variables it sets for every command', () => {
-  assert.equal(detectAgent({}, { CODEX_THREAD_ID: 'abc' }), 'codex');
-  assert.equal(detectAgent({}, { CODEX_SESSION_ID: 'abc' }), 'codex');
-  assert.equal(detectAgent({}, {}), 'claude');
-  assert.equal(detectAgent({}, { CLAUDECODE: '1' }), 'claude');
+  assert.equal(detecterAgent({}, { CODEX_THREAD_ID: 'abc' }), 'codex');
+  assert.equal(detecterAgent({}, { CODEX_SESSION_ID: 'abc' }), 'codex');
+  assert.equal(detecterAgent({}, {}), 'claude');
+  assert.equal(detecterAgent({}, { CLAUDECODE: '1' }), 'claude');
 });
 
 test('--agent and FLOORPLAN_AGENT override the guess, and nonsense is ignored', () => {
-  assert.equal(detectAgent({ agent: 'codex' }, {}), 'codex');
-  assert.equal(detectAgent({ agent: 'Claude' }, { CODEX_THREAD_ID: 'abc' }), 'claude');
-  assert.equal(detectAgent({}, { FLOORPLAN_AGENT: 'codex' }), 'codex');
-  assert.equal(detectAgent({ agent: 'gpt' }, { CODEX_THREAD_ID: 'abc' }), 'codex');
+  assert.equal(detecterAgent({ agent: 'codex' }, {}), 'codex');
+  assert.equal(detecterAgent({ agent: 'Claude' }, { CODEX_THREAD_ID: 'abc' }), 'claude');
+  assert.equal(detecterAgent({}, { FLOORPLAN_AGENT: 'codex' }), 'codex');
+  assert.equal(detecterAgent({ agent: 'gpt' }, { CODEX_THREAD_ID: 'abc' }), 'codex');
 });
 
 test('a map built under Codex records it, and leaves the project notes alone', () => {

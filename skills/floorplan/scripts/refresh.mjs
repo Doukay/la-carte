@@ -10,12 +10,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { compileGlob, parseArgs, mapDir } from './lib/common.mjs';
+import { compilerMotif, lireArguments, dossierCarte } from './lib/common.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const outDir = mapDir(root);
+const outDir = dossierCarte(root);
 const graphFile = path.join(outDir, 'graph.json');
 const archFile = path.join(outDir, 'architecture.json');
 if (!fs.existsSync(graphFile) || !fs.existsSync(archFile)) {
@@ -27,7 +27,7 @@ const arch = JSON.parse(fs.readFileSync(archFile, 'utf8'));
 
 // A blueprint is redrawn from plan.json, not from code. --from-code maps the real code instead
 // (plan.json is kept, so the blueprint can be drawn again with plan.mjs + build.mjs).
-if (old.meta?.blueprint && !args['from-code']) {
+if (old.meta?.ebauche && !args['from-code']) {
   const run = (script, ...rest) => execFileSync(process.execPath, [path.join(HERE, script), root, ...rest], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
   try {
     process.stdout.write(run('plan.mjs') + '\n' + run('build.mjs', ...process.argv.slice(2).filter((a) => a.startsWith('--'))));
@@ -42,7 +42,7 @@ execFileSync(node, [path.join(HERE, 'scan.mjs'), root], { stdio: ['ignore', 'ign
 const scan = JSON.parse(fs.readFileSync(path.join(outDir, '.cache', 'scan.json'), 'utf8'));
 
 const include = Array.isArray(arch.include) ? arch.include : ['code'];
-const ignore = (arch.ignore || []).map(compileGlob);
+const ignore = (arch.ignore || []).map(compilerMotif);
 const now = new Map(scan.files.filter((f) => include.includes(f.category) && !ignore.some((g) => g.test(f.path))).map((f) => [f.path, f]));
 const before = new Map(old.files.map((f) => [f.p, f]));
 

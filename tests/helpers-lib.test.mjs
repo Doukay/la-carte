@@ -4,12 +4,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib } from './helpers.mjs';
 
-const { compileGlob, classify, parseArgs } = await lib('common.mjs');
-const { humanize, fallbackFileName, fallbackRouteName } = await lib('names.mjs');
-const { routeSegments } = await lib('routes.mjs');
+const { compilerMotif, classer, lireArguments } = await lib('common.mjs');
+const { humaniser, nomFichierParDefaut, nomRouteParDefaut } = await lib('names.mjs');
+const { segmentsRoute } = await lib('routes.mjs');
 
 test('globs: ** spans folders, * stays in one, braces and bare folders work', () => {
-  const g = (glob, p) => compileGlob(glob).test(p);
+  const g = (glob, p) => compilerMotif(glob).test(p);
   assert.ok(g('src/**/*.ts', 'src/a/b.ts'));
   assert.ok(g('src/**/*.ts', 'src/b.ts'));
   assert.ok(!g('src/*.ts', 'src/a/b.ts'));
@@ -21,7 +21,7 @@ test('globs: ** spans folders, * stays in one, braces and bare folders work', ()
 });
 
 test('globs: a bracketed folder name ([id], [...slug]) is a folder, not a character class', () => {
-  const g = (glob, p) => compileGlob(glob).test(p);
+  const g = (glob, p) => compilerMotif(glob).test(p);
   assert.ok(g('app/orders/[id]/**', 'app/orders/[id]/page.tsx'));
   assert.ok(!g('app/orders/[id]/**', 'app/orders/i/page.tsx'));
   assert.ok(g('app/[...slug]', 'app/[...slug]/page.tsx'));
@@ -30,30 +30,30 @@ test('globs: a bracketed folder name ([id], [...slug]) is a folder, not a charac
 });
 
 test('globs: a more specific pattern scores higher', () => {
-  assert.ok(compileGlob('api/routes/**').specificity > compileGlob('api/**').specificity);
+  assert.ok(compilerMotif('api/routes/**').specificity > compilerMotif('api/**').specificity);
 });
 
 test('classify: code, docs, lock files, assets and generated files', () => {
-  assert.deepEqual(classify('src/a.ts', 100), { category: 'code', lang: 'typescript' });
-  assert.deepEqual(classify('app/main.py', 100), { category: 'code', lang: 'python' });
-  assert.equal(classify('README.md', 10).category, 'docs');
-  assert.equal(classify('package-lock.json', 10).category, 'lock');
-  assert.equal(classify('logo.png', 10).category, 'asset');
-  assert.equal(classify('dist/app.min.js', 10).category, 'generated');
+  assert.deepEqual(classer('src/a.ts', 100), { category: 'code', lang: 'typescript' });
+  assert.deepEqual(classer('app/main.py', 100), { category: 'code', lang: 'python' });
+  assert.equal(classer('README.md', 10).category, 'docs');
+  assert.equal(classer('package-lock.json', 10).category, 'lock');
+  assert.equal(classer('logo.png', 10).category, 'asset');
+  assert.equal(classer('dist/app.min.js', 10).category, 'generated');
 });
 
 test('parseArgs: positionals, --flag value, --flag=value and bare flags', () => {
-  assert.deepEqual(parseArgs(['root', '--port', '9', '--no-open', '--x=1']), { _: ['root'], port: '9', 'no-open': true, x: '1' });
+  assert.deepEqual(lireArguments(['root', '--port', '9', '--no-open', '--x=1']), { _: ['root'], port: '9', 'no-open': true, x: '1' });
 });
 
 test('fallback names read like plain words', () => {
-  assert.equal(humanize('order_service'), 'Order service');
-  assert.equal(humanize('OrderService'), 'Order service');
-  assert.equal(fallbackFileName('api/routes/order_service.py'), 'Order service');
-  assert.equal(fallbackRouteName({ method: 'POST', path: '/orders/:id/refund' }), 'Create orders refund');
+  assert.equal(humaniser('order_service'), 'Order service');
+  assert.equal(humaniser('OrderService'), 'Order service');
+  assert.equal(nomFichierParDefaut('api/routes/order_service.py'), 'Order service');
+  assert.equal(nomRouteParDefaut({ method: 'POST', path: '/orders/:id/refund' }), 'Create orders refund');
 });
 
 test('endpoint paths: parameters in every framework style match anything', () => {
-  assert.deepEqual(routeSegments('/orders/:id/refund'), ['orders', '*', 'refund']);
-  assert.deepEqual(routeSegments('/orders/{id}'), ['orders', '*']);
+  assert.deepEqual(segmentsRoute('/orders/:id/refund'), ['orders', '*', 'refund']);
+  assert.deepEqual(segmentsRoute('/orders/{id}'), ['orders', '*']);
 });

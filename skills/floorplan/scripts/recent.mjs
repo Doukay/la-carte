@@ -5,11 +5,11 @@
 // usage: node recent.mjs [root] [--days 7]
 import fs from 'node:fs';
 import path from 'node:path';
-import { git, parseArgs, mapDir } from './lib/common.mjs';
+import { git, lireArguments, dossierCarte } from './lib/common.mjs';
 
-const args = parseArgs(process.argv.slice(2));
+const args = lireArguments(process.argv.slice(2));
 const root = path.resolve(args._[0] || '.');
-const dir = mapDir(root);
+const dir = dossierCarte(root);
 const graphFile = path.join(dir, 'graph.json');
 if (!fs.existsSync(graphFile)) { console.error('✗ No floorplan/graph.json. Run build.mjs first.'); process.exit(1); }
 const G = JSON.parse(fs.readFileSync(graphFile, 'utf8'));
@@ -31,7 +31,7 @@ const L = [];
 const MAX = 40;
 const list = (rows) => { rows.slice(0, MAX).forEach((r) => L.push('  ' + r)); if (rows.length > MAX) L.push(`  … +${rows.length - MAX} more`); };
 
-L.push(`RECENT WORK FACTS for ${G.project.name}  (map built ${G.meta.generatedAt})`);
+L.push(`RECENT WORK FACTS for ${G.projet.name}  (map built ${G.meta.generatedAt})`);
 L.push(current?.tasks
   ? `Current recent-work.json: ${current.tasks.length} task(s), updated ${current.updatedAt || 'unknown'}. Rewrite it: it replaces the previous highlights.`
   : 'No recent-work.json yet.');
