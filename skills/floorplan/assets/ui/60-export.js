@@ -1,16 +1,17 @@
-// Export: a copy of the map to share as one HTML file, for people without Claude or Codex. The map's server
-// (serve.mjs) builds it: the same page without the Ask bar, requests for Claude or Codex, or links into this
-// computer, plus the extras ticked here. Talks to the viewer only through window.Floorplan.
+// Export : une copie de la carte à partager, en un seul fichier HTML, pour les personnes sans Claude ni Codex.
+// Le serveur de la carte (serve.mjs) la fabrique : la même page sans la bulle de questions, sans demandes à
+// Claude ou Codex, sans liens vers cet ordinateur, avec en plus les éléments cochés ici. Ce fichier ne parle à
+// la carte que par window.Floorplan.
 (() => {
   const SC = window.Floorplan;
   if (!SC || SC.exported) return;
-  const S = window.FLOORPLAN_SERVER;
-  // opened in the Claude app: there's no map folder to export from
-  if (!S && location.protocol !== 'file:') return;
+  const SERVEUR = window.FLOORPLAN_SERVER;
+  // ouverte dans l'appli Claude : il n'y a pas de dossier de carte d'où exporter
+  if (!SERVEUR && location.protocol !== 'file:') return;
   const { h } = SC;
-  const G = SC.graph;
-  const PLAN = !!G.meta.blueprint;
-  const CMD = 'node floorplan/serve.mjs --export';
+  const GRAPHE = SC.graph;
+  const EST_UN_PLAN = !!GRAPHE.meta.blueprint;
+  const COMMANDE = 'node floorplan/serve.mjs --export';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -27,57 +28,58 @@
   document.head.appendChild(style);
   SC.icons.export = '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>';
 
-  // only what this map has; the extras that say how the app could be attacked are off unless ticked
-  const PARTS = [
-    { id: 'flows', label: 'Flows and the tour', hint: 'The guided walkthroughs, including ones you requested.', on: true, has: G.flows.length > 0 || (G.tour || []).length > 0 },
-    { id: 'notes', label: 'Notes pinned to files', hint: 'The notes shown on file cards.', on: true, has: G.files.some((f) => f.note) },
-    { id: 'recent', label: 'Recent work', hint: 'What was just changed, and why.', on: false, has: !!G.recent?.items?.length },
-    PLAN
-      ? { id: 'health', label: 'Design review', hint: 'The decisions the plan still leaves open.', on: false, has: !!G.health?.issues?.length }
-      : { id: 'health', label: 'Health check', hint: 'Lists the endpoints anyone can use and where secrets sit in the code (never their values). Only include it for people you trust.', on: false, warn: true, has: !!G.health?.issues?.length },
-  ].filter((p) => p.has);
+  // seulement ce que cette carte contient ; ce qui dit comment attaquer l'appli reste décoché par défaut
+  const ELEMENTS = [
+    { id: 'flows', titre: 'Parcours et visite guidée', aide: 'Les explications pas à pas, y compris celles que vous avez demandées.', coche: true, present: GRAPHE.flows.length > 0 || (GRAPHE.tour || []).length > 0 },
+    { id: 'notes', titre: 'Notes sur les fichiers', aide: 'Les notes affichées sur les cartes des fichiers.', coche: true, present: GRAPHE.files.some((f) => f.note) },
+    { id: 'recent', titre: 'Travail récent', aide: 'Ce qui vient de changer, et pourquoi.', coche: false, present: !!GRAPHE.recent?.items?.length },
+    EST_UN_PLAN
+      ? { id: 'health', titre: 'Revue du plan', aide: 'Les décisions que le plan laisse encore ouvertes.', coche: false, present: !!GRAPHE.health?.issues?.length }
+      : { id: 'health', titre: 'Contrôle de santé', aide: 'Montre les adresses du serveur ouvertes à tous et où se trouvent les secrets dans le code (jamais leur valeur). À inclure seulement pour des personnes de confiance.', coche: false, attention: true, present: !!GRAPHE.health?.issues?.length },
+  ].filter((e) => e.present);
 
-  async function download(el, close) {
-    const err = el.querySelector('.xp-err');
-    const include = [...el.querySelectorAll('[data-xp]')].filter((c) => c.checked).map((c) => c.dataset.xp);
-    // flows requested since the map was last built live only on this page so far
-    const flows = G.flows.filter((f) => f.custom).map((f) => ({ id: f.id, title: f.title, description: f.description, steps: f.steps }));
+  async function telecharger(fenetre, fermer) {
+    const erreur = fenetre.querySelector('.xp-err');
+    const inclus = [...fenetre.querySelectorAll('[data-xp]')].filter((c) => c.checked).map((c) => c.dataset.xp);
+    // les parcours demandés depuis la dernière construction de la carte n'existent pour l'instant que sur cette page
+    const parcours = GRAPHE.flows.filter((f) => f.custom).map((f) => ({ id: f.id, title: f.title, description: f.description, steps: f.steps }));
     try {
-      const r = await fetch('/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': S.token }, body: JSON.stringify({ include, flows }) });
-      if (r.status === 403) throw new Error('The map’s server has restarted since this page opened. Reload the page and try again.');
-      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'The map’s server couldn’t export it.');
-      const name = /filename="([^"]+)"/.exec(r.headers.get('content-disposition') || '')?.[1] || 'floorplan-map.html';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(await r.blob());
-      a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-      close();
-      SC.toast(`Downloaded ${name}`);
+      const reponse = await fetch('/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVEUR.token }, body: JSON.stringify({ include: inclus, flows: parcours }) });
+      if (reponse.status === 403) throw new Error('Le serveur de la carte a redémarré depuis l’ouverture de cette page. Rechargez la page et réessayez.');
+      if (!reponse.ok) throw new Error((await reponse.json().catch(() => ({}))).error || 'Le serveur de la carte n’a pas pu l’exporter.');
+      const nom = /filename="([^"]+)"/.exec(reponse.headers.get('content-disposition') || '')?.[1] || 'floorplan-map.html';
+      const lien = document.createElement('a');
+      lien.href = URL.createObjectURL(await reponse.blob());
+      lien.download = nom;
+      document.body.appendChild(lien); lien.click(); lien.remove();
+      setTimeout(() => URL.revokeObjectURL(lien.href), 30000);
+      fermer();
+      SC.toast(`${nom} téléchargé`);
     } catch (e) {
-      err.hidden = false;
-      err.textContent = e.message === 'Failed to fetch' ? 'Couldn’t reach the map’s server. Ask Claude or Codex to open the floorplan again, then try again.' : e.message;
+      erreur.hidden = false;
+      // 'Failed to fetch' est le texte du navigateur : il reste en anglais
+      erreur.textContent = e.message === 'Failed to fetch' ? 'Impossible de joindre le serveur de la carte. Demandez à Claude ou Codex de rouvrir la carte, puis réessayez.' : e.message;
     }
   }
 
-  function openExport() {
-    if (!S) {
+  function ouvrirExport() {
+    if (!SERVEUR) {
       SC.modal({
-        title: 'Export a copy',
-        html: `<p>Exporting needs the map’s server. Ask Claude or Codex to “export the floorplan”, or run this in the project folder:</p><pre>${h(CMD)}</pre>`,
-        actions: [{ label: 'Copy command', primary: true, icon: 'copy', onClick: () => { SC.copy(CMD); SC.toast('Copied'); } }],
+        title: 'Exporter une copie',
+        html: `<p>L’export a besoin du serveur de la carte. Demandez à Claude ou Codex d’« exporter la carte », ou lancez ceci dans le dossier du projet :</p><pre>${h(COMMANDE)}</pre>`,
+        actions: [{ label: 'Copier la commande', primary: true, icon: 'copy', onClick: () => { SC.copy(COMMANDE); SC.toast('Copié'); } }],
       });
       return;
     }
-    const m = SC.modal({
-      title: 'Export a copy',
-      html: `<p>One HTML file with the whole map, to send to anyone. It opens in any browser with nothing to install, and has no Ask bar.</p>
-        ${PARTS.length ? `<div class="xp-opts">${PARTS.map((p) => `<label class="xp-opt${p.warn ? ' warn' : ''}"><input type="checkbox" data-xp="${p.id}"${p.on ? ' checked' : ''}><div><b>${h(p.label)}</b><span>${h(p.hint)}</span></div></label>`).join('')}</div>` : ''}
-        <p class="xp-note">It shows how ${h(G.project.name)} is put together: every part, file and endpoint, and the names of the functions inside, but not the code itself.</p>
+    const fenetre = SC.modal({
+      title: 'Exporter une copie',
+      html: `<p>Un seul fichier HTML avec toute la carte, à envoyer à qui vous voulez. Il s’ouvre dans n’importe quel navigateur sans rien installer, et n’a pas de bulle de questions.</p>
+        ${ELEMENTS.length ? `<div class="xp-opts">${ELEMENTS.map((e) => `<label class="xp-opt${e.attention ? ' warn' : ''}"><input type="checkbox" data-xp="${e.id}"${e.coche ? ' checked' : ''}><div><b>${h(e.titre)}</b><span>${h(e.aide)}</span></div></label>`).join('')}</div>` : ''}
+        <p class="xp-note">Il montre comment ${h(GRAPHE.project.name)} est construit : chaque partie, chaque fichier, chaque adresse du serveur et le nom des fonctions, mais pas le code lui-même.</p>
         <div class="xp-err" hidden></div>`,
-      actions: [{ label: 'Download', primary: true, icon: 'export', keepOpen: true, onClick: (close) => { download(m.el, close); } }],
+      actions: [{ label: 'Télécharger', primary: true, icon: 'export', keepOpen: true, onClick: (fermer) => { telecharger(fenetre.el, fermer); } }],
     });
   }
 
-  SC.addHeaderButton({ id: 'btn-export', label: 'Export', icon: 'export', title: 'Export a copy of this map to share', onClick: openExport });
+  SC.addHeaderButton({ id: 'btn-export', label: 'Exporter', icon: 'export', title: 'Exporter une copie de cette carte à partager', onClick: ouvrirExport });
 })();
