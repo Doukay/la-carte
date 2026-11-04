@@ -33,24 +33,24 @@ Ouvre ton projet dans Codex et demande avec tes mots :
 
 > Dessine-moi un floorplan de ce code
 
-Pour appeler la compétence par son nom, tape `$floorplan`. Ensuite, tout est comme dans Claude Code ([Pour commencer](getting-started.md#fais-ta-première-carte)) : Codex analyse le code, décrit chaque partie, fichier et appel au serveur, construit la carte et l'ouvre. Plus tard, « mets à jour le floorplan » ne relit que ce qui a changé.
+Pour appeler la compétence par son nom, tape `$floorplan`. Ensuite, tout est comme dans Claude Code ([Pour commencer](bien-demarrer.md#fais-ta-première-carte)) : Codex analyse le code, décrit chaque partie, fichier et appel au serveur, construit la carte et l'ouvre. Plus tard, « mets à jour le floorplan » ne relit que ce qui a changé.
 
 Quand Codex ouvre la carte, il demande à lancer le serveur de la carte hors de son bac à sable. Le serveur doit continuer à tourner après la fin de la commande, et la bulle de questions doit pouvoir joindre Codex. Si tu préfères ne pas l'autoriser, lance le serveur toi-même depuis le dossier du projet :
 
 ```bash
-node floorplan/serve.mjs
+node floorplan/serveur.mjs
 ```
 
 ## Poser des questions sur la carte
 
 La bulle de questions de la carte lance ton propre Codex sur ton ordinateur : `codex exec` dans le bac à sable **en lecture seule** de Codex, dans le dossier de ton projet, avec ta connexion ChatGPT. Il lit la carte et ton code source pour répondre, et ne peut modifier aucun fichier. Ces exécutions ne sont pas gardées dans ton historique Codex ; une question de suite emmène avec elle les dernières questions et réponses.
 
-**Limite à connaître :** avec Codex, la bulle de questions peut lire n'importe quel fichier lisible du projet, **fichiers de secrets compris** (`.env`, clés…). Le blocage de ces fichiers que cette version met en place avec Claude Code n'existe pas côté Codex. Ce que Codex lit part chez OpenAI. Sur un projet qui contient des secrets en clair, préfère Claude Code pour poser des questions. Voir [Confidentialité et sécurité](privacy-and-security.md).
+**Limite à connaître :** avec Codex, la bulle de questions peut lire n'importe quel fichier lisible du projet, **fichiers de secrets compris** (`.env`, clés…). Le blocage de ces fichiers que cette version met en place avec Claude Code n'existe pas côté Codex. Ce que Codex lit part chez OpenAI. Sur un projet qui contient des secrets en clair, préfère Claude Code pour poser des questions. Voir [Confidentialité et sécurité](confidentialite-et-securite.md).
 
 Le serveur utilise l'agent qui a fait la carte, et passe à l'autre si celui-là n'est pas installé. Pour choisir :
 
 ```bash
-node floorplan/serve.mjs --engine codex
+node floorplan/serveur.mjs --engine codex
 ```
 
 Il trouve `codex` dans ton PATH, et sous Windows la ligne de commande qui vient avec l'application de bureau Codex. Si la tienne est ailleurs, passe `--codex /chemin/vers/codex`. `--model <nom>` choisit le modèle ; sinon tes réglages Codex décident.
@@ -59,11 +59,11 @@ Il trouve `codex` dans ton PATH, et sous Windows la ligne de commande qui vient 
 
 - **Pas de fichier de notes.** Cette copie n'écrit jamais dans tes fichiers de notes (ni `CLAUDE.local.md` pour Claude Code, ni `AGENTS.md` pour Codex) : elle n'écrit que dans `floorplan/`. Pour que tes sessions pensent à la carte, ajoute toi-même une ligne dans tes notes.
 - **Pas d'application Claude.** Publier la carte dans l'application Claude est une fonction de Claude. Dans Codex, la carte s'ouvre dans ton navigateur, servie depuis ton ordinateur.
-- **« Corriger avec Codex ».** Les demandes de correction toutes prêtes du panneau Santé sont à coller dans Codex. Sur un [plan](getting-started.md#planifier-une-appli-pas-encore-construite), c'est pareil pour **Construire ça avec Codex**, et l'interrupteur **Modifier** de la bulle de questions lance aussi Codex dans son bac à sable en lecture seule : Codex répond avec le plan mis à jour, et le serveur de la carte l'enregistre.
+- **« Corriger avec Codex ».** Les demandes de correction toutes prêtes du panneau Santé sont à coller dans Codex. Sur un [plan](bien-demarrer.md#planifier-une-appli-pas-encore-construite), c'est pareil pour **Construire ça avec Codex**, et l'interrupteur **Modifier** de la bulle de questions lance aussi Codex dans son bac à sable en lecture seule : Codex répond avec le plan mis à jour, et le serveur de la carte l'enregistre.
 
 ## Mettre à jour ou retirer
 
-Cette copie ne se met pas à jour toute seule avec l'auteur (voir [Reprendre une correction de l'auteur](getting-started.md#reprendre-une-correction-de-lauteur)). Dans l'application, ouvre **Plugins**, trouve la source de Floorplan et choisis **Upgrade** pour prendre la dernière version de cette copie, ou **Remove marketplace** pour la retirer. Depuis un terminal :
+Cette copie ne se met pas à jour toute seule avec l'auteur (voir [Reprendre une correction de l'auteur](bien-demarrer.md#reprendre-une-correction-de-lauteur)). Dans l'application, ouvre **Plugins**, trouve la source de Floorplan et choisis **Upgrade** pour prendre la dernière version de cette copie, ou **Remove marketplace** pour la retirer. Depuis un terminal :
 
 ```bash
 codex plugin marketplace upgrade floorplan-fr

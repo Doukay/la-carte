@@ -4,25 +4,25 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { REPO, lib, makeProject, run, readGraph, routeKeys, cleanup } from './helpers.mjs';
+import { DEPOT, lib, creerProjet, executer, lireGraphe, clesRoutes, nettoyer } from './aides.mjs';
 
-const { extraire } = await lib('extract.mjs');
+const { extraire } = await lib('extraction.mjs');
 
 let racine, graphe;
 before(() => {
-  racine = makeProject({}, { arch: {
+  racine = creerProjet({}, { arch: {
     projet: { name: 'fastify-app', summary: 'Test fixture.' },
     nodes: [
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The website.', paths: ['web/**'] },
       { id: 'api', label: 'Server', kind: 'service', summary: 'The Fastify server.', paths: ['api/**'] },
     ],
   } });
-  fs.cpSync(path.join(REPO, 'tests', 'fixtures', 'fastify-app'), racine, { recursive: true });
-  run('scan.mjs', racine);
-  run('build.mjs', racine, '--no-claude-md');
-  graphe = readGraph(racine);
+  fs.cpSync(path.join(DEPOT, 'tests', 'fixtures', 'fastify-app'), racine, { recursive: true });
+  executer('analyser.mjs', racine);
+  executer('construire.mjs', racine, '--no-claude-md');
+  graphe = lireGraphe(racine);
 });
-after(() => cleanup(racine));
+after(() => nettoyer(racine));
 
 test('register(plugin, { prefix }) est un montage : importé par nom, par import() ou par require()', () => {
   const r = extraire([
@@ -51,7 +51,7 @@ test('register(plugin, { prefix }) est un montage : importé par nom, par import
 });
 
 test('les adresses du serveur reçoivent le préfixe sous lequel leur plugin est enregistré, à travers des register imbriqués avec ou sans préfixe', () => {
-  assert.deepEqual(routeKeys(graphe), [
+  assert.deepEqual(clesRoutes(graphe), [
     'GET /api/v1/buildings', 'GET /api/v1/buildings/:buildingId/faq', 'GET /api/v1/buildings/:buildingId/notes', 'GET /api/v1/invites', 'GET /api/v1/tickets',
     'GET /api/v1/tickets/:id', 'GET /health', 'POST /api/v1/invites/accept', 'POST /api/v1/tickets/:id/accept',
   ]);

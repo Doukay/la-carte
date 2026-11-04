@@ -1,42 +1,42 @@
 {
-  "name": "floorplan",
-  "version": "0.6.3",
-  "description": "See how your app actually fits together: an interactive map of your codebase where every part, file and web request has a plain-English name and description, with a health check, screens, guided flows, questions answered on the map, and highlights of what was just worked on.",
+  "name": "floorplan-fr",
+  "version": "0.6.3-fr.1",
+  "description": "Vois comment ton appli est construite : une carte interactive de ton code où chaque partie, fichier et appel au serveur a un nom et une description en français simple, avec un contrôle de santé, les écrans, des parcours guidés, des questions sur la carte et le travail récent. Traduction française non officielle de Floorplan (Hayden Smith).",
   "author": {
-    "name": "Hayden Smith",
+    "name": "Hayden Smith (auteur d'origine) ; traduction française non officielle",
     "url": "https://github.com/haydenschmitty"
   },
-  "homepage": "https://github.com/haydenschmitty/floorplan",
-  "repository": "https://github.com/haydenschmitty/floorplan",
+  "homepage": "https://github.com/Doukay/la-carte",
+  "repository": "https://github.com/Doukay/la-carte",
   "license": "MIT",
   "keywords": [
-    "codebase",
+    "code",
     "architecture",
-    "map",
-    "visualization",
-    "onboarding",
-    "diagram",
+    "carte",
+    "visualisation",
+    "français",
+    "schéma",
     "documentation"
   ],
   "skills": "./skills/",
   "requires_local_executor": true,
   "interface": {
-    "displayName": "Floorplan",
-    "shortDescription": "See how your app fits together",
-    "longDescription": "Codex reads your codebase and draws an interactive map of it. Every part, file and web request gets a plain-English name and description, and every connection between them is shown. It adds a health check for exposed keys and endpoints anyone can change, your app's screens, guided flows, highlights of what was just worked on, and an Ask bar that answers questions on the map using your own Codex sign-in.",
-    "developerName": "Hayden Smith",
+    "displayName": "Floorplan FR",
+    "shortDescription": "Vois comment ton appli est construite",
+    "longDescription": "Codex lit ton code et dessine une carte interactive. Chaque partie, fichier et appel au serveur reçoit un nom et une description en français simple, et chaque lien entre eux est montré. Traduction française non officielle de Floorplan (Hayden Smith).",
+    "developerName": "Hayden Smith (auteur d'origine) ; traduction française non officielle",
     "category": "Developer Tools",
     "capabilities": [
       "Interactive",
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/haydenschmitty/floorplan",
-    "privacyPolicyURL": "https://github.com/haydenschmitty/floorplan/blob/main/docs/privacy-and-security.md",
+    "websiteURL": "https://github.com/Doukay/la-carte",
+    "privacyPolicyURL": "https://github.com/Doukay/la-carte/blob/main/docs/confidentialite-et-securite.md",
     "defaultPrompt": [
-      "Draw a floorplan of this codebase",
-      "Update the floorplan with what we just changed",
-      "Show me how the frontend talks to the backend"
+      "Dessine la carte de ce code",
+      "Mets à jour la carte avec ce qu’on vient de changer",
+      "Montre-moi comment l’interface parle au serveur"
     ],
     "composerIcon": "./.codex-plugin/icon.png",
     "logo": "./.codex-plugin/icon.png",

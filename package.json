@@ -1,9 +1,11 @@
 {
-  "name": "floorplan",
+  "name": "floorplan-fr",
   "private": true,
-  "description": "Floorplan, a Claude Code plugin. No dependencies: this file only gives `npm test` a home.",
+  "description": "Floorplan FR, un plugin Claude Code. Aucune dépendance : ce fichier donne seulement une place à `npm test`.",
   "license": "MIT",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "test": "node --test"
   }

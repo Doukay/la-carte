@@ -4,30 +4,30 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { REPO, lib, makeProject, run, readGraph, routeKeys, openEndpoints, cleanup } from './helpers.mjs';
+import { DEPOT, lib, creerProjet, executer, lireGraphe, clesRoutes, adressesOuvertes, nettoyer } from './aides.mjs';
 
-const { extraire } = await lib('extract.mjs');
+const { extraire } = await lib('extraction.mjs');
 const { associerAppels } = await lib('routes.mjs');
 
 let racine, graphe, resume;
 before(() => {
-  racine = makeProject({}, { arch: {
+  racine = creerProjet({}, { arch: {
     projet: { name: 'firebase-app', summary: 'Test fixture.' },
     nodes: [
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The website.', paths: ['web/**'] },
       { id: 'fn', label: 'Functions', kind: 'service', summary: 'Cloud Functions.', paths: ['functions/**'] },
     ],
   } });
-  fs.cpSync(path.join(REPO, 'tests', 'fixtures', 'firebase-app'), racine, { recursive: true });
-  resume = run('scan.mjs', racine);
-  run('build.mjs', racine, '--no-claude-md');
-  graphe = readGraph(racine);
+  fs.cpSync(path.join(DEPOT, 'tests', 'fixtures', 'firebase-app'), racine, { recursive: true });
+  resume = executer('analyser.mjs', racine);
+  executer('construire.mjs', racine, '--no-claude-md');
+  graphe = lireGraphe(racine);
 });
-after(() => cleanup(racine));
+after(() => nettoyer(racine));
 
 test('les fonctions appelables et onRequest sont des adresses du serveur, sous le nom exporté par le fichier d’entrée', () => {
   // archiveItem est exporté sous le nom retireItem ; api est une appli Express, donc ses propres routes sont les adresses du serveur
-  assert.deepEqual(routeKeys(graphe), [
+  assert.deepEqual(clesRoutes(graphe), [
     'ANY /legacyPing', 'ANY /signDocument', 'CALL /approveItem', 'CALL /legacyStats', 'CALL /retireItem',
     'GET /api/reports', 'POST /api/reports',
   ]);
@@ -53,7 +53,7 @@ test('Écrans montre le code serveur derrière une page qui appelle des fonction
 });
 
 test('Santé : une fonction appelable qui vérifie request.auth ou context.auth est protégée ; une qui ne le fait pas est ouverte', () => {
-  assert.deepEqual(openEndpoints(graphe), ['ANY /legacyPing', 'CALL /retireItem', 'GET /api/reports', 'POST /api/reports']);
+  assert.deepEqual(adressesOuvertes(graphe), ['ANY /legacyPing', 'CALL /retireItem', 'GET /api/reports', 'POST /api/reports']);
 });
 
 test('les fonctions de tâche de fond sont listées dans le résumé de l’analyse', () => {

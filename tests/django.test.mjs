@@ -2,9 +2,9 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { makeProject, run, readJson, cleanup } from './helpers.mjs';
+import { creerProjet, executer, lireJson, nettoyer } from './aides.mjs';
 
-const racine = makeProject({
+const racine = creerProjet({
   'manage.py': '',
   'mysite/__init__.py': '',
   'mysite/urls.py': [
@@ -22,11 +22,11 @@ const racine = makeProject({
   'shop/views.py': 'def cart(request): ...\n',
   'web/api.js': 'export const getOrder = (id) => fetch(`/api/orders/${id}/`);\n',
 });
-after(() => cleanup(racine));
+after(() => nettoyer(racine));
 
 test('les urls incluses sous un préfixe le reçoivent, et la ligne include n’est pas elle-même une adresse du serveur', () => {
-  run('scan.mjs', racine);
-  const analyse = readJson(path.join(racine, 'floorplan', '.cache', 'scan.json'));
+  executer('analyser.mjs', racine);
+  const analyse = lireJson(path.join(racine, 'floorplan', '.cache', 'analyse.json'));
   assert.deepEqual(analyse.routes.map((r) => `${r.file} ${r.path}`).sort(), [
     'orders/urls.py /api/orders',
     'orders/urls.py /api/orders/<int:pk>',

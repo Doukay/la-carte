@@ -3,24 +3,24 @@
 // l’exécution pour qu’aucune ne soit jamais enregistrée dans ce dépôt.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lib, FAKE_PASSWORD } from './helpers.mjs';
+import { lib, FAUX_MOT_DE_PASSE } from './aides.mjs';
 
-const { trouverProblemes } = await lib('health.mjs');
+const { trouverProblemes } = await lib('sante.mjs');
 const secrets = (source, path = 'app/config.py', lang = 'python') => trouverProblemes(source, { path, category: 'code', lang }).filter((x) => x.k === 'secret');
 const FAUX_JETON_GITHUB = 'ghp_' + 'aBcD' + '1e2F3g4H5i6J7k8L9m0N1o2P3q4R5s6T7u8V';
 
 test('un mot de passe écrit en dur est trouvé, avec sa ligne, et masqué', () => {
-  const [s, ...reste] = secrets(`PORT = 3000\nDB_PASSWORD = "${FAKE_PASSWORD}"\n`);
+  const [s, ...reste] = secrets(`PORT = 3000\nDB_PASSWORD = "${FAUX_MOT_DE_PASSE}"\n`);
   assert.equal(reste.length, 0);
   assert.equal(s.line, 2);
   assert.equal(s.name, 'DB_PASSWORD');
   assert.equal(s.sev, 'high');
-  assert.equal(s.hint, `${FAKE_PASSWORD.length} caractères`, 'l’indice d’un mot de passe donne seulement sa longueur');
+  assert.equal(s.hint, `${FAUX_MOT_DE_PASSE.length} caractères`, 'l’indice d’un mot de passe donne seulement sa longueur');
 });
 
 test('un mot de passe dans une adresse n’arrive jamais dans la liste des sites extérieurs', async () => {
-  const { extraire } = await lib('extract.mjs');
-  const { hosts } = extraire(`fetch("https://bob:${FAKE_PASSWORD}@api.stripe.com/x")`, 'javascript', 'a.js');
+  const { extraire } = await lib('extraction.mjs');
+  const { hosts } = extraire(`fetch("https://bob:${FAUX_MOT_DE_PASSE}@api.stripe.com/x")`, 'javascript', 'a.js');
   assert.deepEqual(hosts.map((h) => h.host), ['api.stripe.com']);
 });
 
@@ -31,9 +31,9 @@ test('un format de clé connu porte le nom de son service et ne montre que sa lo
 });
 
 test('la valeur du secret n’apparaît jamais dans ce que Santé enregistre', () => {
-  for (const trouves of [secrets(`DB_PASSWORD = "${FAKE_PASSWORD}"`), secrets(`token = "${FAUX_JETON_GITHUB}"`)]) {
+  for (const trouves of [secrets(`DB_PASSWORD = "${FAUX_MOT_DE_PASSE}"`), secrets(`token = "${FAUX_JETON_GITHUB}"`)]) {
     const texte = JSON.stringify(trouves);
-    assert.ok(!texte.includes(FAKE_PASSWORD) && !texte.includes(FAUX_JETON_GITHUB.slice(4)), texte);
+    assert.ok(!texte.includes(FAUX_MOT_DE_PASSE) && !texte.includes(FAUX_JETON_GITHUB.slice(4)), texte);
   }
 });
 

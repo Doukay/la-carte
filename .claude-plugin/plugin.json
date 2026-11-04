@@ -1,24 +1,24 @@
 {
-  "name": "floorplan",
-  "version": "0.6.3",
-  "description": "See how your app actually fits together: an interactive map of your codebase where every part, file and web request has a plain-English name and description, with a health check, screens, guided flows, questions answered on the map, and highlights of what was just worked on.",
+  "name": "floorplan-fr",
+  "version": "0.6.3-fr.1",
+  "description": "Vois comment ton appli est construite : une carte interactive de ton code où chaque partie, fichier et appel au serveur a un nom et une description en français simple, avec un contrôle de santé, les écrans, des parcours guidés, des questions sur la carte et le travail récent. Traduction française non officielle de Floorplan (Hayden Smith).",
   "author": {
-    "name": "Hayden Smith",
+    "name": "Hayden Smith (auteur d'origine) ; traduction française non officielle",
     "url": "https://github.com/haydenschmitty"
   },
-  "homepage": "https://github.com/haydenschmitty/floorplan",
-  "repository": "https://github.com/haydenschmitty/floorplan",
-  "documentationUrl": "https://github.com/haydenschmitty/floorplan/blob/main/docs/README.md",
-  "privacyPolicyUrl": "https://github.com/haydenschmitty/floorplan/blob/main/docs/privacy-and-security.md",
-  "supportUrl": "https://github.com/haydenschmitty/floorplan/issues",
+  "homepage": "https://github.com/Doukay/la-carte",
+  "repository": "https://github.com/Doukay/la-carte",
+  "documentationUrl": "https://github.com/Doukay/la-carte/blob/main/docs/README.md",
+  "privacyPolicyUrl": "https://github.com/Doukay/la-carte/blob/main/docs/confidentialite-et-securite.md",
+  "supportUrl": "https://github.com/Doukay/la-carte/issues",
   "license": "MIT",
   "keywords": [
-    "codebase",
+    "code",
     "architecture",
-    "map",
-    "visualization",
-    "onboarding",
-    "diagram",
+    "carte",
+    "visualisation",
+    "français",
+    "schéma",
     "documentation"
   ]
 }

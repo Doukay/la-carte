@@ -17,7 +17,7 @@ Licence MIT · Node 18 ou plus · aucune dépendance
 
 </div>
 
-> **Traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/getting-started.md#reprendre-une-correction-de-lauteur)).
+> **Traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur)).
 >
 > Floorplan a été créé par **[Hayden Smith](https://github.com/haydenschmitty)**. Dépôt d'origine : <https://github.com/haydenschmitty/floorplan>. Le travail est à lui, cette copie ne fait que le traduire et en retirer quelques fonctions (voir le [journal des changements](CHANGELOG.md#version-française)). Licence MIT conservée, voir [LICENSE](LICENSE).
 >
@@ -33,21 +33,6 @@ Floorplan te donne le schéma que personne n'a dessiné. Demande une carte à Cl
 - **Pour une équipe :** accueillir quelqu'un en quelques minutes, de la vue d'ensemble jusqu'au fichier précis.
 - **Pour travailler avec une IA :** après chaque modification de Claude ou de Codex, voir exactement quelles parties il a touchées et pourquoi.
 
-## Comparaison avec Archify et Understand Anything
-
-Les trois outils transforment du code en quelque chose qu'on peut voir, et tous les trois valent d'être connus. Ils répondent à des questions différentes (comparaison faite par l'auteur d'origine, gardée telle quelle) :
-
-| | **Floorplan** | **[Archify](https://github.com/tt-a1i/archify)** | **[Understand Anything](https://github.com/Egonex-AI/Understand-Anything)** |
-|---|---|---|---|
-| **La question à laquelle il répond** | Comment marche vraiment l'appli que j'ai construite, et de quoi dois-je me méfier ? | Comment montrer ça clairement ? | Comment marche ce gros projet, jusqu'aux fonctions ? |
-| **Pour qui** | Les personnes qui construisent avec l'IA et ne lisent pas le code | Toute personne qui explique un système, un processus ou une idée | Les développeurs qui découvrent un gros projet |
-| **Ce que tu obtiens** | Une carte zoomable de toute ton appli : parties, fichiers et adresses du serveur, les écrans, les appels entre l'interface et le serveur (même entre dépôts), et les services extérieurs | Un schéma soigné parmi 10 types (architecture, séquence, base de données…) ou une page d'explication, à partir d'un dépôt ou d'une simple description | Un graphe de connaissances de chaque fichier, fonction et classe, avec des couches, une vue par domaine métier et des visites guidées |
-| **Seulement ici** | **Contrôle de santé** (clés dans le code, tables Supabase ouvertes et règles Firebase ouvertes, webhooks Stripe falsifiables, adresses du serveur que tout le monde peut utiliser), **Travail récent** (ce que ton IA vient de changer, et pourquoi), plans à partir d'un cahier des charges | 10 types de schémas, exports en image et en vidéo, schémas de choses qui ne sont pas du code | Impact d'une modification, un tableau de bord qui s'adapte à ton rôle, graphes de bases de connaissances |
-| **Fonctionne dans** | Claude Code, Codex | Claude Code, Codex, Cursor, OpenCode et d'autres | Claude Code, Codex, Cursor, Copilot, Gemini CLI et d'autres |
-
-**Choisis Floorplan** pour comprendre et contrôler une appli qui est à toi. **Choisis Archify** pour dessiner un schéma pour un document, un exposé ou une décision. **Choisis Understand Anything** pour étudier un gros projet fonction par fonction.
-
-Ils marchent aussi ensemble : cartographie ton appli avec Floorplan, puis dessine un parcours avec Archify pour une présentation.
 
 ## Fonctions
 
@@ -114,7 +99,7 @@ Il y a aussi des **parcours** guidés que tu peux demander avec tes mots, une **
 
 ### Les plans, pour une appli pas encore construite
 
-Floorplan est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/getting-started.md#planifier-une-appli-pas-encore-construite).
+Floorplan est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
 
 ## Voir en images
 
@@ -170,7 +155,7 @@ claude plugin install floorplan-fr@floorplan-fr
 
 (ou, depuis le dépôt Git de cette copie : `claude plugin marketplace add <compte>/floorplan-fr`, si ton Git a accès au dépôt.)
 
-Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/getting-started.md).
+Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/bien-demarrer.md).
 
 ### Codex
 
@@ -232,7 +217,7 @@ flowchart LR
     map -. "mets à jour le floorplan" .-> scan
 ```
 
-Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude ou Codex fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/how-it-works.md).
+Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude ou Codex fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/comment-ca-marche.md).
 
 **Langages :** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, plus les fichiers Vue, Svelte et Astro, avec une prise en charge plus légère des autres.<br>
 **Adresses du serveur :** Express, Fastify, Koa, Hono, Next.js, Firebase Cloud Functions, Flask, FastAPI, Django, net/http de Go, Gin, Echo et chi, Actix, Axum, Spring, et les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.<br>
@@ -240,7 +225,7 @@ Des scripts font le travail mécanique : trouver les dépôts, lire le code dans
 
 ## Ce que ça ajoute à ton projet
 
-Un dossier `floorplan/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/project-files.md).
+Un dossier `floorplan/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md).
 
 ## Confidentialité
 
@@ -251,28 +236,28 @@ Un dossier `floorplan/` qui contient la carte, et rien d'autre. **Il n'est pas e
 - Les questions posées sur la carte passent par la ligne de commande de Claude Code ou par Codex, qui peuvent lire ton code mais pas le modifier. Avec Claude Code, la bulle de questions ne peut pas ouvrir les fichiers de secrets (`.env`, `*.pem`, `*.key`…), mais elle lit le reste de tes fichiers.
 - Le contrôle de santé ne garde aucune partie d'une clé (seulement sa longueur). Il donne des fausses alertes et n'est pas un audit de sécurité.
 
-Plus de détails dans [Confidentialité et sécurité](docs/privacy-and-security.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/is-it-safe.md) liste tout ce que Floorplan fait sur ton ordinateur et ses limites.
+Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-securite.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que Floorplan fait sur ton ordinateur et ses limites.
 
 ## Documentation
 
 | | |
 |---|---|
-| [Pour commencer](docs/getting-started.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
+| [Pour commencer](docs/bien-demarrer.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
 | [Floorplan dans Codex](docs/codex.md) | Installer et utiliser Floorplan dans Codex |
-| [Utiliser la carte](docs/using-the-map.md) | Chaque bouton, vue, raccourci et menu |
-| [Comment ça marche](docs/how-it-works.md) | Le déroulé, la mise en relation des appels, les mises à jour |
-| [Ce qu'il y a dans ton projet](docs/project-files.md) | Chaque fichier créé par Floorplan, et comment le modifier |
-| [Confidentialité et sécurité](docs/privacy-and-security.md) | Ce qui tourne où, et ce qui quitte ta machine |
-| [Est-ce sûr à installer ?](docs/is-it-safe.md) | Ce que fait le plugin, les programmes qu'il lance, ses limites honnêtes |
-| [Dépannage](docs/troubleshooting.md) | Les problèmes courants et leurs solutions |
-| [Développer Floorplan](docs/development.md) | Organisation du dépôt, tests, versions marquées |
+| [Utiliser la carte](docs/utiliser-la-carte.md) | Chaque bouton, vue, raccourci et menu |
+| [Comment ça marche](docs/comment-ca-marche.md) | Le déroulé, la mise en relation des appels, les mises à jour |
+| [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md) | Chaque fichier créé par Floorplan, et comment le modifier |
+| [Confidentialité et sécurité](docs/confidentialite-et-securite.md) | Ce qui tourne où, et ce qui quitte ta machine |
+| [Est-ce sûr à installer ?](docs/est-ce-sur.md) | Ce que fait le plugin, les programmes qu'il lance, ses limites honnêtes |
+| [Dépannage](docs/depannage.md) | Les problèmes courants et leurs solutions |
+| [Développer Floorplan](docs/developpement.md) | Organisation du dépôt, tests, versions marquées |
 
 ## FAQ
 
 <details>
 <summary><b>Est-ce sûr à installer ?</b></summary>
 
-Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne télécharge rien et n'exécute jamais de code venu d'Internet. Il ne se connecte à aucun service extérieur. Un test vérifie tout cela, et tu peux le relancer toi-même. Mais ça ne veut pas dire « sans risque » : Claude lit ton code et l'envoie à Anthropic, et le contrôle de santé n'est pas un audit. Tout est dans [Est-ce sûr à installer ?](docs/is-it-safe.md).
+Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne télécharge rien et n'exécute jamais de code venu d'Internet. Il ne se connecte à aucun service extérieur. Un test vérifie tout cela, et tu peux le relancer toi-même. Mais ça ne veut pas dire « sans risque » : Claude lit ton code et l'envoie à Anthropic, et le contrôle de santé n'est pas un audit. Tout est dans [Est-ce sûr à installer ?](docs/est-ce-sur.md).
 </details>
 
 <details>
@@ -314,7 +299,7 @@ Oui. C'est le même plugin, la même carte et le même contrôle de santé. Chaq
 <details>
 <summary><b>Puis-je l'utiliser avant d'avoir écrit du code ?</b></summary>
 
-Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande un floorplan : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/getting-started.md#planifier-une-appli-pas-encore-construite).
+Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande un floorplan : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
 </details>
 
 <details>
@@ -324,15 +309,9 @@ Oui. Pointe-le sur un monorepo, sur un sous-dossier, ou sur un simple dossier qu
 </details>
 
 <details>
-<summary><b>Quelle différence avec Archify ou Understand Anything ?</b></summary>
-
-Archify dessine des schémas de n'importe quoi, et Understand Anything construit un graphe de connaissances de développeur pour un projet. Floorplan cartographie l'appli que tu as construite, en langage simple, et te dit ce qui est risqué et ce que ton IA vient de changer. Voir [la comparaison](#comparaison-avec-archify-et-understand-anything).
-</details>
-
-<details>
 <summary><b>Pourquoi une version française ?</b></summary>
 
-Cette copie existe pour que le plugin, son code, ses messages et ses réponses soient entièrement en français, par et pour un francophone. Elle n'est pas reliée à l'original : voir [Pour commencer](docs/getting-started.md#reprendre-une-correction-de-lauteur) pour reprendre une correction de l'auteur.
+Cette copie existe pour que le plugin, son code, ses messages et ses réponses soient entièrement en français, par et pour un francophone. Elle n'est pas reliée à l'original : voir [Pour commencer](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur) pour reprendre une correction de l'auteur.
 </details>
 
 ## Signaler un problème

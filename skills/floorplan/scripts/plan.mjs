@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 // floorplan plan : transforme floorplan/plan.json (les fichiers, les adresses du serveur et les liens qu’aurait un système,
-// prévus à partir d’un cahier des charges ou d’une description) en floorplan/.cache/scan.json, de la même forme que
-// ce que scan.mjs écrit pour du vrai code. build.mjs le dessine ensuite comme un plan : la même carte, marquée « prévu ».
+// prévus à partir d’un cahier des charges ou d’une description) en floorplan/.cache/analyse.json, de la même forme que
+// ce que analyser.mjs écrit pour du vrai code. construire.mjs le dessine ensuite comme un plan : la même carte, marquée « prévu ».
 //
 // usage : node plan.mjs [racine] [--plan <fichier>]
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { lireArguments, versPosix, dossierCarte, garderHorsGit } from './lib/common.mjs';
-import { planVersAnalyse } from './lib/blueprint.mjs';
+import { lireArguments, versPosix, dossierCarte, garderHorsGit } from './lib/commun.mjs';
+import { planVersAnalyse } from './lib/ebauche.mjs';
 
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = dossierCarte(racine);
 const fichierPlan = path.resolve(params.plan || path.join(dossierSortie, 'plan.json'));
-const fichierSortie = path.join(dossierSortie, '.cache', 'scan.json');
+const fichierSortie = path.join(dossierSortie, '.cache', 'analyse.json');
 
 const echouer = (message) => { console.error(`✗ ${message}`); process.exit(1); };
-if (!fs.existsSync(fichierPlan)) echouer(`Aucun plan à ${fichierPlan}. Écris-le d’abord (voir references/blueprint.md).`);
+if (!fs.existsSync(fichierPlan)) echouer(`Aucun plan à ${fichierPlan}. Écris-le d’abord (voir references/plan.md).`);
 let plan;
 try { plan = JSON.parse(fs.readFileSync(fichierPlan, 'utf8')); } catch (e) { echouer(`plan.json n’est pas un JSON valide : ${e.message}`); }
 
@@ -51,5 +51,5 @@ const nbEcrans = analyse.files.filter((f) => f.ecrans).length;
 if (nbEcrans) sortie.push(`ÉCRANS  ${nbEcrans} prévu(s)`);
 if (infosPlan.questions.length) sortie.push(`QUESTIONS OUVERTES  ${infosPlan.questions.length} (affichées dans Santé tant qu’elles n’ont pas de réponse)`);
 sortie.push('');
-sortie.push(`✓ écrit ${versPosix(path.relative(racine, fichierSortie))}. Ensuite : lance build.mjs${fs.existsSync(fichierArchi) ? '' : ' une fois floorplan/architecture.json écrit'}.`);
+sortie.push(`✓ écrit ${versPosix(path.relative(racine, fichierSortie))}. Ensuite : lance construire.mjs${fs.existsSync(fichierArchi) ? '' : ' une fois floorplan/architecture.json écrit'}.`);
 console.log(sortie.join('\n'));

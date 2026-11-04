@@ -1,5 +1,5 @@
 // Export : une copie de la carte à partager, en un seul fichier HTML, pour les personnes sans Claude ni Codex.
-// Le serveur de la carte (serve.mjs) la fabrique : la même page sans la bulle de questions, sans demandes à
+// Le serveur de la carte (serveur.mjs) la fabrique : la même page sans la bulle de questions, sans demandes à
 // Claude ou Codex, sans liens vers cet ordinateur, avec en plus les éléments cochés ici. Ce fichier ne parle à
 // la carte que par window.Floorplan.
 (() => {
@@ -11,7 +11,7 @@
   const { h } = CARTE;
   const GRAPHE = CARTE.graphe;
   const EST_UN_PLAN = !!GRAPHE.meta.ebauche;
-  const COMMANDE = 'node floorplan/serve.mjs --export';
+  const COMMANDE = 'node floorplan/serveur.mjs --export';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -47,7 +47,7 @@
       const reponse = await fetch('/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVEUR.token }, body: JSON.stringify({ include: inclus, parcours: parcours }) });
       if (reponse.status === 403) throw new Error('Le serveur de la carte a redémarré depuis l’ouverture de cette page. Recharge la page et réessaie.');
       if (!reponse.ok) throw new Error((await reponse.json().catch(() => ({}))).error || 'Le serveur de la carte n’a pas pu l’exporter.');
-      const nom = /filename="([^"]+)"/.exec(reponse.headers.get('content-disposition') || '')?.[1] || 'floorplan-map.html';
+      const nom = /filename="([^"]+)"/.exec(reponse.headers.get('content-disposition') || '')?.[1] || 'carte-floorplan.html';
       const lien = document.createElement('a');
       lien.href = URL.createObjectURL(await reponse.blob());
       lien.download = nom;

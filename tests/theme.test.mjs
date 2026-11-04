@@ -5,11 +5,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
-import { shopApp, scanAndBuild, cleanup } from './helpers.mjs';
+import { appliBoutique, analyserEtConstruire, nettoyer } from './aides.mjs';
 
 let racine, page;
-before(() => { racine = shopApp(); scanAndBuild(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
-after(() => cleanup(racine));
+before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
+after(() => nettoyer(racine));
 
 const scriptDemarrage = () => {
   const position = page.indexOf("/* Thème : s'exécute avant");

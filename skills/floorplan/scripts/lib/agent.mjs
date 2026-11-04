@@ -1,5 +1,5 @@
 // Quel agent de code fait tourner le skill : Claude Code ou Codex. La carte l’enregistre, pour que sa bulle de questions et
-// ses demandes « Corriger avec … » nomment le bon, et pour que serve.mjs réponde par la même CLI.
+// ses demandes « Corriger avec … » nomment le bon, et pour que serveur.mjs réponde par la même CLI.
 // --agent <nom> (ou FLOORPLAN_AGENT) décide ; sinon chaque agent se reconnaît aux variables qu’il définit
 // pour chaque commande qu’il lance, et tout le reste est pris pour Claude Code. Ajouter un agent, c’est ajouter une entrée ici.
 const DETECTION = {

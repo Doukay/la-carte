@@ -1,6 +1,6 @@
 # Schéma d'architecture.json
 
-`floorplan/architecture.json` décrit la structure : parties, modules, services extérieurs, parcours. Les noms et les descriptions des fichiers et des adresses du serveur prises une à une vont plutôt dans `floorplan/descriptions/*.json` (voir [writing-descriptions.md](writing-descriptions.md)). Les deux sont séparés pour que des agents en parallèle puissent les écrire sans conflit. `build.mjs` vérifie les deux par rapport au scan et signale les problèmes champ par champ.
+`floorplan/architecture.json` décrit la structure : parties, modules, services extérieurs, parcours. Les noms et les descriptions des fichiers et des adresses du serveur prises une à une vont plutôt dans `floorplan/descriptions/*.json` (voir [ecrire-les-descriptions.md](ecrire-les-descriptions.md)). Les deux sont séparés pour que des agents en parallèle puissent les écrire sans conflit. `construire.mjs` vérifie les deux par rapport au scan et signale les problèmes champ par champ.
 
 **Langue.** Tous les textes que ce fichier contient et que la personne verra (`summary`, `label`, `details`, `description`, `note`, `title`, `projet.summary`…) s'écrivent **en français, en langage simple, en tutoyant**, même si le code est en anglais. Les chemins, les méthodes et les URL restent tels quels. Les clés JSON ne se traduisent pas, sauf les trois clés de premier niveau `projet`, `parcours` et `visite`.
 
@@ -104,7 +104,7 @@ Clé de premier niveau : `parcours`.
 
 ## Travail récent
 
-`floorplan/recent-work.json` est un fichier à part, réécrit à chaque création et à chaque mise à jour. Il contient ce sur quoi on vient de travailler, présenté par rapport à ce que la personne avait demandé. La carte donne à ces blocs une étiquette verte « Modifié » ou « Nouveau », affiche « N modifié(s) » sur les parties qui les contiennent, ajoute chaque `note` au survol du bloc, et liste les tâches sous un bouton **Travail récent** et dans le panneau de vue d'ensemble.
+`floorplan/travail-recent.json` est un fichier à part, réécrit à chaque création et à chaque mise à jour. Il contient ce sur quoi on vient de travailler, présenté par rapport à ce que la personne avait demandé. La carte donne à ces blocs une étiquette verte « Modifié » ou « Nouveau », affiche « N modifié(s) » sur les parties qui les contiennent, ajoute chaque `note` au survol du bloc, et liste les tâches sous un bouton **Travail récent** et dans le panneau de vue d'ensemble.
 
 ```json
 {

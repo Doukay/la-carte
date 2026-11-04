@@ -12,11 +12,11 @@ Si le défaut vient visiblement du code d'origine (il existe aussi dans la versi
 
 ## Ce que le plugin peut faire
 
-[Est-ce sûr à installer ?](docs/is-it-safe.md) liste tout ce que Floorplan fait sur ton ordinateur, les programmes qu'il lance, ce qu'il ne fait jamais, et ses limites. [`tests/supply-chain.test.mjs`](tests/supply-chain.test.mjs) le vérifie (`node --test`).
+[Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que Floorplan fait sur ton ordinateur, les programmes qu'il lance, ce qu'il ne fait jamais, et ses limites. [`tests/chaine-securite.test.mjs`](tests/chaine-securite.test.mjs) le vérifie (`node --test`).
 
 ## Dans le périmètre
 
-- le serveur local de la carte (`serve.mjs`) ;
+- le serveur local de la carte (`serveur.mjs`) ;
 - tout ce qui pourrait faire fuir des secrets ou du code source ;
 - tout ce qui écrirait en dehors du dossier `floorplan/` du projet ou enverrait quelque chose sur Internet.
 

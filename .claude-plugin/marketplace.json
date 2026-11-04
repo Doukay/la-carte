@@ -1,17 +1,17 @@
 {
-  "name": "floorplan",
+  "name": "floorplan-fr",
   "owner": {
-    "name": "Hayden Smith",
-    "url": "https://github.com/haydenschmitty"
+    "name": "Floorplan FR",
+    "url": "https://github.com/Doukay/la-carte"
   },
   "metadata": {
-    "description": "Floorplan: an interactive map of your codebase for Claude Code."
+    "description": "Floorplan FR : une carte interactive de ton code pour Claude Code, en français. Traduction non officielle."
   },
   "plugins": [
     {
-      "name": "floorplan",
+      "name": "floorplan-fr",
       "source": "./",
-      "description": "An interactive map of your codebase: every part, file and web request with a plain-English name and description, plus a health check, screens, guided flows and recent-work highlights.",
+      "description": "Une carte interactive de ton code, en français : chaque partie, fichier et appel au serveur avec un nom et une description simples, plus un contrôle de santé, les écrans, des parcours guidés et le travail récent.",
       "category": "productivity"
     }
   ]

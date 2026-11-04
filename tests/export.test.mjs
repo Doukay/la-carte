@@ -1,4 +1,4 @@
-// Exporter une copie de la carte à partager : serve.mjs --export et le bouton Exporter de la carte (POST /api/export)
+// Exporter une copie de la carte à partager : serveur.mjs --export et le bouton Exporter de la carte (POST /api/export)
 // écrivent la même page autonome, marquée comme exportée, sans les détails de cet ordinateur ni le
 // jeton du serveur, et avec seulement les options demandées. La santé et le travail récent sont omis sauf demande.
 import { test, before, after } from 'node:test';
@@ -6,14 +6,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
-import { shopApp, run, readJson, writeJson, cleanup, FAKE_PASSWORD } from './helpers.mjs';
+import { appliBoutique, executer, lireJson, ecrireJson, nettoyer, FAUX_MOT_DE_PASSE } from './aides.mjs';
 
 const JETON_DANS_REMOTE = 'ghp-not-a-real-token-1234';
 let racine, serveur, base, jeton;
-const serveurJs = () => path.join(racine, 'floorplan', 'serve.mjs');
+const serveurJs = () => path.join(racine, 'floorplan', 'serveur.mjs');
 /** Le graphe contenu dans une page exportée. */
 const donneesDe = (html) => JSON.parse(/<script>window\.FLOORPLAN = (.*?);<\/script>/s.exec(html)[1]);
-/** Lance serve.mjs --export avec ces paramètres ; renvoie la page exportée et ce qui a été affiché. */
+/** Lance serveur.mjs --export avec ces paramètres ; renvoie la page exportée et ce qui a été affiché. */
 function exporterCli(...parametres) {
   const sortie = execFileSync(process.execPath, [serveurJs(), '--export', ...parametres], { cwd: racine, encoding: 'utf8' });
   const fichier = /Carte exportée vers (.+)/.exec(sortie)[1].trim();
@@ -21,17 +21,17 @@ function exporterCli(...parametres) {
 }
 
 before(async () => {
-  racine = shopApp();
+  racine = appliBoutique();
   execFileSync('git', ['-C', path.join(racine, 'shop-api'), 'remote', 'add', 'origin', `https://someone:${JETON_DANS_REMOTE}@example.com/shop-api.git`]);
-  const archi = readJson(path.join(racine, 'floorplan', 'architecture.json'));
-  writeJson(path.join(racine, 'floorplan', 'architecture.json'), {
+  const archi = lireJson(path.join(racine, 'floorplan', 'architecture.json'));
+  ecrireJson(path.join(racine, 'floorplan', 'architecture.json'), {
     ...archi,
     annotations: [{ path: 'shop-api/config.js', note: 'Moving to the secrets manager next sprint.' }],
     parcours: [{ id: 'refund', title: 'Refund', description: 'A customer asks for a refund.', steps: [{ node: 'web', note: 'The website asks.' }, { node: 'api', note: 'The server refunds.' }] }],
   });
-  writeJson(path.join(racine, 'floorplan', 'recent-work.json'), { tasks: [{ title: 'Refunds', summary: 'Added refunds.', items: [{ ref: 'shop-api/routes/orders.js', change: 'changed', note: 'Refund endpoint.' }] }] });
-  run('scan.mjs', racine);
-  run('build.mjs', racine, '--no-claude-md');
+  ecrireJson(path.join(racine, 'floorplan', 'travail-recent.json'), { tasks: [{ title: 'Refunds', summary: 'Added refunds.', items: [{ ref: 'shop-api/routes/orders.js', change: 'changed', note: 'Refund endpoint.' }] }] });
+  executer('analyser.mjs', racine);
+  executer('construire.mjs', racine, '--no-claude-md');
 
   const port = 20000 + Math.floor(Math.random() * 20000);
   serveur = spawn(process.execPath, [serveurJs(), '--port', String(port), '--no-open'], {
@@ -47,7 +47,7 @@ before(async () => {
 });
 after(async () => {
   if (serveur && serveur.exitCode === null) await new Promise((resoudre) => { serveur.once('exit', resoudre); serveur.kill(); });
-  cleanup(racine);
+  nettoyer(racine);
 });
 
 test('la carte a une santé, un travail récent, une note, un parcours et un dépôt distant à laisser de côté', () => {
@@ -73,7 +73,7 @@ test('par défaut l’export garde les parcours et les notes, et laisse de côt�
   assert.equal(g.meta.root, null);
   assert.ok(g.meta.repos.every((r) => !('remote' in r)));
   assert.ok(!html.includes(JETON_DANS_REMOTE), 'aucun jeton de connexion venant d’un dépôt distant git');
-  const ici = readJson(path.join(racine, 'floorplan', 'graph.json')).meta.root;
+  const ici = lireJson(path.join(racine, 'floorplan', 'graphe.json')).meta.root;
   assert.ok(ici && !html.includes(ici), 'aucun chemin de dossier de cet ordinateur');
   assert.ok(!html.includes('FLOORPLAN_SERVER='), 'aucun détail du serveur');
   assert.match(sortie, /sans bulle de questions/);
@@ -88,7 +88,7 @@ test('la santé et le travail récent n’entrent que sur demande, avec un avert
   assert.equal(g.recent.items.length, 1);
   assert.match(sortie, /Ne le partage qu’avec des personnes de confiance/);
   // où se trouve un secret, jamais le secret lui-même
-  assert.ok(!html.includes(FAKE_PASSWORD));
+  assert.ok(!html.includes(FAUX_MOT_DE_PASSE));
 });
 
 test('les parcours, la visite guidée et les notes peuvent aussi être laissés de côté', () => {
@@ -103,7 +103,7 @@ test('les parcours, la visite guidée et les notes peuvent aussi être laissés 
 test('la page exportée est toujours la carte entière, prête à ouvrir', () => {
   const { html } = exporterCli(path.join(racine, 'page.html'));
   const g = donneesDe(html);
-  const construit = readJson(path.join(racine, 'floorplan', 'graph.json'));
+  const construit = lireJson(path.join(racine, 'floorplan', 'graphe.json'));
   assert.equal(g.files.length, construit.files.length);
   assert.equal(g.routes.length, construit.routes.length);
   assert.equal(g.links.length, construit.links.length);

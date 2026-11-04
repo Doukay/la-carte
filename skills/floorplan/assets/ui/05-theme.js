@@ -1,5 +1,5 @@
 // Le bouton Thème : Auto (suit ton appareil) -> Clair -> Sombre -> Auto. Le choix est retenu sur cet
-// appareil. Le thème lui-même est choisi par un petit script en haut de viewer.html, avant que rien soit dessiné,
+// appareil. Le thème lui-même est choisi par un petit script en haut de carte.html, avant que rien soit dessiné,
 // pour que la page n'affiche jamais un instant les mauvaises couleurs ; ce fichier ajoute seulement le bouton et le tient à jour.
 (() => {
   const CARTE = window.Floorplan;
