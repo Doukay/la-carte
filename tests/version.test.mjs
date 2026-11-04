@@ -11,7 +11,7 @@ const placeDeMarche = lireJson(path.join(DEPOT, '.claude-plugin', 'marketplace.j
 const lire = (p) => fs.readFileSync(path.join(DEPOT, p), 'utf8');
 
 test('la version du plugin est une version sémantique', () => {
-  assert.match(plugin.version, /^\d+\.\d+\.\d+$/);
+  assert.match(plugin.version, /^\d+\.\d+\.\d+-fr\.\d+$/);
 });
 
 test('la place de marché liste ce plugin, depuis ce dépôt', () => {
