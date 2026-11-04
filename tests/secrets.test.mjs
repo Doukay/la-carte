@@ -20,8 +20,8 @@ test('a hard-coded password is found, with its line, and masked', () => {
 
 test('a password inside an address never reaches the list of outside sites', async () => {
   const { extract } = await lib('extract.mjs');
-  const { hosts } = extract(`fetch("https://bob:${FAKE_PASSWORD}@api.example.com/x")`, 'javascript', 'a.js');
-  assert.deepEqual(hosts.map((h) => h.host), ['api.example.com']);
+  const { hosts } = extract(`fetch("https://bob:${FAKE_PASSWORD}@api.stripe.com/x")`, 'javascript', 'a.js');
+  assert.deepEqual(hosts.map((h) => h.host), ['api.stripe.com']);
 });
 
 test('a known key format is named after its service and shows only its length', () => {
