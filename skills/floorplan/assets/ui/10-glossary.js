@@ -1,140 +1,140 @@
-// floorplan glossary: explains the technical words a non-developer meets on the map.
-// The first time a known term appears in a description (details panel, board title area), it gets a
-// dotted underline; hovering or focusing it shows a one-sentence explanation. Off while
-// "Show technical detail" is on. Talks to the viewer only through window.Floorplan.
+// Glossaire de Floorplan : explique les mots techniques qu'une personne qui n'est pas développeuse rencontre sur la carte.
+// La première fois qu'un terme connu apparaît dans une description (panneau de détails, zone de titre du tableau), il est
+// souligné en pointillés ; le survoler ou le sélectionner affiche une explication en une phrase. Désactivé tant que
+// « Afficher le détail technique » est activé. Ne parle au visualiseur que par window.Floorplan.
 (() => {
   const CARTE = window.Floorplan;
   if (!CARTE) return;
 
-  // [display name, plain explanation, aliases...]. Aliases are matched as whole words, ignoring case,
-  // except those marked with a leading "=" (matched exactly, so "REST" doesn't fire on "the rest").
-  const TERMS = [
-    ['API', 'The way programs talk to each other: one asks for something (prices, an order) and the other answers.', 'API', 'APIs', 'API client'],
-    ['Endpoint', 'One specific request the app can receive, like "mark this order shipped"; each has its own web address.', 'endpoint', 'endpoints'],
-    ['Webhook', 'A message another service sends your app automatically when something happens there, like "a payment went through".', 'webhook', 'webhooks'],
-    ['Server', 'A computer in the cloud that runs your app\'s behind-the-scenes work and answers requests from the screens.', 'server', 'servers', 'main server'],
-    ['Frontend', 'The part of the app people see and click: the screens, buttons and forms in the browser.', 'frontend', 'front end', 'front-end'],
-    ['Backend', 'The behind-the-scenes part of the app that stores the records, applies the rules and talks to other services.', 'backend', 'back end', 'back-end'],
-    ['Database', 'Where the app keeps its records (products, orders, customers) so nothing is lost when it restarts.', 'database', 'databases', 'DB'],
-    ['Record', 'One saved entry in the database, like a single order or customer; a table is the list of all records of one kind.', 'database record', 'database records', 'database table', 'database tables'],
-    ['Model', 'In code, a model describes how one kind of record (an order, a customer) is stored in the database.', 'model', 'models', 'ORM', 'ORM model', 'ORM models', 'data model'],
-    ['Query', 'A question the app asks the database, like "all orders from today that haven\'t shipped".', 'query', 'queries'],
-    ['Queue', 'A waiting line of tasks; work is dropped in and handled one by one in the background so nothing gets lost.', 'queue', 'queues', 'queued', 'outbox', 'message queue'],
-    ['Background job', 'A task that runs on its own behind the scenes, so people don\'t have to wait for it on screen.', 'background job', 'background jobs', 'background task', 'background tasks', 'worker', 'workers'],
-    ['Scheduled job', 'A task that runs automatically on a timetable, like every hour or every night.', 'cron', 'cron job', 'cron jobs', 'scheduled job', 'scheduled jobs', 'scheduler'],
-    ['Environment variable', 'A setting stored outside the code, such as which database or account to use, so it can differ between test and live.', 'environment variable', 'environment variables', 'env var', 'env vars', '.env'],
-    ['Secret', 'A password or key the app uses to sign in to another service; it must never be shared or put in the code.', 'secret', 'secrets', 'API key', 'API keys', 'credentials'],
-    ['Deploy', 'Putting a new version of the app live so people start using it.', 'deploy', 'deploys', 'deployed', 'deployment', 'deployments'],
-    ['Migration', 'A one-time change to how records are stored, like adding a new field to every order.', 'migration', 'migrations'],
-    ['Cache', 'A saved copy of something kept close by so it loads faster instead of being worked out again.', 'cache', 'cached', 'caching'],
-    ['Sign-in', 'Checking who someone is (usually with a password) before letting them in.', 'auth', 'authentication', 'login', 'log in', 'sign-in', 'sign in'],
-    ['Permissions', 'The rules for who is allowed to do what, like only managers issuing refunds.', 'permissions', 'authorization', 'roles', 'RBAC'],
-    ['Session', 'How the app remembers you are signed in, so you don\'t have to type your password on every screen.', 'session', 'sessions'],
-    ['Token', 'A temporary digital pass the app hands out after sign-in and checks on every request.', 'token', 'tokens', 'bearer token', 'access token'],
-    ['SDK', 'A ready-made kit of code a company provides so apps can talk to its service more easily.', 'SDK', 'SDKs'],
-    ['Repository', 'The folder that holds all of a project\'s code and its full history of changes.', 'repository', 'repositories', 'repo', 'repos'],
-    ['Component', 'A reusable building block of the screens, like a button, a table or a whole product editor.', 'component', 'components'],
-    ['Route', 'A web address the app answers: on the screens it\'s a page, on the server it\'s a kind of request.', 'route', 'routes', 'routing', 'App Router'],
-    ['Request', 'A message asking the server to do or fetch something; the server sends back a response with the result.', 'request', 'requests', 'response', 'responses'],
-    ['JSON', 'A simple text format programs use to send data to each other, like a labelled list.', 'JSON'],
-    ['REST', 'A common style for building APIs, where each web address stands for a kind of thing (orders, products).', '=REST', '=RESTful'],
-    ['HTTP method', 'The kind of request: GET reads something, POST creates, PUT or PATCH changes, DELETE removes.', 'HTTP method', 'HTTP methods', '=GET', '=POST', '=PUT', '=PATCH', '=DELETE'],
-    ['HTTP', 'The language browsers and servers use to talk over the web; HTTPS is the encrypted version.', 'HTTP', 'HTTPS'],
-    ['CDN', 'A network of servers around the world that delivers images and files quickly from somewhere near the visitor.', 'CDN', 'CDNs'],
-    ['Storage bucket', 'Cloud file storage for things like product images, uploads and exports.', 'storage bucket', 'bucket', 'buckets', 'S3', 'GCS', 'Cloud Storage'],
-    ['Pub/Sub', 'Google\'s message service: one part of the app posts an event and others pick it up to handle in the background.', 'Pub/Sub', 'PubSub'],
-    ['MCP', 'A standard way to connect AI assistants (like Claude or ChatGPT) to an app so they can look things up in it.', 'MCP', 'MCP server', 'Model Context Protocol'],
-    ['Next.js', 'A popular toolkit for building websites and web apps with React.', 'Next.js', 'NextJS'],
-    ['React', 'A popular library for building interactive screens out of reusable pieces.', '=React'],
-    ['Flask', 'A Python toolkit for building web servers.', 'Flask'],
-    ['SQLAlchemy', 'A Python toolkit that lets the code read and save database records without writing raw database commands.', 'SQLAlchemy'],
-    ['Postgres', 'A widely used database; RDS and Cloud SQL are Amazon\'s and Google\'s hosted versions of it.', 'Postgres', 'PostgreSQL', 'RDS', 'Cloud SQL'],
-    ['Docker', 'A way to package an app with everything it needs so it runs the same on any computer or cloud.', 'Docker', 'container', 'containers'],
-    ['Cloud Run', 'Google\'s service for running an app\'s servers and background jobs in the cloud without managing machines.', 'Cloud Run'],
-    ['Middleware', 'A check every request passes through on its way in, such as "is this person signed in?".', 'middleware'],
-    ['Blueprint', 'In Flask, a group of related requests bundled together, like all the order requests.', 'blueprint', 'blueprints'],
-    ['Tests', 'Automatic checks that the code still does what it should, run before changes go live.', 'test suite', 'unit test', 'unit tests', 'pytest', 'Vitest'],
-    ['Script', 'A small program run by hand for a one-off job, like fixing or importing data.', 'script', 'scripts'],
-    ['OAuth', 'The standard behind "Sign in with…" buttons: it lets one app use another on your behalf without sharing your password.', 'OAuth'],
+  // [nom affiché, explication simple, alias...]. Les alias sont comparés comme des mots entiers, sans tenir compte de la casse,
+  // sauf ceux marqués d'un « = » au début (comparés exactement, pour que « REST » ne se déclenche pas sur « le reste »).
+  const TERMES = [
+    ['API', 'La façon dont des programmes se parlent entre eux : l’un demande quelque chose (des prix, une commande) et l’autre répond.', 'API', 'APIs', 'API client', 'interface de programmation'],
+    ['Adresse du serveur', 'Une demande précise que l’appli peut recevoir, comme « marquer cette commande comme expédiée » ; chacune a sa propre adresse web.', 'endpoint', 'endpoints', 'adresse du serveur', 'adresses du serveur'],
+    ['Webhook', 'Un message qu’un autre service envoie tout seul à ton appli quand quelque chose s’y passe, par exemple « un paiement est passé ».', 'webhook', 'webhooks'],
+    ['Serveur', 'Un ordinateur dans le cloud qui fait le travail de l’appli en coulisses et répond aux demandes venant des écrans.', 'server', 'servers', 'main server', 'serveur', 'serveurs', 'serveur principal'],
+    ['Frontend (ce qu’on voit)', 'La partie de l’appli que les gens voient et sur laquelle ils cliquent : les écrans, boutons et formulaires dans le navigateur.', 'frontend', 'front end', 'front-end', 'partie visible'],
+    ['Backend (les coulisses)', 'La partie de l’appli qui travaille en coulisses : elle garde les données, applique les règles et parle aux autres services.', 'backend', 'back end', 'back-end'],
+    ['Base de données', 'L’endroit où l’appli garde ses données (produits, commandes, clients) pour que rien ne se perde quand elle redémarre.', 'database', 'databases', 'DB', 'base de données', 'bases de données'],
+    ['Enregistrement', 'Une entrée sauvegardée dans la base de données, comme une commande ou un client ; une table est la liste de tous les enregistrements d’un même genre.', 'database record', 'database records', 'database table', 'database tables', 'enregistrement en base', 'enregistrements en base', 'table de la base', 'tables de la base', 'table de base de données', 'tables de base de données'],
+    ['Modèle de données', 'Dans le code, un modèle décrit comment un genre d’enregistrement (une commande, un client) est rangé dans la base de données.', 'model', 'models', 'ORM', 'ORM model', 'ORM models', 'data model', 'modèle de données', 'modèles de données'],
+    ['Requête sur la base', 'Une question que l’appli pose à la base de données, comme « toutes les commandes d’aujourd’hui qui ne sont pas encore parties ».', 'query', 'queries', 'requête SQL', 'requêtes SQL'],
+    ['File d’attente', 'Une file de tâches qui attendent leur tour ; le travail y est déposé puis traité un par un en arrière-plan, pour que rien ne se perde.', 'queue', 'queues', 'queued', 'outbox', 'message queue', 'file d’attente', 'files d’attente', 'file d\'attente', 'files d\'attente'],
+    ['Tâche de fond', 'Une tâche qui tourne toute seule en coulisses, pour que les gens n’aient pas à l’attendre à l’écran.', 'background job', 'background jobs', 'background task', 'background tasks', 'worker', 'workers', 'tâche de fond', 'tâches de fond'],
+    ['Tâche planifiée', 'Une tâche qui se lance automatiquement selon un horaire, par exemple toutes les heures ou chaque nuit.', 'cron', 'cron job', 'cron jobs', 'scheduled job', 'scheduled jobs', 'scheduler', 'tâche planifiée', 'tâches planifiées'],
+    ['Variable d’environnement', 'Un réglage rangé en dehors du code, comme la base de données ou le compte à utiliser, pour qu’il puisse changer entre les tests et la vraie mise en ligne.', 'environment variable', 'environment variables', 'env var', 'env vars', '.env', 'variable d’environnement', 'variables d’environnement', 'variable d\'environnement', 'variables d\'environnement'],
+    ['Secret', 'Un mot de passe ou une clé que l’appli utilise pour se connecter à un autre service ; il ne doit jamais être partagé ni mis dans le code.', 'secret', 'secrets', 'API key', 'API keys', 'credentials', 'clé d’API', 'clés d’API', 'clé d\'API', 'clés d\'API', 'identifiants'],
+    ['Déploiement', 'Mettre en ligne une nouvelle version de l’appli pour que les gens commencent à l’utiliser.', 'deploy', 'deploys', 'deployed', 'deployment', 'deployments', 'déploiement', 'déploiements', 'déployer', 'déployé', 'déployée', 'mise en ligne'],
+    ['Migration', 'Un changement unique dans la façon dont les données sont rangées, comme ajouter un nouveau champ à chaque commande.', 'migration', 'migrations'],
+    ['Cache', 'Une copie gardée à portée de main pour que ça s’affiche plus vite, au lieu de tout recalculer.', 'cache', 'cached', 'caching', 'mise en cache'],
+    ['Se connecter', 'Vérifier qui est la personne (en général avec un mot de passe) avant de la laisser entrer.', 'auth', 'authentication', 'login', 'log in', 'sign-in', 'sign in', 'authentification', 'se connecter', 'page de connexion'],
+    ['Droits d’accès', 'Les règles qui disent qui a le droit de faire quoi, par exemple seuls les responsables peuvent faire un remboursement.', 'permissions', 'authorization', 'roles', 'RBAC', 'droits d’accès', 'droits d\'accès', 'autorisations', 'rôles'],
+    ['Session', 'La façon dont l’appli se souvient que tu es connecté, pour que tu n’aies pas à retaper ton mot de passe sur chaque écran.', 'session', 'sessions'],
+    ['Jeton', 'Un laissez-passer numérique temporaire que l’appli remet après la connexion et vérifie à chaque appel au serveur.', 'token', 'tokens', 'bearer token', 'access token', 'jeton', 'jetons'],
+    ['SDK', 'Un kit de code prêt à l’emploi qu’une entreprise fournit pour que les applis parlent plus facilement à son service.', 'SDK', 'SDKs'],
+    ['Dépôt', 'Le dossier qui contient tout le code d’un projet et tout l’historique de ses modifications.', 'repository', 'repositories', 'repo', 'repos', 'dépôt', 'dépôts'],
+    ['Composant', 'Une brique réutilisable des écrans, comme un bouton, un tableau ou tout un éditeur de produit.', 'component', 'components', 'composant', 'composants'],
+    ['Route', 'Une adresse web à laquelle l’appli répond : côté écrans c’est une page, côté serveur c’est un genre d’appel.', 'route', 'routes', 'routing', 'App Router', 'routage'],
+    ['Appel au serveur', 'Un message qui demande au serveur de faire ou de chercher quelque chose ; le serveur renvoie une réponse avec le résultat.', 'request', 'requests', 'response', 'responses', 'requête', 'requêtes', 'requête HTTP', 'requêtes HTTP', 'appel au serveur', 'appels au serveur', 'réponse du serveur', 'réponses du serveur'],
+    ['JSON', 'Un format texte simple que les programmes utilisent pour s’envoyer des données, comme une liste avec des étiquettes.', 'JSON'],
+    ['REST', 'Un style courant pour construire des API, où chaque adresse web représente un genre de chose (commandes, produits).', '=REST', '=RESTful'],
+    ['Méthode HTTP', 'Le genre de demande : GET lit quelque chose, POST crée, PUT ou PATCH modifie, DELETE supprime.', 'HTTP method', 'HTTP methods', 'méthode HTTP', 'méthodes HTTP', '=GET', '=POST', '=PUT', '=PATCH', '=DELETE'],
+    ['HTTP', 'Le langage que les navigateurs et les serveurs utilisent pour se parler sur le web ; HTTPS est la version chiffrée.', 'HTTP', 'HTTPS'],
+    ['CDN', 'Un réseau de serveurs dans le monde entier qui livre vite les images et les fichiers depuis un endroit proche du visiteur.', 'CDN', 'CDNs'],
+    ['Espace de stockage', 'Un stockage de fichiers dans le cloud, pour les images de produits, les envois de fichiers et les exports.', 'storage bucket', 'bucket', 'buckets', 'S3', 'GCS', 'Cloud Storage', 'espace de stockage', 'espaces de stockage'],
+    ['Pub/Sub', 'Le service de messages de Google : une partie de l’appli publie un événement et d’autres le récupèrent pour le traiter en arrière-plan.', 'Pub/Sub', 'PubSub'],
+    ['MCP', 'Une façon standard de relier des assistants IA (comme Claude ou ChatGPT) à une appli pour qu’ils puissent y chercher des choses.', 'MCP', 'MCP server', 'Model Context Protocol', 'serveur MCP'],
+    ['Next.js', 'Une boîte à outils très utilisée pour construire des sites et des applis web avec React.', 'Next.js', 'NextJS'],
+    ['React', 'Une bibliothèque très utilisée pour construire des écrans interactifs à partir de pièces réutilisables.', '=React'],
+    ['Flask', 'Une boîte à outils Python pour construire des serveurs web.', 'Flask'],
+    ['SQLAlchemy', 'Une boîte à outils Python qui permet au code de lire et d’enregistrer des données de la base sans écrire de commandes brutes pour la base.', 'SQLAlchemy'],
+    ['Postgres', 'Une base de données très utilisée ; RDS et Cloud SQL sont les versions hébergées d’Amazon et de Google.', 'Postgres', 'PostgreSQL', 'RDS', 'Cloud SQL'],
+    ['Docker', 'Une façon d’emballer une appli avec tout ce dont elle a besoin pour qu’elle tourne pareil sur n’importe quel ordinateur ou cloud.', 'Docker', 'container', 'containers', 'conteneur', 'conteneurs'],
+    ['Cloud Run', 'Le service de Google pour faire tourner les serveurs et les tâches de fond d’une appli dans le cloud sans gérer de machines.', 'Cloud Run'],
+    ['Intergiciel (middleware)', 'Une vérification par laquelle passe chaque appel à son arrivée, par exemple « cette personne est-elle connectée ? ».', 'middleware', 'intergiciel'],
+    ['Blueprint Flask', 'Dans Flask, un groupe d’appels liés entre eux, comme tous les appels sur les commandes.', 'blueprint', 'blueprints'],
+    ['Tests', 'Des vérifications automatiques que le code fait toujours ce qu’il doit, lancées avant la mise en ligne des changements.', 'test suite', 'unit test', 'unit tests', 'pytest', 'Vitest', 'tests unitaires', 'test unitaire', 'tests automatiques'],
+    ['Script', 'Un petit programme lancé à la main pour un travail ponctuel, comme corriger ou importer des données.', 'script', 'scripts'],
+    ['OAuth', 'Le standard derrière les boutons « Se connecter avec… » : il permet à une appli d’en utiliser une autre en ton nom sans partager ton mot de passe.', 'OAuth'],
   ];
 
-  const exact = new Map(), loose = new Map(), alts = [];
-  TERMS.forEach(([name, text, ...aliases], i) => {
-    for (let a of aliases) {
+  const exacts = new Map(), souples = new Map(), alternatives = [];
+  TERMES.forEach(([nom, texte, ...alias], i) => {
+    for (let a of alias) {
       const strict = a.startsWith('=');
       if (strict) a = a.slice(1);
-      (strict ? exact : loose).set(strict ? a : a.toLowerCase(), i);
-      alts.push(a);
+      (strict ? exacts : souples).set(strict ? a : a.toLowerCase(), i);
+      alternatives.push(a);
     }
   });
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  alts.sort((a, b) => b.length - a.length);
-  const RE = new RegExp(`(?<![\\w./-])(?:${alts.map(esc).join('|')})(?![\\w/]|-\\w|\\.\\w)`, 'gi');
-  const termOf = (m) => exact.has(m) ? exact.get(m) : loose.has(m.toLowerCase()) ? loose.get(m.toLowerCase()) : -1;
+  const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  alternatives.sort((a, b) => b.length - a.length);
+  const MOTIF = new RegExp(`(?<![\\w./-])(?:${alternatives.map(echapper).join('|')})(?![\\w/]|-\\w|\\.\\w)`, 'gi');
+  const termeDe = (m) => exacts.has(m) ? exacts.get(m) : souples.has(m.toLowerCase()) ? souples.get(m.toLowerCase()) : -1;
 
-  // Where to look, and what to leave alone.
-  const TARGETS = '.pd, .rd, .callout';
-  const SKIP = 'a[href], button, code, pre, kbd, samp, input, textarea, select, [contenteditable], .tag, .rp, .pp, .method, .kbd, .sc-term, [data-noglossary]';
-  const CLICKABLE = 'a, [data-go], [data-sel], [data-flow], [data-open], [role="button"]';
-  const isMono = (el) => /mono|monospace/i.test(el.style?.fontFamily || '');
+  // Où chercher, et ce qu'il faut laisser tranquille.
+  const CIBLES = '.pd, .rd, .callout';
+  const IGNORES = 'a[href], button, code, pre, kbd, samp, input, textarea, select, [contenteditable], .tag, .rp, .pp, .method, .kbd, .sc-term, [data-noglossary]';
+  const CLIQUABLES = 'a, [data-go], [data-sel], [data-flow], [data-open], [role="button"]';
+  const estMono = (el) => /mono|monospace/i.test(el.style?.fontFamily || '');
 
-  function annotate(scope, targets) {
-    if (!scope || CARTE.technique()) return;
-    const used = new Set([...scope.querySelectorAll('.sc-term')].map((s) => +s.dataset.term)); // max one per term per scope
-    const skipped = (from, stop) => { for (let p = from; p && p !== stop; p = p.parentElement) if (p.matches(SKIP) || isMono(p)) return true; return false; };
-    for (const el of targets) {
-      if (skipped(el, scope)) continue;
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-        acceptNode: (t) => !t.nodeValue.trim() || skipped(t.parentElement, el) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+  function annoter(portee, cibles) {
+    if (!portee || CARTE.technique()) return;
+    const utilises = new Set([...portee.querySelectorAll('.sc-term')].map((s) => +s.dataset.term)); // un seul par terme et par zone
+    const aIgnorer = (depart, arret) => { for (let p = depart; p && p !== arret; p = p.parentElement) if (p.matches(IGNORES) || estMono(p)) return true; return false; };
+    for (const el of cibles) {
+      if (aIgnorer(el, portee)) continue;
+      const parcoureur = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+        acceptNode: (t) => !t.nodeValue.trim() || aIgnorer(t.parentElement, el) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
       });
-      const texts = [];
-      while (walker.nextNode()) texts.push(walker.currentNode);
-      for (const t of texts) wrapIn(t, used);
+      const textes = [];
+      while (parcoureur.nextNode()) textes.push(parcoureur.currentNode);
+      for (const t of textes) envelopper(t, utilises);
     }
   }
-  function wrapIn(textNode, used) {
-    let node = textNode;
-    while (node) {
-      RE.lastIndex = 0;
-      let m, hit = null;
-      while ((m = RE.exec(node.nodeValue))) {
-        const i = termOf(m[0]);
-        if (i >= 0 && !used.has(i)) { hit = { m, i }; break; }
+  function envelopper(noeudTexte, utilises) {
+    let noeud = noeudTexte;
+    while (noeud) {
+      MOTIF.lastIndex = 0;
+      let m, trouve = null;
+      while ((m = MOTIF.exec(noeud.nodeValue))) {
+        const i = termeDe(m[0]);
+        if (i >= 0 && !utilises.has(i)) { trouve = { m, i }; break; }
       }
-      if (!hit) return;
-      used.add(hit.i);
-      const word = node.splitText(hit.m.index);
-      const rest = word.splitText(hit.m[0].length);
-      const span = document.createElement('span');
-      span.className = 'sc-term';
-      span.dataset.term = String(hit.i);
-      if (!word.parentElement.closest(CLICKABLE)) span.tabIndex = 0; // inside clickable rows: hover only, clicks pass through
-      word.replaceWith(span);
-      span.appendChild(word);
-      node = rest;
+      if (!trouve) return;
+      utilises.add(trouve.i);
+      const mot = noeud.splitText(trouve.m.index);
+      const reste = mot.splitText(trouve.m[0].length);
+      const etiquette = document.createElement('span');
+      etiquette.className = 'sc-term';
+      etiquette.dataset.term = String(trouve.i);
+      if (!mot.parentElement.closest(CLIQUABLES)) etiquette.tabIndex = 0; // dans les lignes cliquables : survol seulement, les clics passent au travers
+      mot.replaceWith(etiquette);
+      etiquette.appendChild(mot);
+      noeud = reste;
     }
   }
-  function strip(scope) {
-    if (!scope) return;
-    for (const s of scope.querySelectorAll('.sc-term')) s.replaceWith(...s.childNodes);
-    scope.normalize();
+  function retirer(portee) {
+    if (!portee) return;
+    for (const s of portee.querySelectorAll('.sc-term')) s.replaceWith(...s.childNodes);
+    portee.normalize();
   }
 
-  const panelEl = () => document.getElementById('panel');
-  const contextEl = () => document.getElementById('context');
-  const doPanel = () => { const p = panelEl(); if (p) annotate(p, p.querySelectorAll(TARGETS)); };
-  const doContext = () => { const c = contextEl(); if (c) annotate(c, c.querySelectorAll('p, .callout')); };
+  const elementPanneau = () => document.getElementById('panel');
+  const elementContexte = () => document.getElementById('context');
+  const traiterPanneau = () => { const p = elementPanneau(); if (p) annoter(p, p.querySelectorAll(CIBLES)); };
+  const traiterContexte = () => { const c = elementContexte(); if (c) annoter(c, c.querySelectorAll('p, .callout')); };
 
-  // Run after the viewer and any other extension listeners have finished filling the DOM.
-  CARTE.sur('panel', () => { hide(true); queueMicrotask(doPanel); });
-  CARTE.sur('render', () => { hide(true); queueMicrotask(doContext); });
+  // Lancé après que le visualiseur et les autres extensions ont fini de remplir la page.
+  CARTE.sur('panel', () => { masquer(true); queueMicrotask(traiterPanneau); });
+  CARTE.sur('render', () => { masquer(true); queueMicrotask(traiterContexte); });
   CARTE.sur('technical', (on) => {
-    hide(true);
-    if (on) { strip(panelEl()); strip(contextEl()); }
-    else { queueMicrotask(() => { strip(panelEl()); strip(contextEl()); doPanel(); doContext(); }); }
+    masquer(true);
+    if (on) { retirer(elementPanneau()); retirer(elementContexte()); }
+    else { queueMicrotask(() => { retirer(elementPanneau()); retirer(elementContexte()); traiterPanneau(); traiterContexte(); }); }
   });
 
-  // ---------- popover ----------
+  // ---------- bulle d'explication ----------
   const style = document.createElement('style');
   style.textContent = `
 .sc-term { pointer-events: auto; cursor: help; border-radius: 4px; text-decoration-line: underline; text-decoration-style: dotted; text-decoration-thickness: 1px; text-underline-offset: 3px;
@@ -149,46 +149,46 @@
 #sc-gloss b { display: block; color: var(--text); font-weight: 600; margin-bottom: 2px; }`;
   document.head.appendChild(style);
 
-  const pop = document.createElement('div');
-  pop.id = 'sc-gloss';
-  pop.className = 'glass';
-  pop.setAttribute('role', 'tooltip');
-  document.body.appendChild(pop);
+  const bulle = document.createElement('div');
+  bulle.id = 'sc-gloss';
+  bulle.className = 'glass';
+  bulle.setAttribute('role', 'tooltip');
+  document.body.appendChild(bulle);
 
-  let current = null, showT = 0, hideT = 0;
-  function show(el) {
-    clearTimeout(hideT);
-    if (current === el) return;
-    const term = TERMS[+el.dataset.term];
-    if (!term) return;
-    current?.classList.remove('on'); current?.removeAttribute('aria-describedby');
-    current = el;
+  let courant = null, minuteurAffichage = 0, minuteurMasquage = 0;
+  function afficher(el) {
+    clearTimeout(minuteurMasquage);
+    if (courant === el) return;
+    const terme = TERMES[+el.dataset.term];
+    if (!terme) return;
+    courant?.classList.remove('on'); courant?.removeAttribute('aria-describedby');
+    courant = el;
     el.classList.add('on');
     el.setAttribute('aria-describedby', 'sc-gloss');
-    pop.innerHTML = `<b>${CARTE.h(term[0])}</b>${CARTE.h(term[1])}`;
+    bulle.innerHTML = `<b>${CARTE.h(terme[0])}</b>${CARTE.h(terme[1])}`;
     const r = el.getClientRects()[0] || el.getBoundingClientRect();
-    const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 8;
-    const x = Math.max(12, Math.min(r.left, innerWidth - pw - 12));
-    const below = r.bottom + gap + ph <= innerHeight - 12;
-    const y = below ? r.bottom + gap : Math.max(12, r.top - gap - ph);
-    pop.style.left = `${Math.round(x)}px`;
-    pop.style.top = `${Math.round(y)}px`;
-    pop.classList.add('on');
+    const largeurBulle = bulle.offsetWidth, hauteurBulle = bulle.offsetHeight, ecart = 8;
+    const x = Math.max(12, Math.min(r.left, innerWidth - largeurBulle - 12));
+    const enDessous = r.bottom + ecart + hauteurBulle <= innerHeight - 12;
+    const y = enDessous ? r.bottom + ecart : Math.max(12, r.top - ecart - hauteurBulle);
+    bulle.style.left = `${Math.round(x)}px`;
+    bulle.style.top = `${Math.round(y)}px`;
+    bulle.classList.add('on');
   }
-  function hide(now) {
-    clearTimeout(showT); clearTimeout(hideT);
-    const go = () => { pop.classList.remove('on'); current?.classList.remove('on'); current?.removeAttribute('aria-describedby'); current = null; };
-    if (now === true) go(); else hideT = setTimeout(go, 90);
+  function masquer(immediat) {
+    clearTimeout(minuteurAffichage); clearTimeout(minuteurMasquage);
+    const terminer = () => { bulle.classList.remove('on'); courant?.classList.remove('on'); courant?.removeAttribute('aria-describedby'); courant = null; };
+    if (immediat === true) terminer(); else minuteurMasquage = setTimeout(terminer, 90);
   }
-  const termAt = (ev) => ev.target instanceof Element ? ev.target.closest('.sc-term') : null;
-  document.addEventListener('mouseover', (ev) => { const t = termAt(ev); if (!t) return; clearTimeout(showT); showT = setTimeout(() => show(t), current ? 0 : 140); });
-  document.addEventListener('mouseout', (ev) => { const t = termAt(ev); if (t && !t.contains(ev.relatedTarget)) { clearTimeout(showT); hide(); } });
-  document.addEventListener('focusin', (ev) => { const t = termAt(ev); if (t) show(t); });
-  document.addEventListener('focusout', (ev) => { if (termAt(ev)) hide(); });
-  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && current) hide(true); });
-  document.addEventListener('scroll', () => { if (current) hide(true); }, true);
-  addEventListener('resize', () => { if (current) hide(true); });
+  const termeSous = (ev) => ev.target instanceof Element ? ev.target.closest('.sc-term') : null;
+  document.addEventListener('mouseover', (ev) => { const t = termeSous(ev); if (!t) return; clearTimeout(minuteurAffichage); minuteurAffichage = setTimeout(() => afficher(t), courant ? 0 : 140); });
+  document.addEventListener('mouseout', (ev) => { const t = termeSous(ev); if (t && !t.contains(ev.relatedTarget)) { clearTimeout(minuteurAffichage); masquer(); } });
+  document.addEventListener('focusin', (ev) => { const t = termeSous(ev); if (t) afficher(t); });
+  document.addEventListener('focusout', (ev) => { if (termeSous(ev)) masquer(); });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && courant) masquer(true); });
+  document.addEventListener('scroll', () => { if (courant) masquer(true); }, true);
+  addEventListener('resize', () => { if (courant) masquer(true); });
 
-  // initial pass, in case the first render/panel happened before this script ran
-  if (document.readyState !== 'loading') queueMicrotask(() => { doPanel(); doContext(); });
+  // premier passage, au cas où le premier affichage ou panneau aurait eu lieu avant ce script
+  if (document.readyState !== 'loading') queueMicrotask(() => { traiterPanneau(); traiterContexte(); });
 })();

@@ -1,133 +1,133 @@
 #!/usr/bin/env node
-// floorplan describer: turn the built graph into per-module worksheets that Claude (or parallel
-// subagents) use to write a human-readable name + one-line description for every file and route.
+// floorplan describe : transforme le graphe construit en fiches de travail par module, que Claude (ou des sous-agents
+// en parallèle) utilise pour écrire un nom lisible et une description d’une ligne pour chaque fichier et chaque route.
 //
-// usage: node describe.mjs [root]                  write worksheets + description skeletons, print an index
-//        node describe.mjs [root] --all            include entries that already have descriptions
-//        node describe.mjs [root] --max-files 40   files per worksheet before splitting into parts
+// usage : node describe.mjs [racine]                  écrit les fiches de travail et les squelettes de description, affiche un index
+//        node describe.mjs [racine] --all            inclut aussi les entrées qui ont déjà une description
+//        node describe.mjs [racine] --max-files 40   nombre de fichiers par fiche avant de la découper en morceaux
 //
-// Run build.mjs first: worksheets are generated from floorplan/graph.json.
+// Lance d’abord build.mjs : les fiches de travail sont générées à partir de floorplan/graph.json.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { lireArguments, formaterNombre, dossierCarte } from './lib/common.mjs';
 import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/names.mjs';
 
-const args = lireArguments(process.argv.slice(2));
-const root = path.resolve(args._[0] || '.');
-const outDir = dossierCarte(root);
-const graphFile = path.join(outDir, 'graph.json');
-if (!fs.existsSync(graphFile)) { console.error('✗ No floorplan/graph.json. Run build.mjs first.'); process.exit(1); }
-const g = JSON.parse(fs.readFileSync(graphFile, 'utf8'));
-const maxFiles = Number(args['max-files']) || 40;
-const wsDir = path.join(outDir, '.cache', 'worksheets');
-const descDir = path.join(outDir, 'descriptions');
-fs.mkdirSync(wsDir, { recursive: true });
-fs.mkdirSync(descDir, { recursive: true });
-for (const f of fs.readdirSync(wsDir)) fs.unlinkSync(path.join(wsDir, f));
+const params = lireArguments(process.argv.slice(2));
+const racine = path.resolve(params._[0] || '.');
+const dossierSortie = dossierCarte(racine);
+const fichierGraphe = path.join(dossierSortie, 'graph.json');
+if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de floorplan/graph.json. Lance d’abord build.mjs.'); process.exit(1); }
+const g = JSON.parse(fs.readFileSync(fichierGraphe, 'utf8'));
+const maxFichiers = Number(params['max-files']) || 40;
+const dossierFiches = path.join(dossierSortie, '.cache', 'worksheets');
+const dossierDescriptions = path.join(dossierSortie, 'descriptions');
+fs.mkdirSync(dossierFiches, { recursive: true });
+fs.mkdirSync(dossierDescriptions, { recursive: true });
+for (const f of fs.readdirSync(dossierFiches)) fs.unlinkSync(path.join(dossierFiches, f));
 
-const nodes = new Map(g.nodes.map((n) => [n.id, n]));
-const fileByPath = new Map(g.files.map((f) => [f.p, f]));
-const label = (id) => nodes.get(id)?.label || id;
-// Who the map is written for (architecture.json "audience", copied into graph.meta by build.mjs).
-const audience = g.meta?.audience === 'developers' ? 'developers' : 'everyone';
-const STYLE = audience === 'developers'
-  ? 'technical style for engineers: name the frameworks, patterns and mechanics where they help.'
-  : 'plain language for a non-technical owner: what it does for the business or its users, in everyday words, still specific. No jargon (endpoint, ORM, blueprint, webhook, worker…): the path and method/URL are already shown next to it. See "Plain language" in references/writing-descriptions.md.';
+const partiesParId = new Map(g.nodes.map((n) => [n.id, n]));
+const fichierParChemin = new Map(g.files.map((f) => [f.p, f]));
+const etiquette = (id) => partiesParId.get(id)?.label || id;
+// Pour qui la carte est écrite (le "audience" de architecture.json, copié dans graph.meta par build.mjs).
+const publicCible = g.meta?.audience === 'developers' ? 'developers' : 'everyone';
+const STYLE = publicCible === 'developers'
+  ? 'un style technique pour des ingénieurs : nomme les frameworks, les patterns et les mécanismes quand ça aide.'
+  : 'un langage simple pour un propriétaire non technique : ce que ça fait pour l’activité ou pour ses utilisateurs, avec des mots de tous les jours, mais précis. Pas de jargon (endpoint, ORM, blueprint, webhook, worker…) : le chemin et la méthode ou l’URL sont déjà affichés à côté. Voir « Langage simple » dans references/writing-descriptions.md.';
 
-// file -> neighbours, summarised by owning node
-const usesOf = new Map(), usedBy = new Map();
-const bump = (m, k, v) => { if (!m.has(k)) m.set(k, new Map()); m.get(k).set(v, (m.get(k).get(v) || 0) + 1); };
+// fichier -> voisins, résumés par partie propriétaire
+const utilisations = new Map(), utilisateurs = new Map();
+const incrementer = (m, k, v) => { if (!m.has(k)) m.set(k, new Map()); m.get(k).set(v, (m.get(k).get(v) || 0) + 1); };
 for (const l of g.links) {
   if (!l.a.startsWith('f:')) continue;
   const a = l.a.slice(2);
-  const bNode = l.b.startsWith('f:') ? fileByPath.get(l.b.slice(2))?.n : l.b.slice(2);
-  if (bNode) bump(usesOf, a, label(bNode));
-  if (l.b.startsWith('f:')) { const aNode = fileByPath.get(a)?.n; if (aNode) bump(usedBy, l.b.slice(2), label(aNode)); }
+  const partieB = l.b.startsWith('f:') ? fichierParChemin.get(l.b.slice(2))?.n : l.b.slice(2);
+  if (partieB) incrementer(utilisations, a, etiquette(partieB));
+  if (l.b.startsWith('f:')) { const partieA = fichierParChemin.get(a)?.n; if (partieA) incrementer(utilisateurs, l.b.slice(2), etiquette(partieA)); }
 }
-const top = (m, n = 5) => m ? [...m.entries()].sort((x, y) => y[1] - x[1]).slice(0, n).map(([k, v]) => `${k}${v > 1 ? ` ×${v}` : ''}`).join(', ') : '';
+const principaux = (m, n = 5) => m ? [...m.entries()].sort((x, y) => y[1] - x[1]).slice(0, n).map(([k, v]) => `${k}${v > 1 ? ` ×${v}` : ''}`).join(', ') : '';
 
-const routesByFile = new Map();
-for (const r of g.routes || []) { if (!routesByFile.has(r.f)) routesByFile.set(r.f, []); routesByFile.get(r.f).push(r); }
+const routesParFichier = new Map();
+for (const r of g.routes || []) { if (!routesParFichier.has(r.f)) routesParFichier.set(r.f, []); routesParFichier.get(r.f).push(r); }
 
-const needs = (f) => args.all || f.auto || f.review;
-const byNode = new Map();
+const aBesoin = (f) => params.all || f.auto || f.review;
+const parPartie = new Map();
 for (const f of g.files) {
-  const rs = routesByFile.get(f.p) || [];
-  if (!needs(f) && !rs.some((r) => args.all || r.auto || r.review)) continue;
-  if (!byNode.has(f.n)) byNode.set(f.n, []);
-  byNode.get(f.n).push(f);
+  const routesFichier = routesParFichier.get(f.p) || [];
+  if (!aBesoin(f) && !routesFichier.some((r) => params.all || r.auto || r.review)) continue;
+  if (!parPartie.has(f.n)) parPartie.set(f.n, []);
+  parPartie.get(f.n).push(f);
 }
 
 const index = [];
-for (const [nid, list] of byNode) {
-  list.sort((a, b) => a.p.localeCompare(b.p));
-  // Split into parts of at most maxFiles files or ~100 routes, whichever comes first.
-  const chunks = [[]];
-  let routesInChunk = 0;
-  for (const f of list) {
-    const nr = (routesByFile.get(f.p) || []).length;
-    const cur = chunks[chunks.length - 1];
-    if (cur.length && (cur.length >= maxFiles || routesInChunk + nr > 100)) { chunks.push([]); routesInChunk = 0; }
-    chunks[chunks.length - 1].push(f);
-    routesInChunk += nr;
+for (const [idPartie, liste] of parPartie) {
+  liste.sort((a, b) => a.p.localeCompare(b.p));
+  // Découper en morceaux d’au plus maxFichiers fichiers ou ~100 routes, au premier des deux atteint.
+  const morceaux = [[]];
+  let routesDansMorceau = 0;
+  for (const f of liste) {
+    const nbRoutes = (routesParFichier.get(f.p) || []).length;
+    const courant = morceaux[morceaux.length - 1];
+    if (courant.length && (courant.length >= maxFichiers || routesDansMorceau + nbRoutes > 100)) { morceaux.push([]); routesDansMorceau = 0; }
+    morceaux[morceaux.length - 1].push(f);
+    routesDansMorceau += nbRoutes;
   }
-  const parts = chunks.length;
-  for (let i = 0; i < parts; i++) {
-    const chunk = chunks[i];
-    const key = parts > 1 ? `${nid}--${i + 1}` : nid;
-    const descFile = path.join(descDir, `${key}.json`);
-    const n = nodes.get(nid);
-    const out = [];
-    out.push(`# Worksheet ${key}: ${n?.label || nid}${parts > 1 ? ` (part ${i + 1}/${parts})` : ''}`);
-    out.push(`Audience: ${audience}. Write in ${STYLE}`);
-    if (n?.summary) out.push(`Module: ${n.summary}`);
-    out.push(`Write to: floorplan/descriptions/${key}.json (a skeleton is already there; fill in every "description", improve every "name").`);
-    out.push('Entries marked REVIEW already have a description but their code changed: update name/description if the change matters, then delete the "review" field. Entries not listed here are fine; leave them alone.');
-    out.push('');
-    let routeCount = 0;
-    for (const f of chunk) {
-      out.push(`## ${f.p}  (${formaterNombre(f.loc)} loc, ${f.l})${f.review ? '  REVIEW' : !needs(f) ? '  (already described; only its routes need work)' : ''}`);
-      if (f.review) out.push(`current: ${f.name} — ${f.d}
-changed: ${f.review}`);
-      if (f.doc) out.push(`doc: ${f.doc}`);
+  const nbMorceaux = morceaux.length;
+  for (let i = 0; i < nbMorceaux; i++) {
+    const morceau = morceaux[i];
+    const cle = nbMorceaux > 1 ? `${idPartie}--${i + 1}` : idPartie;
+    const fichierDescription = path.join(dossierDescriptions, `${cle}.json`);
+    const n = partiesParId.get(idPartie);
+    const sortie = [];
+    sortie.push(`# Fiche de travail ${cle} : ${n?.label || idPartie}${nbMorceaux > 1 ? ` (morceau ${i + 1}/${nbMorceaux})` : ''}`);
+    sortie.push(`Public : ${publicCible}. Écris en français, avec ${STYLE}`);
+    if (n?.summary) sortie.push(`Module : ${n.summary}`);
+    sortie.push(`À écrire dans : floorplan/descriptions/${cle}.json (un squelette y est déjà ; remplis chaque "description", améliore chaque "name").`);
+    sortie.push('Les entrées marquées À REVOIR ont déjà une description mais leur code a changé : mets à jour name et description si le changement compte, puis supprime le champ "review". Les entrées absentes de cette fiche sont bonnes : n’y touche pas.');
+    sortie.push('');
+    let nbRoutesFiche = 0;
+    for (const f of morceau) {
+      sortie.push(`## ${f.p}  (${formaterNombre(f.loc)} lignes, ${f.l})${f.review ? '  À REVOIR' : !aBesoin(f) ? '  (déjà décrit ; seules ses routes sont à traiter)' : ''}`);
+      if (f.review) sortie.push(`actuel : ${f.name} — ${f.d}
+changement : ${f.review}`);
+      if (f.doc) sortie.push(`doc : ${f.doc}`);
       if (f.s?.length) {
-        const syms = f.s.slice(0, 12).map((s) => `${s[0]}${s[1] === 'function' ? '()' : ''}${s[4] ? ` (${s[4]})` : ''}`);
-        out.push(`defines: ${syms.join('; ')}${f.s.length > 12 ? `; … +${f.s.length - 12}` : ''}`);
+        const symboles = f.s.slice(0, 12).map((s) => `${s[0]}${s[1] === 'function' ? '()' : ''}${s[4] ? ` (${s[4]})` : ''}`);
+        sortie.push(`définit : ${symboles.join('; ')}${f.s.length > 12 ? `; … +${f.s.length - 12}` : ''}`);
       }
-      const u = top(usesOf.get(f.p)), b = top(usedBy.get(f.p));
-      if (u) out.push(`uses: ${u}`);
-      if (b) out.push(`used by: ${b}`);
-      for (const r of routesByFile.get(f.p) || []) {
-        routeCount++;
-        const mark = r.review ? `  REVIEW (${r.review}); current: ${r.name} — ${r.d}` : r.auto ? '  NEW' : '  (described)';
-        out.push(`route: ${cleRoute({ method: r.m, path: r.p })}  handler ${r.h || '?'}${r.doc ? ` (${r.doc})` : ''}${mark}`);
+      const u = principaux(utilisations.get(f.p)), b = principaux(utilisateurs.get(f.p));
+      if (u) sortie.push(`utilise : ${u}`);
+      if (b) sortie.push(`utilisé par : ${b}`);
+      for (const r of routesParFichier.get(f.p) || []) {
+        nbRoutesFiche++;
+        const marque = r.review ? `  À REVOIR (${r.review}) ; actuel : ${r.name} — ${r.d}` : r.auto ? '  NOUVEAU' : '  (décrit)';
+        sortie.push(`adresse du serveur : ${cleRoute({ method: r.m, path: r.p })}  gestionnaire ${r.h || '?'}${r.doc ? ` (${r.doc})` : ''}${marque}`);
       }
-      out.push('');
+      sortie.push('');
     }
-    fs.writeFileSync(path.join(wsDir, `${key}.md`), out.join('\n'));
+    fs.writeFileSync(path.join(dossierFiches, `${cle}.md`), sortie.join('\n'));
 
-    // skeleton: keep anything already written, add missing keys
-    let existing = {};
-    try { existing = JSON.parse(fs.readFileSync(descFile, 'utf8')); } catch {}
-    const skel = { files: { ...(existing.files || {}) }, routes: { ...(existing.routes || {}) } };
-    for (const f of chunk) {
-      if (!skel.files[f.p]) skel.files[f.p] = { name: f.auto ? nomFichierParDefaut(f.p) : f.name, description: f.auto ? '' : f.d };
-      for (const r of routesByFile.get(f.p) || []) {
+    // squelette : garder tout ce qui est déjà écrit, ajouter les clés manquantes
+    let existant = {};
+    try { existant = JSON.parse(fs.readFileSync(fichierDescription, 'utf8')); } catch {}
+    const squelette = { files: { ...(existant.files || {}) }, routes: { ...(existant.routes || {}) } };
+    for (const f of morceau) {
+      if (!squelette.files[f.p]) squelette.files[f.p] = { name: f.auto ? nomFichierParDefaut(f.p) : f.name, description: f.auto ? '' : f.d };
+      for (const r of routesParFichier.get(f.p) || []) {
         const k = cleRoute({ method: r.m, path: r.p });
-        if (!skel.routes[k]) skel.routes[k] = { name: r.auto ? nomRouteParDefaut({ handler: r.h, method: r.m, path: r.p }) : r.name, description: r.auto ? '' : r.d };
+        if (!squelette.routes[k]) squelette.routes[k] = { name: r.auto ? nomRouteParDefaut({ handler: r.h, method: r.m, path: r.p }) : r.name, description: r.auto ? '' : r.d };
       }
     }
-    if (!Object.keys(skel.routes).length) delete skel.routes;
-    fs.writeFileSync(descFile, JSON.stringify(skel, null, 2) + '\n');
-    index.push({ key, node: n?.label || nid, files: chunk.length, routes: routeCount, loc: chunk.reduce((s, f) => s + f.loc, 0) });
+    if (!Object.keys(squelette.routes).length) delete squelette.routes;
+    fs.writeFileSync(fichierDescription, JSON.stringify(squelette, null, 2) + '\n');
+    index.push({ key: cle, node: n?.label || idPartie, files: morceau.length, routes: nbRoutesFiche, loc: morceau.reduce((s, f) => s + f.loc, 0) });
   }
 }
 
-if (!index.length) { console.log('✓ Every file and route already has a description. Use --all to regenerate worksheets for everything.'); process.exit(0); }
-const totals = index.reduce((s, w) => ({ files: s.files + w.files, routes: s.routes + w.routes }), { files: 0, routes: 0 });
-console.log(`${index.length} worksheet(s) in floorplan/.cache/worksheets/ covering ${totals.files} files and ${totals.routes} routes still to describe.`);
-console.log('Each has a matching skeleton in floorplan/descriptions/<key>.json. Fill those in, then run build.mjs.');
-console.log(`Audience: ${audience}. Write in ${STYLE}\n`);
-console.log('key'.padEnd(34) + 'files'.padStart(6) + 'routes'.padStart(8) + 'loc'.padStart(8) + '  module');
-for (const w of index.sort((a, b) => b.files - a.files)) console.log(w.key.padEnd(34) + String(w.files).padStart(6) + String(w.routes).padStart(8) + formaterNombre(w.loc).padStart(8) + '  ' + w.node);
+if (!index.length) { console.log('✓ Chaque fichier et chaque route a déjà une description. Utilise --all pour régénérer les fiches de travail de tout.'); process.exit(0); }
+const totaux = index.reduce((s, w) => ({ files: s.files + w.files, routes: s.routes + w.routes }), { files: 0, routes: 0 });
+console.log(`${index.length} fiche(s) de travail dans floorplan/.cache/worksheets/, pour ${totaux.files} fichiers et ${totaux.routes} routes encore à décrire.`);
+console.log('Chacune a un squelette correspondant dans floorplan/descriptions/<clé>.json. Remplis-les, puis lance build.mjs.');
+console.log(`Public : ${publicCible}. Écris en français, avec ${STYLE}\n`);
+console.log('clé'.padEnd(34) + 'fichiers'.padStart(9) + 'routes'.padStart(8) + 'lignes'.padStart(8) + '  module');
+for (const w of index.sort((a, b) => b.files - a.files)) console.log(w.key.padEnd(34) + String(w.files).padStart(9) + String(w.routes).padStart(8) + formaterNombre(w.loc).padStart(8) + '  ' + w.node);

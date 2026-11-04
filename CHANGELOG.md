@@ -1,5 +1,25 @@
 # Changelog
 
+> **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
+
+## Version française
+
+Cette copie est partie de la version 0.6.3 de l'auteur (marque Git `auteur-0.6.3`). Elle n'est reliée à aucune de ses mises à jour : une correction de l'auteur se reprend à la main (voir [Reprendre une correction de l'auteur](docs/getting-started.md#reprendre-une-correction-de-lauteur)). Rien n'a encore été repris de ses versions suivantes.
+
+- **Tout est réécrit en français** : noms dans le code, commentaires, textes que voit la personne (en la tutoyant, en langage simple), consignes envoyées à Claude (qui répond en français), README et guides de `docs/`. Le code n'est donc plus identique à celui de l'auteur, sauf le moteur de mise en page `elk.bundled.js` (elkjs 0.9.3), toujours identique à celui de npm.
+- **Plus aucun envoi vers l'extérieur** :
+  - la liste d'attente « Floorplan Cloud » est retirée ;
+  - le signalement d'une fausse alerte à l'auteur est retiré ; le bouton **Pas un problème** reste, et il ne fait qu'écrire sur ta machine ;
+  - les liens qui renvoyaient à la promotion de l'auteur (badge de version, étoiles, boutique de plugins, démonstration en ligne, vidéo) sont retirés des docs.
+- **Plus aucune écriture hors de `floorplan/`** : `CLAUDE.local.md`, l'option `--claude-md`, `.git/info/exclude`, le déplacement de `show-code/` et `~/.floorplan/settings.json` sont retirés.
+- **Secrets mieux protégés** :
+  - le contrôle de santé ne garde **aucun** caractère d'une clé, seulement sa longueur ;
+  - un mot de passe écrit dans une adresse est retiré du nom du site ;
+  - avec Claude Code, la bulle de questions ne peut plus lire `.env`, `.env.*`, `*.pem`, `*.key` ni aucun fichier dont le nom contient `secret`, `token` ou `credential` (pas de blocage équivalent avec Codex), et elle ne charge pas les serveurs MCP de la machine.
+- **Plugin** : nom `floorplan-fr`, source `floorplan-fr`, commande `/floorplan-fr:floorplan`, installé depuis le dossier ou le dépôt de cette copie.
+- **Dépôt** : `CONTRIBUTING.md` et les modèles de tickets et de demandes de fusion sont supprimés (ils renvoyaient à l'auteur) ; `SECURITY.md` est réécrit ; les tests sur GitHub ne tournent plus qu'à la demande, au quotidien on lance `node --test` sur le PC.
+- **Docs** : `docs/is-it-safe.md` et `docs/privacy-and-security.md` sont réécrits pour dire ce qui est vrai de cette version, avec ses limites ; les commandes de vérification qui renvoyaient au dépôt de l'auteur sont retirées (celle de `elk.bundled.js` contre npm reste) ; `docs/getting-started.md` gagne « Reprendre une correction de l'auteur » et « Revenir en arrière ».
+
 ## 0.6.3 (2026-11-02)
 
 - **Endpoints in route tables** (#54, from @Yahhi): servers without a framework often keep their endpoints in a lookup a dispatcher reads, keyed by method and path, like `{ "GET /api/orders": listOrders }` in JavaScript or a Python dict of handlers behind a cloud function. Floorplan found no endpoints in these apps, so the website's requests weren't linked to the server. Now each key is an endpoint, named after its handler (a function, an inline function that calls one, or a wrapped one like `requireAuth(createOrder)`). Tables of other things keyed the same way, like access levels or notes, are left alone. Health doesn't judge sign-in on these endpoints, because the dispatcher or the handler checks it where Floorplan can't see.

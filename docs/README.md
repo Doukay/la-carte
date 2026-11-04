@@ -1,17 +1,19 @@
-# Floorplan documentation
+# Documentation de Floorplan (traduction française)
 
-| Guide | What's in it |
+> Traduction française non officielle de Floorplan, de Hayden Smith ([dépôt d'origine](https://github.com/haydenschmitty/floorplan), licence MIT). Voir le [README](../README.md).
+
+| Guide | Ce qu'il contient |
 |---|---|
-| [Getting started](getting-started.md) | Installing, making your first map, keeping it updated, planning an app before it exists, updating and removing the plugin |
-| [Floorplan in Codex](codex.md) | Installing and using Floorplan in Codex, and what's different from Claude Code |
-| [Using the map](using-the-map.md) | Every button, view, panel, shortcut and right-click menu, and what a blueprint adds |
-| [How it works](how-it-works.md) | The pipeline from scan to map, how connections are found, how updates stay cheap, how blueprints are drawn and changed |
-| [What's in your project](project-files.md) | Every file Floorplan creates, which ones you can edit, and how it stays out of git |
-| [Privacy and security](privacy-and-security.md) | What runs where, what leaves your machine, and how secrets are handled |
-| [Is it safe to install?](is-it-safe.md) | Everything Floorplan does on your computer, how a test enforces it, and how to verify your installed copy |
-| [Troubleshooting](troubleshooting.md) | Common problems and how to fix them |
-| [Developing Floorplan](development.md) | Repo layout, testing a local copy, releasing a new version |
+| [Pour commencer](getting-started.md) | Installer, faire ta première carte, la garder à jour, planifier une appli avant qu'elle existe, mettre à jour, reprendre une correction de l'auteur, revenir en arrière, retirer le plugin |
+| [Floorplan dans Codex](codex.md) | Installer et utiliser Floorplan dans Codex, et ce qui change par rapport à Claude Code |
+| [Utiliser la carte](using-the-map.md) | Chaque bouton, vue, panneau, raccourci et menu du clic droit, et ce qu'ajoute un plan |
+| [Comment ça marche](how-it-works.md) | Le déroulé de l'analyse à la carte, comment les liens sont trouvés, comment les mises à jour restent légères, comment les plans sont dessinés et modifiés |
+| [Ce qu'il y a dans ton projet](project-files.md) | Chaque fichier créé par Floorplan, ceux que tu peux modifier, et comment il reste hors de Git |
+| [Confidentialité et sécurité](privacy-and-security.md) | Ce qui tourne où, ce qui quitte ta machine, comment les secrets sont traités |
+| [Est-ce sûr à installer ?](is-it-safe.md) | Tout ce que Floorplan fait sur ton ordinateur, comment un test le garantit, et les limites honnêtes |
+| [Dépannage](troubleshooting.md) | Les problèmes courants et comment les régler |
+| [Développer Floorplan](development.md) | Organisation du dépôt, lancer les tests, marquer une version |
 
-New here? Start with [Getting started](getting-started.md).
+Nouveau ici ? Commence par [Pour commencer](getting-started.md).
 
-Floorplan is mainly for mapping code you already have, and every guide is written for that. It can also draw a **blueprint**, a map planned from a PRD or spec before the code exists: see [Plan something you haven't built yet](getting-started.md#plan-something-you-havent-built-yet), [Blueprints on the map](using-the-map.md#blueprints) and [how blueprints work](how-it-works.md#blueprints).
+Floorplan sert surtout à cartographier du code que tu as déjà, et chaque guide est écrit pour ça. Il peut aussi dessiner un **plan**, une carte prévue à partir d'un cahier des charges ou d'une spécification avant que le code existe : voir [Planifier une appli pas encore construite](getting-started.md#planifier-une-appli-pas-encore-construite), [Les plans sur la carte](using-the-map.md#les-plans) et [comment fonctionnent les plans](how-it-works.md#les-plans).

@@ -1,85 +1,89 @@
-# Floorplan in Codex
+# Floorplan dans Codex
 
-Floorplan works in [Codex](https://developers.openai.com/codex) the same way it works in Claude Code: the same skill, scripts and map, on your own ChatGPT sign-in. There are no API keys to set up.
+Floorplan marche dans [Codex](https://developers.openai.com/codex) comme dans Claude Code : la même compétence, les mêmes scripts et la même carte, avec ta propre connexion ChatGPT. Il n'y a aucune clé d'API à régler.
 
-## What you need
+## Ce qu'il te faut
 
-- Codex: the desktop app or the CLI, signed in with your ChatGPT account.
-- [Node.js](https://nodejs.org) 18 or newer.
+- Codex : l'application de bureau ou la ligne de commande, connecté avec ton compte ChatGPT.
+- [Node.js](https://nodejs.org) 18 ou plus.
 
-## Install
+## Installation
 
-**In the Codex app** (no terminal needed):
+Cette copie n'est pas dans une boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `floorplan-fr`.
 
-1. Open **Plugins** and choose **Add a marketplace**.
-2. For **Source**, enter `haydenschmitty/floorplan`. Leave **Git ref** empty, and click **Add marketplace**.
-3. Find **Floorplan** in the list and click **+** to install it.
-4. Start a new chat.
+**Dans l'application Codex** (pas besoin de terminal) :
 
-**From a terminal**, with the [Codex CLI](https://developers.openai.com/codex/cli):
+1. Ouvre **Plugins** et choisis **Add a marketplace**.
+2. Pour **Source**, entre le chemin du dossier de cette copie (ou l'adresse de son dépôt Git, si ton Git y a accès). Laisse **Git ref** vide, et clique sur **Add marketplace**.
+3. Trouve **Floorplan** dans la liste et clique sur **+** pour l'installer.
+4. Ouvre une nouvelle discussion.
+
+**Depuis un terminal**, avec la [ligne de commande de Codex](https://developers.openai.com/codex/cli) :
 
 ```bash
-codex plugin marketplace add haydenschmitty/floorplan
-codex plugin add floorplan@floorplan
+codex plugin marketplace add /chemin/vers/floorplan-fr
+codex plugin add floorplan-fr@floorplan-fr
 ```
 
-The app and the CLI share their plugins, so installing in one makes Floorplan available in both.
+L'application et la ligne de commande partagent leurs plugins, donc l'installer dans l'une rend Floorplan disponible dans les deux.
 
-## Make your first map
+## Fais ta première carte
 
-Open your project in Codex and ask in plain words:
+Ouvre ton projet dans Codex et demande avec tes mots :
 
-> Draw a floorplan of this codebase
+> Dessine-moi un floorplan de ce code
 
-To call the skill by name, type `$floorplan`. Everything after that is the same as in Claude Code ([Getting started](getting-started.md#make-your-first-map)): Codex scans the code, describes every part, file and web request, builds the map and opens it. Later, "update the floorplan" re-reads only what changed.
+Pour appeler la compétence par son nom, tape `$floorplan`. Ensuite, tout est comme dans Claude Code ([Pour commencer](getting-started.md#fais-ta-première-carte)) : Codex analyse le code, décrit chaque partie, fichier et appel au serveur, construit la carte et l'ouvre. Plus tard, « mets à jour le floorplan » ne relit que ce qui a changé.
 
-When Codex opens the map, it asks to run the map's server outside its sandbox. The server has to keep running after the command ends, and the Ask bar needs to reach Codex. If you'd rather not allow it, run the server yourself from the project folder:
+Quand Codex ouvre la carte, il demande à lancer le serveur de la carte hors de son bac à sable. Le serveur doit continuer à tourner après la fin de la commande, et la bulle de questions doit pouvoir joindre Codex. Si tu préfères ne pas l'autoriser, lance le serveur toi-même depuis le dossier du projet :
 
 ```bash
 node floorplan/serve.mjs
 ```
 
-## Asking questions on the map
+## Poser des questions sur la carte
 
-The map's Ask bar runs your own Codex on your computer: `codex exec` in Codex's **read-only** sandbox, in your project folder, with your ChatGPT sign-in. It reads the map and your source to answer, and can't change any files. These runs aren't saved to your Codex history; a follow-up question brings the last few questions and answers along instead.
+La bulle de questions de la carte lance ton propre Codex sur ton ordinateur : `codex exec` dans le bac à sable **en lecture seule** de Codex, dans le dossier de ton projet, avec ta connexion ChatGPT. Il lit la carte et ton code source pour répondre, et ne peut modifier aucun fichier. Ces exécutions ne sont pas gardées dans ton historique Codex ; une question de suite emmène avec elle les dernières questions et réponses.
 
-The server uses whichever agent built the map, and falls back to the other one if that one isn't installed. To choose:
+**Limite à connaître :** avec Codex, la bulle de questions peut lire n'importe quel fichier lisible du projet, **fichiers de secrets compris** (`.env`, clés…). Le blocage de ces fichiers que cette version met en place avec Claude Code n'existe pas côté Codex. Ce que Codex lit part chez OpenAI. Sur un projet qui contient des secrets en clair, préfère Claude Code pour poser des questions. Voir [Confidentialité et sécurité](privacy-and-security.md).
+
+Le serveur utilise l'agent qui a fait la carte, et passe à l'autre si celui-là n'est pas installé. Pour choisir :
 
 ```bash
 node floorplan/serve.mjs --engine codex
 ```
 
-It finds `codex` on your PATH, and on Windows the CLI that comes with the Codex desktop app. If yours is somewhere else, pass `--codex /path/to/codex`. `--model <name>` picks the model; otherwise your Codex settings decide.
+Il trouve `codex` dans ton PATH, et sous Windows la ligne de commande qui vient avec l'application de bureau Codex. Si la tienne est ailleurs, passe `--codex /chemin/vers/codex`. `--model <nom>` choisit le modèle ; sinon tes réglages Codex décident.
 
-## What's different from Claude Code
+## Ce qui change par rapport à Claude Code
 
-- **No notes file.** In Claude Code, Floorplan can keep a short note in `CLAUDE.local.md` (personal and never committed, and only if you say yes) that points future sessions at the map. Codex has no personal, uncommitted equivalent (`AGENTS.md` is shared with your team), so in Codex Floorplan leaves your project's notes alone.
-- **No Claude app.** Publishing the map to the Claude app is a Claude feature. In Codex the map opens in your browser, served from your computer.
-- **"Fix with Codex".** The Health panel's ready-made fix prompts are for pasting into Codex. On a [blueprint](getting-started.md#plan-something-you-havent-built-yet), the same goes for **Build this with Codex**, and the Ask bar's **Change** switch runs Codex in its read-only sandbox too: Codex replies with the updated plan, and the map's server saves it.
+- **Pas de fichier de notes.** Cette copie n'écrit jamais dans tes fichiers de notes (ni `CLAUDE.local.md` pour Claude Code, ni `AGENTS.md` pour Codex) : elle n'écrit que dans `floorplan/`. Pour que tes sessions pensent à la carte, ajoute toi-même une ligne dans tes notes.
+- **Pas d'application Claude.** Publier la carte dans l'application Claude est une fonction de Claude. Dans Codex, la carte s'ouvre dans ton navigateur, servie depuis ton ordinateur.
+- **« Corriger avec Codex ».** Les demandes de correction toutes prêtes du panneau Santé sont à coller dans Codex. Sur un [plan](getting-started.md#planifier-une-appli-pas-encore-construite), c'est pareil pour **Construire ça avec Codex**, et l'interrupteur **Modifier** de la bulle de questions lance aussi Codex dans son bac à sable en lecture seule : Codex répond avec le plan mis à jour, et le serveur de la carte l'enregistre.
 
-## Update or remove it
+## Mettre à jour ou retirer
 
-In the app, open **Plugins**, find the Floorplan marketplace and choose **Upgrade** to get the latest version, or **Remove marketplace** to take it out. From a terminal:
+Cette copie ne se met pas à jour toute seule avec l'auteur (voir [Reprendre une correction de l'auteur](getting-started.md#reprendre-une-correction-de-lauteur)). Dans l'application, ouvre **Plugins**, trouve la source de Floorplan et choisis **Upgrade** pour prendre la dernière version de cette copie, ou **Remove marketplace** pour la retirer. Depuis un terminal :
 
 ```bash
-codex plugin marketplace upgrade floorplan
-codex plugin add floorplan@floorplan
+codex plugin marketplace upgrade floorplan-fr
+codex plugin add floorplan-fr@floorplan-fr
 ```
 
 ```bash
-codex plugin remove floorplan@floorplan
-codex plugin marketplace remove floorplan
+codex plugin remove floorplan-fr@floorplan-fr
+codex plugin marketplace remove floorplan-fr
 ```
 
-Your maps stay in each project's `floorplan/` folder until you delete them.
+Tes cartes restent dans le dossier `floorplan/` de chaque projet jusqu'à ce que tu les supprimes.
 
-## Trying a working copy
+## Essayer ta copie de travail
 
-Point Codex at your local clone instead of GitHub:
+Pointe Codex vers ton clone local plutôt que vers le dépôt Git :
 
 ```bash
-codex plugin marketplace add /path/to/floorplan
-codex plugin add floorplan@floorplan
+codex plugin marketplace add /chemin/vers/floorplan-fr
+codex plugin add floorplan-fr@floorplan-fr
 ```
 
-Codex copies a local plugin into its cache when you add it (unlike Claude Code, which runs a local plugin straight from the folder). After you change the plugin, run `codex plugin add floorplan@floorplan` again and start a new session.
+Codex copie un plugin local dans son cache quand tu l'ajoutes (contrairement à Claude Code, qui lance un plugin local directement depuis le dossier). Après avoir changé le plugin, relance `codex plugin add floorplan-fr@floorplan-fr` et ouvre une nouvelle session.

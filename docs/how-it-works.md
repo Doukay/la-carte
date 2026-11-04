@@ -1,117 +1,117 @@
-# How it works
+# Comment ça marche
 
-Floorplan splits the work between scripts and the AI you run it in, Claude Code or Codex. The scripts do everything mechanical: finding files, parsing code, matching requests to endpoints, laying out the map. They're plain Node.js with no dependencies, and they cost no tokens. The AI does what only a reader of the code can: deciding what the parts of your app *are*, and explaining them plainly.
+Floorplan partage le travail entre des scripts et l'IA dans laquelle tu le lances, Claude Code ou Codex. Les scripts font tout le travail mécanique : trouver les fichiers, lire le code, relier les appels aux adresses du serveur, disposer la carte. Ce sont des scripts Node.js sans dépendance, et ils ne coûtent aucun jeton. L'IA fait ce que seul un lecteur du code peut faire : décider ce que les parties de ton appli *sont*, et les expliquer simplement.
 
 ```mermaid
 flowchart TD
-    status["status: is there a map already?"] -->|no| scan
-    status -->|yes| refresh["refresh: re-scan, carry over what didn't change"]
-    scan["scan: repos, files, imports, endpoints, requests"] --> arch["The AI writes architecture.json<br/>the parts of the app, outside services, flows, tour"]
-    arch --> build["build: assign files, connect everything,<br/>Health, screens, the map"]
-    build --> describe["The AI names and describes every file and endpoint"]
-    describe --> recent["The AI marks recent work"]
+    status["status : y a-t-il déjà une carte ?"] -->|non| scan
+    status -->|oui| refresh["refresh : nouvelle analyse, on garde ce qui n'a pas changé"]
+    scan["scan : dépôts, fichiers, imports, adresses du serveur, appels"] --> arch["L'IA écrit architecture.json<br/>les parties de l'appli, les services extérieurs, les parcours, la visite guidée"]
+    arch --> build["build : affecter les fichiers, tout relier,<br/>santé, écrans, la carte"]
+    build --> describe["L'IA nomme et décrit chaque fichier et chaque adresse du serveur"]
+    describe --> recent["L'IA marque le travail récent"]
     refresh --> describe
-    recent --> open["open: serve the map and show it"]
+    recent --> open["open : servir la carte et l'afficher"]
 ```
 
-## 1. Scan
+## 1. L'analyse
 
-`scan.mjs` finds every git repository under the folder you point it at (one repo, a monorepo, or several repos side by side), skipping duplicate worktrees. It lists files with git, so your `.gitignore` is respected, then extracts from each file:
+`scan.mjs` trouve chaque dépôt Git sous le dossier que tu lui indiques (un dépôt, un monorepo, ou plusieurs dépôts côte à côte), en ignorant les copies de travail en double. Il liste les fichiers avec Git, donc ton `.gitignore` est respecté, puis il en extrait :
 
-- **imports**, resolved to real files: TypeScript path aliases, Python packages, Go modules, Rust crates, JVM packages;
-- **exported definitions** and their doc comments;
-- **endpoints** the server defines;
-- **web requests** the code makes;
-- content **fingerprints**, so later updates can tell what changed.
+- les **imports**, résolus vers de vrais fichiers : alias de chemins TypeScript, paquets Python, modules Go, crates Rust, paquets de la JVM ;
+- les **définitions exportées** et leurs commentaires de documentation ;
+- les **adresses du serveur** que le serveur définit ;
+- les **appels au serveur** que le code fait ;
+- des **empreintes** du contenu, pour que les mises à jour suivantes sachent ce qui a changé.
 
-Supported languages: TypeScript and JavaScript (including Vue, Svelte and Astro files), Python, Go, Rust, Java, Kotlin, Scala and Groovy, with lighter support for others.
+Langages pris en charge : TypeScript et JavaScript (y compris les fichiers Vue, Svelte et Astro), Python, Go, Rust, Java, Kotlin, Scala et Groovy, avec une prise en charge plus légère des autres.
 
-## 2. Connecting requests to endpoints
+## 2. Relier les appels aux adresses du serveur
 
-The most useful lines on the map connect a screen's web requests to the server code that answers them, often across repos. Floorplan:
+Les lignes les plus utiles de la carte relient les appels au serveur d'un écran au code du serveur qui y répond, souvent entre dépôts. Floorplan :
 
-- **Finds endpoints** in Express, Fastify (plugin prefixes included), Koa, Hono, Next.js (route files and API routes), Firebase Cloud Functions, Flask, FastAPI, Django, Go (net/http, Gin, Echo, chi, Fiber), Actix, Axum and Spring, and in route tables keyed by method and path (`"GET /api/orders": listOrders`) in JavaScript and Python.
-- **Resolves prefixes**: Flask blueprints registered with a `url_prefix`, and Express routers mounted with `app.use('/api/users', usersRouter)`, including routers mounted inside other routers and mounts with middleware in front.
-- **Finds requests** made with `fetch`, axios, ky, `requests` and similar, including:
-  - addresses built in a variable first: `const url = …; api.get(url)`;
-  - template strings with nested parts;
-  - small helpers in the same file that add a prefix, like `call('/definitions')`.
-- **Firebase Cloud Functions** are called by name rather than by address. A callable function (`onCall`) shows up as `CALL /approveItem` under the name your functions entry file exports it as, and the website's `httpsCallable(functions, 'approveItem')` calls reach it, including through a helper of your own that wraps `httpsCallable`. An `onRequest` function is an ordinary endpoint at `/<name>`, and an Express app passed to it keeps its own routes under that name. Scheduled and other background functions (Firestore, Storage, Pub/Sub) are listed for the AI to place on the map.
-- **Matches** the two. When a request only spells out part of the address, because the base URL lives in settings, Floorplan learns each client's base path and prefers matches that fit it.
+- **Trouve les adresses du serveur** dans Express, Fastify (préfixes de plugins compris), Koa, Hono, Next.js (fichiers de routes et routes d'API), Firebase Cloud Functions, Flask, FastAPI, Django, Go (net/http, Gin, Echo, chi, Fiber), Actix, Axum et Spring, et dans les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.
+- **Résout les préfixes** : les blueprints Flask enregistrés avec un `url_prefix`, et les routeurs Express montés avec `app.use('/api/users', usersRouter)`, y compris les routeurs montés dans d'autres routeurs et les montages précédés d'un intergiciel.
+- **Trouve les appels** faits avec `fetch`, axios, ky, `requests` et similaires, y compris :
+  - les adresses construites d'abord dans une variable : `const url = …; api.get(url)` ;
+  - les gabarits de texte avec des parties imbriquées ;
+  - les petites fonctions d'aide du même fichier qui ajoutent un préfixe, comme `call('/definitions')`.
+- **Gère les Firebase Cloud Functions**, qui s'appellent par leur nom et non par une adresse. Une fonction appelable (`onCall`) apparaît comme `CALL /approveItem`, sous le nom que le fichier d'entrée de tes fonctions lui donne en l'exportant, et les `httpsCallable(functions, 'approveItem')` du site l'atteignent, même à travers une fonction d'aide à toi qui enveloppe `httpsCallable`. Une fonction `onRequest` est une adresse du serveur ordinaire à `/<nom>`, et une appli Express qu'on lui passe garde ses propres routes sous ce nom. Les fonctions planifiées et les autres tâches de fond (Firestore, Storage, Pub/Sub) sont listées pour que l'IA les place sur la carte.
+- **Associe** les deux. Quand un appel n'écrit qu'une partie de l'adresse, parce que l'adresse de base est dans les réglages, Floorplan apprend le chemin de base de chaque client et préfère les associations qui y correspondent.
 
-It's pattern matching, not a compiler, so it catches most connections but not all. If an important link is missing, ask for it to be added to the floorplan, and it will record it as an explicit connection.
+C'est de la reconnaissance de motifs, pas un compilateur : elle trouve la plupart des liens, pas tous. Si un lien important manque, demande qu'on l'ajoute au floorplan, et il sera enregistré comme un lien explicite.
 
-## 3. The AI describes the system
+## 3. L'IA décrit le système
 
-Claude or Codex reads the scan summary, READMEs, setup files and entry points, then writes `architecture.json`:
+Claude ou Codex lit le résumé de l'analyse, les README, les fichiers de réglages et les points d'entrée, puis écrit `architecture.json` :
 
-- the main parts of your app, each with a plain summary;
-- the outside services it really talks to (databases, payment providers, email);
-- connections the scan can't see, like queues, scheduled jobs and webhooks;
-- a few guided flows and a "Start here" tour.
+- les grandes parties de ton appli, chacune avec un résumé en langage simple ;
+- les services extérieurs avec lesquels elle parle vraiment (bases de données, paiement, e-mail) ;
+- les liens que l'analyse ne voit pas, comme les files d'attente, les tâches planifiées et les webhooks ;
+- quelques parcours guidés et une visite « Commencer ici ».
 
-The build then assigns every file to the deepest part whose patterns match, and reports anything left over.
+La construction affecte ensuite chaque fichier à la partie la plus profonde dont les motifs correspondent, et signale ce qui reste.
 
-Next, `describe.mjs` writes a worksheet for each part. A worksheet is a digest of every file and endpoint: what it defines, its doc comments, what it uses and what uses it. The AI fills in a name and description for each. On large projects, Claude Code splits the worksheets across parallel helpers.
+Puis `describe.mjs` écrit une feuille de travail pour chaque partie. C'est un condensé de chaque fichier et adresse du serveur : ce qu'il définit, ses commentaires de documentation, ce qu'il utilise et ce qui l'utilise. L'IA remplit un nom et une description pour chacun. Sur les gros projets, Claude Code répartit les feuilles entre plusieurs aides en parallèle.
 
-By default everything is written for the app's owner, not an engineer: what each thing does for the business, in everyday words. Ask for a developer-facing map and it switches to technical style.
+Par défaut, tout est écrit pour la personne qui possède l'appli, pas pour un ingénieur : ce que fait chaque chose pour l'activité, avec des mots de tous les jours. Demande une carte pour développeurs et le style devient technique.
 
-## 4. Build
+## 4. La construction
 
-`build.mjs` validates everything the AI wrote and reports problems by name ("did you mean …"). It then:
+`build.mjs` vérifie tout ce que l'IA a écrit et signale les problèmes par leur nom (« voulais-tu dire … »). Puis il :
 
-- connects the parts, using imports, matched requests and the AI's explicit connections;
-- runs the **Health** check;
-- detects **screens**: Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack;
-- writes `graph.json` and the self-contained `index.html`, noting whether Claude Code or Codex made it, so the map's Ask bar and fix prompts name the right one.
+- relie les parties, grâce aux imports, aux appels associés et aux liens explicites de l'IA ;
+- lance le **contrôle de santé** ;
+- détecte les **écrans** : Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack ;
+- écrit `graph.json` et le fichier autonome `index.html`, en notant si c'est Claude Code ou Codex qui l'a fait, pour que la bulle de questions de la carte et les demandes de correction nomment le bon.
 
-The map lays itself out in your browser with [ELK](https://eclipse.dev/elk/), so the build itself is fast.
+La carte se dispose toute seule dans ton navigateur avec [ELK](https://eclipse.dev/elk/), donc la construction elle-même est rapide.
 
-## 5. Recent work
+## 5. Le travail récent
 
-After every make or update, the AI records what was just worked on in `recent-work.json`. `recent.mjs` lists the facts: what changed since the last map, uncommitted changes, and recent commits, each matched to its card. The AI adds the *why*: what you asked for, and how each change serves it. The previous highlights are replaced every time.
+Après chaque création ou mise à jour, l'IA note ce sur quoi elle vient de travailler dans `recent-work.json`. `recent.mjs` liste les faits : ce qui a changé depuis la dernière carte, les modifications pas encore enregistrées, et les commits récents, chacun rattaché à son bloc. L'IA ajoute le *pourquoi* : ce que tu avais demandé, et en quoi chaque changement y répond. Les mises en avant précédentes sont remplacées à chaque fois.
 
-## 6. Showing it
+## 6. L'afficher
 
-`open.mjs` starts the map's small local server in the background and opens your browser. If the server is already running for this map, it's reused, and any open tab reloads itself in place instead of a new one opening.
+`open.mjs` démarre en arrière-plan le petit serveur local de la carte et ouvre ton navigateur. Si le serveur tourne déjà pour cette carte, il est réutilisé, et l'onglet ouvert se recharge sur place au lieu d'en ouvrir un nouveau.
 
-## Updates
+## Les mises à jour
 
-`refresh.mjs` re-scans and compares against the last build, using each file's fingerprint:
+`refresh.mjs` refait l'analyse et la compare à la dernière construction, avec l'empreinte de chaque fichier :
 
-- **exact content**, which spots edits, renames and moves;
-- **signature**: its exports, endpoints and doc comments. Edits inside function bodies don't count.
+- **contenu exact**, qui repère les modifications, les renommages et les déplacements ;
+- **signature** : ses exports, ses adresses du serveur et ses commentaires de documentation. Les modifications à l'intérieur du corps d'une fonction ne comptent pas.
 
-It then:
-- carries descriptions over to moved and renamed files and endpoints;
-- drops entries for deleted files;
-- flags entries whose signature changed, for review.
+Il :
+- reporte les descriptions sur les fichiers et adresses du serveur déplacés ou renommés ;
+- supprime les entrées des fichiers effacés ;
+- signale à relire les entrées dont la signature a changé.
 
-Then it rebuilds. The AI only has to describe what's new or flagged, and check the structure if the change was large. That's why updates are quick.
+Puis il reconstruit. L'IA n'a plus qu'à décrire ce qui est nouveau ou signalé, et à vérifier la structure si le changement était grand. C'est pour ça que les mises à jour sont rapides.
 
-## Blueprints
+## Les plans
 
-Everything above is how Floorplan maps existing code, its main job. A blueprint is the other way in: a map of something that isn't built yet. The AI reads a PRD or a description and writes `floorplan/plan.json`: every file and endpoint the system would need, which screen calls which endpoint, which parts use outside services and the database, and who may use each endpoint. It also lists the stack it chose, its assumptions and the questions the PRD leaves open.
+Tout ce qui précède décrit comment Floorplan cartographie du code existant, son travail principal. Un plan est l'autre entrée : une carte de quelque chose qui n'est pas encore construit. L'IA lit un cahier des charges ou une description et écrit `floorplan/plan.json` : chaque fichier et chaque adresse du serveur dont le système aurait besoin, quel écran appelle quelle adresse, quelles parties utilisent des services extérieurs et la base de données, et qui peut utiliser chaque adresse. Il liste aussi la technologie choisie, les hypothèses et les questions que le cahier des charges laisse ouvertes.
 
-`plan.mjs` turns the plan into the same scan `scan.mjs` makes from code, so the build, Screens, flows, the tour and Ask all work the same way. The differences:
+`plan.mjs` transforme le plan en la même analyse que `scan.mjs` fait à partir du code, donc la construction, les Écrans, les parcours, la visite et les questions marchent tous de la même façon. Les différences :
 
-- cards have dashed outlines and the board a **Blueprint** label;
-- Health becomes a **design review** of the plan: endpoints anyone could use to change data, endpoints with no decision on who may use them, open questions, and pieces nothing connects to;
-- every part has **Build this with Claude** (or Codex): a request to build that part as planned, listing its files, endpoints and what it relies on;
-- Ask answers from the plan and the PRD, since there's no code to read;
-- the Ask bar's **Change** switch takes requests like "also plan out refunds": the agent returns the updated plan, the map's server checks it with `plan.mjs` and `build.mjs` (sending problems back once), saves it and redraws the map with the changes highlighted, and **Undo** puts the previous plan back. Each design review item's **Resolve on the map** fills in that request for you: an open question just needs your answer. The agent stays read-only: only the server writes, and only `plan.json`, `architecture.json` and `recent-work.json`.
+- les blocs ont un contour en pointillés et le tableau porte l'étiquette **Plan** ;
+- la Santé devient une **revue du plan** : adresses du serveur que tout le monde pourrait utiliser pour changer des données, adresses sans décision sur qui peut les utiliser, questions ouvertes, et éléments reliés à rien ;
+- chaque partie a **Construire ça avec Claude** (ou Codex) : une demande pour construire cette partie comme prévu, qui liste ses fichiers, ses adresses du serveur et ce dont elle dépend ;
+- la bulle de questions répond à partir du plan et du cahier des charges, puisqu'il n'y a pas de code à lire ;
+- l'interrupteur **Modifier** de la bulle de questions prend des demandes comme « prévois aussi les remboursements » : l'agent renvoie le plan mis à jour, le serveur de la carte le vérifie avec `plan.mjs` et `build.mjs` (en renvoyant une fois les problèmes), l'enregistre et redessine la carte en mettant les changements en avant, et **Annuler** remet le plan précédent. Le bouton **Résoudre sur la carte** de chaque point de la revue du plan remplit cette demande à ta place : une question ouverte n'attend que ta réponse. L'agent reste en lecture seule : seul le serveur écrit, et seulement `plan.json`, `architecture.json` et `recent-work.json`.
 
-Updating a blueprint redraws it from `plan.json`. Once the code exists, `refresh.mjs --from-code` maps the real code instead, and `plan.json` stays.
+Mettre à jour un plan le redessine à partir de `plan.json`. Quand le code existe, `refresh.mjs --from-code` cartographie le vrai code à la place, et `plan.json` reste.
 
-## Asking questions
+## Poser des questions
 
-The map's server answers each question with the AI on your computer, in your project:
+Le serveur de la carte répond à chaque question avec l'IA qui est sur ton ordinateur, dans ton projet :
 
-- **Claude Code:** it runs `claude -p` with read-only tools only: reading and searching files, and `floorplan/query.mjs`, which looks things up in the map.
-- **Codex:** it runs `codex exec` in Codex's read-only sandbox, with the same lookups. These runs aren't saved to your Codex history, so a follow-up brings the last few questions and answers along.
+- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `floorplan/query.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
+- **Codex :** il lance `codex exec` dans le bac à sable en lecture seule de Codex, avec les mêmes recherches. Ces exécutions ne sont pas gardées dans ton historique Codex, donc une question de suite emmène avec elle les dernières questions et réponses. Le blocage des fichiers de secrets ci-dessus n'existe pas côté Codex.
 
-It uses whichever made the map, and the other one if that isn't installed. Either way it answers with text plus the cards to show, so answers can cite real code.
+Il utilise celui qui a fait la carte, et l'autre si celui-là n'est pas installé. Dans les deux cas il répond par du texte plus les blocs à montrer, donc les réponses peuvent citer du vrai code.
 
-In the Claude app, the map asks Claude through the app instead, with the same lookups but no access to your source.
+Dans l'application Claude, la carte interroge Claude par l'application, avec les mêmes recherches mais sans accès à ton code source.
 
-The same lookups help ordinary Claude Code sessions. If you say yes after your first map, the short section Floorplan adds to `CLAUDE.local.md` tells them to check the map (`query.mjs find`, `show`, `path`, `overview`) before searching the code from scratch.
+Ces mêmes recherches (`node floorplan/query.mjs` avec `find`, `show`, `path` ou `overview`) peuvent servir à une session ordinaire de Claude Code : cette copie n'écrit rien dans tes fichiers de notes pour le lui dire, mais tu peux lui demander de consulter la carte avant de chercher dans le code.

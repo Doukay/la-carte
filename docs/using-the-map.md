@@ -1,133 +1,136 @@
-# Using the map
+# Utiliser la carte
 
-The map is a board of cards connected by lines. Each card is a part of your app: a big area like "Main server", a group of files, a single file, or an endpoint (a request the server can receive). Lines show what uses what.
+La carte est un tableau de blocs reliés par des lignes. Chaque bloc est une partie de ton appli : une grande zone comme « Serveur principal », un groupe de fichiers, un seul fichier, ou une adresse du serveur (un appel que le serveur peut recevoir). Les lignes montrent qui utilise quoi.
 
-## Getting around
+> Les captures d'écran de ce guide viennent de la version d'origine de Floorplan : leur interface est en anglais.
 
-| To… | Do this |
+## Se déplacer
+
+| Pour… | Fais ceci |
 |---|---|
-| go inside a card | double-click it, or select it and press **Enter** |
-| go back up | **Backspace**, the back arrow, or the breadcrumbs at the top |
-| pan | drag the background |
-| zoom | scroll, or **+** / **−** |
-| fit everything on screen | **F**, or the frame button bottom-left |
-| find anything | **/** or **Ctrl/⌘ K**, then type a name, file or URL |
-| see details | click a card; the panel on the right fills in |
-| show or hide the panel | **P**, or the panel button top-right |
-| close a menu, stop a flow, clear a selection | **Esc** |
+| entrer dans un bloc | double-clique dessus, ou sélectionne-le et appuie sur **Entrée** |
+| remonter | **Retour arrière**, la flèche de retour, ou le fil d'Ariane en haut |
+| déplacer la vue | fais glisser le fond |
+| zoomer | molette, ou **+** / **−** |
+| tout faire tenir à l'écran | **F**, ou le bouton de cadrage en bas à gauche |
+| tout chercher | **/** ou **Ctrl/⌘ K**, puis tape un nom, un fichier ou une adresse |
+| voir les détails | clique sur un bloc ; le panneau de droite se remplit |
+| afficher ou masquer le panneau | **P**, ou le bouton du panneau en haut à droite |
+| fermer un menu, arrêter un parcours, effacer une sélection | **Échap** |
 
-The details on cards simplify as you zoom out: descriptions drop away and titles get bigger, so the map stays readable from far away.
+Les détails des blocs se simplifient quand tu dézoomes : les descriptions disparaissent et les titres grossissent, pour que la carte reste lisible de loin.
 
-### On a phone or tablet
+### Sur un téléphone ou une tablette
 
-- **Drag** with one finger to pan, and **pinch** with two to zoom.
-- **Tap a card** to see its details in a sheet at the bottom. **Open** in the sheet goes inside the card. Tapping empty space, going in or up, or **Esc** puts the sheet away.
-- The top bar wraps onto two rows and its buttons show only their icons. On a phone the zoom buttons sit in the top row, and the description under the title folds to one line, with **More** to read the rest.
+- **Fais glisser** avec un doigt pour déplacer la vue, et **pince** avec deux doigts pour zoomer.
+- **Touche un bloc** pour voir ses détails dans une feuille en bas. **Ouvrir** dans la feuille entre dans le bloc. Toucher un espace vide, entrer ou remonter, ou **Échap** range la feuille.
+- La barre du haut passe sur deux lignes et ses boutons n'affichent que leur icône. Sur un téléphone, les boutons de zoom sont sur la première ligne, et la description sous le titre se replie sur une ligne, avec **Plus** pour lire la suite.
 
-Nothing changes with a mouse in a window 1000 px wide or wider. Phone and tablet support was built by [@menachem-kurkus](https://github.com/menachem-kurkus).
+Rien ne change à la souris dans une fenêtre de 1000 px de large ou plus. Le support des téléphones et des tablettes a été construit par [@menachem-kurkus](https://github.com/menachem-kurkus).
 
-## Cards
+## Les blocs
 
-- **Title and description:** a plain-English name, and one line on what it does.
-- **Footer:** how much is inside (modules, files or endpoints) on the left. On the right, a green tag when it's part of recent work.
-- **Endpoint cards** show the method and address (`POST /api/orders`) above their name.
-- **A small amber dot** after a title means there's a note pinned to that file.
-- **Pill-shaped cards at the edges** of a view are things outside it. The brackets above each column say which side is which:
-  - **Used by:** outside parts that use or call into this one.
-  - **Inside ‹name›:** what this part is made of.
-  - **Uses:** outside parts it relies on, like a database or Stripe.
+- **Titre et description :** un nom en langage simple, et une ligne sur ce qu'il fait.
+- **Pied :** ce qu'il y a dedans (modules, fichiers ou adresses du serveur) à gauche. À droite, une étiquette verte quand il fait partie du travail récent.
+- **Les blocs d'adresse du serveur** montrent la méthode et l'adresse (`POST /api/orders`) au-dessus de leur nom.
+- **Un petit point ambre** après un titre veut dire qu'une note est épinglée sur ce fichier.
+- **Les blocs en forme de pilule sur les bords** d'une vue sont des éléments extérieurs à elle. Les crochets au-dessus de chaque colonne disent de quel côté on est :
+  - **Utilisé par :** les parties extérieures qui utilisent celle-ci ou l'appellent.
+  - **Dans ‹nom› :** de quoi cette partie est faite.
+  - **Utilise :** les parties extérieures dont elle dépend, comme une base de données ou Stripe.
 
-  Double-click an outside card to jump there.
+  Double-clique sur un bloc extérieur pour y aller.
 
-<img src="images/inside.png" alt="Inside a part of the server: what uses it on the left, its files in the middle, outside services on the right">
+<img src="images/inside.png" alt="L'intérieur d'une partie du serveur : ce qui l'utilise à gauche, ses fichiers au milieu, les services extérieurs à droite">
 
-Hover over a card for a moment to see what kind of thing it is, where it lives, and how big it is. Hover over a line to see what it carries, for example which endpoints a screen calls.
+Laisse la souris un instant sur un bloc pour voir de quel genre de chose il s'agit, où il se trouve et sa taille. Laisse-la sur une ligne pour voir ce qu'elle transporte, par exemple quelles adresses du serveur un écran appelle.
 
-## The side panel
+## Le panneau latéral
 
-Click anything to see it in the panel: its full description, what it's part of, what's inside it, what it's **used by** and what it **depends on**, its endpoints, and buttons to open it or ask about it. With nothing selected, the panel describes the current view, or the whole app at the top level.
+Clique sur n'importe quoi pour le voir dans le panneau : sa description complète, de quoi il fait partie, ce qu'il contient, par quoi il est **utilisé** et de quoi il **dépend**, ses adresses du serveur, et des boutons pour l'ouvrir ou poser une question dessus. Sans sélection, le panneau décrit la vue actuelle, ou toute l'appli au niveau le plus haut.
 
-Drag the panel's left edge to resize it.
+Fais glisser le bord gauche du panneau pour le redimensionner.
 
-## Header buttons
+## Les boutons du haut
 
-### Health
-A count of important issues, and a plain-language list of problems the scan found:
-- passwords and keys written into the code, or into a committed `.env` file;
-- secret keys in settings the browser gets, like an OpenAI key in a `VITE_` or `NEXT_PUBLIC_` variable;
-- Supabase tables with row-level security switched off, and database rules that let anyone change a table;
-- Firebase rules that let anyone read or change your data or files, including "test mode" rules and when they run out;
-- Stripe webhooks that act on payments without checking Stripe's signature, so anyone could fake one;
-- servers that let any website call them, flagged as worth fixing when login cookies go along too;
-- endpoints that let anyone change or read data without signing in;
-- files nothing uses;
-- files over about 1,000 lines, which AI struggles to edit safely.
+### Santé
+Un compte des problèmes importants, et une liste en langage simple de ce que l'analyse a trouvé :
+- mots de passe et clés écrits dans le code, ou dans un fichier `.env` enregistré dans Git ;
+- clés secrètes dans des réglages que le navigateur reçoit, comme une clé OpenAI dans une variable `VITE_` ou `NEXT_PUBLIC_` ;
+- tables Supabase dont la sécurité au niveau des lignes est désactivée, et règles de base de données qui laissent n'importe qui modifier une table ;
+- règles Firebase qui laissent n'importe qui lire ou changer tes données ou tes fichiers, y compris les règles du « mode test » et la date où elles expirent ;
+- webhooks Stripe qui agissent sur des paiements sans vérifier la signature de Stripe, donc que n'importe qui pourrait falsifier ;
+- serveurs que n'importe quel site web peut appeler, signalés comme à corriger quand les cookies de connexion suivent ;
+- adresses du serveur qui laissent n'importe qui changer ou lire des données sans se connecter ;
+- fichiers inutilisés ;
+- fichiers de plus de 1 000 lignes environ, que l'IA a du mal à modifier sans risque.
 
-Each issue has **Show on map**, which highlights the affected files and endpoints with notes, and **Fix with Claude** (or **Fix with Codex**, for a map made in Codex), which copies a ready-made prompt naming the exact files and lines and the safe fix. It's a quick automatic check, not a security audit. On a blueprint this button is **Review** instead (see [Blueprints](#blueprints)).
+Chaque problème a **Montrer sur la carte**, qui met en avant les fichiers et adresses du serveur concernés avec des notes, et **Corriger avec Claude** (ou **Corriger avec Codex**, pour une carte faite dans Codex), qui copie une demande toute prête nommant les fichiers et lignes exacts et la correction sûre. C'est un contrôle automatique rapide, pas un audit de sécurité : **il donne des fausses alertes, et il laisse passer des choses.** Sur un plan, ce bouton devient **Revue du plan** (voir [Les plans](#les-plans)).
 
-Health leaves password hashes and encrypted values alone (bcrypt, argon2, dotenvx, sops, Ansible Vault and similar), and goes by the value, so a backup with one value left unencrypted is still flagged. It can only recognise encryption that marks itself, and it can't read a `.env` file that git ignores. It also doesn't judge sign-in on endpoints in a route table (`"GET /api/orders": listOrders`) or on Django endpoints, because the check isn't where it can read it for each route, so no report there doesn't mean those endpoints are protected.
+La Santé laisse tranquilles les empreintes de mots de passe et les valeurs chiffrées (bcrypt, argon2, dotenvx, sops, Ansible Vault et similaires), et elle juge d'après la valeur, donc une sauvegarde dont une seule valeur n'est pas chiffrée est quand même signalée. Elle ne reconnaît que le chiffrement qui se signale lui-même, et elle ne peut pas lire un fichier `.env` que Git ignore. Elle ne juge pas non plus la connexion sur les adresses du serveur d'une table de routes (`"GET /api/orders": listOrders`) ni sur celles de Django, parce que le contrôle n'est pas à un endroit où elle peut le lire pour chaque route : ne rien voir là ne veut donc pas dire que ces adresses sont protégées.
 
-It also leaves alone what's public on purpose, as long as it only reads: feeds and files for crawlers and AI tools (`rss.xml`, `llms.txt` and similar), addresses your project lists in its `llms.txt` or allows in its `robots.txt`, responses marked `Cache-Control: public`, and Next.js `GET` routes that read no database, session or server secret, even through what they import. Endpoints that change data are always checked. Payload CMS's own API routes count as checked, because Payload applies its access rules, so check those rules yourself. A token passed to a browser tracker's script is left alone too, since every visitor already has it.
+Elle laisse aussi de côté ce qui est public exprès, tant que ça ne fait que lire : les flux et fichiers pour les robots et les outils d'IA (`rss.xml`, `llms.txt` et similaires), les adresses que ton projet liste dans son `llms.txt` ou autorise dans son `robots.txt`, les réponses marquées `Cache-Control: public`, et les routes `GET` de Next.js qui ne lisent ni base de données, ni session, ni secret du serveur, même à travers ce qu'elles importent. Les adresses qui changent des données sont toujours contrôlées. Les routes d'API propres à Payload CMS comptent comme contrôlées, parce que Payload applique ses règles d'accès : vérifie toi-même ces règles. Un jeton passé au script d'un outil de suivi du navigateur est aussi laissé de côté, puisque chaque visiteur l'a déjà.
 
-If an issue is wrong, press **Not a problem** and add a reason if you like. It moves to the bottom of the list and out of the count, and stays that way when the map is rebuilt. Editing elsewhere in the file won't bring it back, but it does show again if the same check finds something new in that file or the issue changes severity. **Show again** undoes it. Exported copies keep the issue set apart but leave your reason out.
+Si un problème est faux, appuie sur **Pas un problème** et ajoute une raison si tu veux. Il descend en bas de la liste et sort du compte, et il reste ainsi quand la carte est reconstruite. Modifier autre chose dans le fichier ne le fait pas revenir, mais il réapparaît si le même contrôle trouve quelque chose de nouveau dans ce fichier ou si le problème change de gravité. **Afficher à nouveau** annule. Les copies exportées gardent le problème à part mais laissent ta raison de côté.
 
-You can also tick the box to tell the Floorplan developer. That opens a GitHub issue for you to read, edit and send yourself, with the check's name and title, the kinds of files involved and your note. A title can name a file or an endpoint, and the preview shows you exactly what will go. It never includes your code or any values, and nothing is sent unless you send it.
+Ce choix reste sur ta machine, dans `floorplan/`. **Rien n'est envoyé à l'auteur de Floorplan ni à personne** : cette version n'a pas de signalement de fausse alerte.
 
-### Recent work
-Appears when Claude or Codex has just changed things. It lays the changed cards out on one board, with what you asked for, a summary of what was done, and a note on every card. Elsewhere on the map, changed cards have a green ring and a **Changed** or **New** tag, and the parts that contain them show **N changed**, so you can follow the green down from the top level.
+### Travail récent
+Apparaît quand Claude ou Codex vient de changer des choses. Il place les blocs modifiés sur un seul tableau, avec ce que tu avais demandé, un résumé de ce qui a été fait, et une note sur chaque bloc. Ailleurs sur la carte, les blocs modifiés ont un anneau vert et une étiquette **Modifié** ou **Nouveau**, et les parties qui les contiennent affichent **N modifiés**, pour que tu puisses suivre le vert depuis le niveau le plus haut.
 
-### Screens
-Every page of your app that Floorplan detected. Pick one to see everything behind it: its components, the requests it makes, the server code that answers them, the data they touch, and outside services.
+### Écrans
+Chaque page de ton appli que Floorplan a détectée. Choisis-en une pour voir tout ce qu'il y a derrière : ses composants, les appels qu'elle fait, le code du serveur qui y répond, les données qu'ils touchent, et les services extérieurs.
 
-### Export
-Saves a copy of the map to send to anyone, such as a teammate, a client, or someone without Claude or Codex. It's one HTML file that opens in any browser with nothing to install. The copy has the whole map, search, screens, the tour and flows, but no Ask bar, no **Fix with Claude** or **Build this** requests, no editor links, and nothing about your computer, like its folder path. An **Exported** label beside the title shows the date, and a small **Made with Floorplan** link at the bottom leads here.
+### Exporter
+Enregistre une copie de la carte à envoyer à n'importe qui, comme un collègue, un client, ou une personne qui n'a ni Claude ni Codex. C'est un seul fichier HTML qui s'ouvre dans n'importe quel navigateur sans rien installer. La copie contient toute la carte, la recherche, les écrans, la visite guidée et les parcours, mais pas de bulle de questions, pas de demandes **Corriger avec Claude** ou **Construire ça**, pas de liens vers l'éditeur, et rien sur ton ordinateur, comme le chemin de ton dossier. Une étiquette **Exporté** à côté du titre montre la date.
 
-You choose what goes in:
-- **Flows and the tour**, and **notes pinned to files**, on by default;
-- **Recent work**, off by default;
-- **Health check** (or the **design review** on a blueprint), off by default. Health lists the endpoints anyone can use and where secrets sit in the code (never their values), so only include it for people you trust.
+Tu choisis ce qu'on y met :
+- **Parcours et visite guidée**, et **notes épinglées sur les fichiers**, cochés par défaut ;
+- **Travail récent**, décoché par défaut ;
+- **Contrôle de santé** (ou la **revue du plan** sur un plan), décoché par défaut. La Santé liste les adresses du serveur que tout le monde peut utiliser et où se trouvent les secrets dans le code (jamais leurs valeurs) : ne l'inclus que pour des personnes de confiance.
 
-Every copy shows how the app fits together (each part, file and endpoint, with names and descriptions), but not your source code. Export needs the map's server; on a map opened straight from its file, the button shows the command to run instead. You can also ask Claude or Codex to "export the floorplan".
+Chaque copie montre comment l'appli tient ensemble (chaque partie, fichier et adresse du serveur, avec leurs noms et descriptions), mais pas ton code source. L'export a besoin du serveur de la carte ; sur une carte ouverte directement depuis son fichier, le bouton montre à la place la commande à lancer. Tu peux aussi demander à Claude ou à Codex d'« exporter le floorplan ».
 
-### Start here
-Replays the one-minute tour that runs the first time you open a map.
+### Commencer ici
+Rejoue la visite guidée d'une minute qui se lance la première fois que tu ouvres une carte.
 
-### Flows
-Guided walkthroughs of the app's main jobs, like "Checkout" or "Sign up". A flow moves across the board step by step, with a narration at each stop. Use **←** / **→** or the flow bar's buttons to step through, and **Esc** to stop.
+### Parcours
+Des visites guidées des principales tâches de l'appli, comme « Commande » ou « Inscription ». Un parcours traverse le tableau étape par étape, avec un commentaire à chaque arrêt. Utilise **←** / **→** ou les boutons de la barre du parcours pour avancer, et **Échap** pour arrêter.
 
-**Request a new flow** lets you describe one in plain words ("how does a refund get back to the customer's card?"), and Claude or Codex traces it through the code. Flows you request are saved with the map.
+**Demander un nouveau parcours** te laisse en décrire un avec tes mots (« comment un remboursement revient-il sur la carte bancaire du client ? »), et Claude ou Codex le suit dans le code. Les parcours que tu demandes sont enregistrés avec la carte.
 
-### Filters
-- **Show connections:** turn kinds of lines on or off (Uses, Web requests, Background jobs and so on).
-- **Show technical detail:** switch to developer terms (Imports, HTTP, Queues), and show each file's exports.
-- **Highlight recent work:** turn the green highlights off for a clean map.
+### Filtres
+- **Afficher les liens :** active ou désactive des sortes de lignes (Utilise, Appels au serveur, Tâches de fond, etc.).
+- **Afficher le détail technique :** passe aux termes de développeur (Imports, HTTP, Files d'attente), et montre les exports de chaque fichier.
+- **Mettre en avant le travail récent :** coupe les surlignages verts pour une carte nette.
 
-## Asking questions
+## Poser des questions
 
-<img src="images/ask.png" alt="An answer board with numbered cards and a written walkthrough">
+<img src="images/ask.png" alt="Un tableau de réponse avec des blocs numérotés et une explication écrite">
 
-Type into the Ask bar at the bottom and press **Enter**. Claude or Codex answers in a few sentences and shows an **answer board**: just the cards involved, how they connect, a short note on each, and a numbered walkthrough when the answer is a sequence. Follow-up suggestions appear under the answer. **Back to map** returns to where you were.
+Tape dans la bulle de questions en bas et appuie sur **Entrée**. Claude ou Codex répond en quelques phrases et montre un **tableau de réponse** : seulement les blocs concernés, comment ils se relient, une courte note sur chacun, et une explication numérotée quand la réponse est une suite d'étapes. Des suggestions de suite apparaissent sous la réponse. **Retour à la carte** te ramène là où tu étais.
 
-- **Right-click → Ask about this** on any card or line adds it to your question as context.
-- The label in the bar shows what's answering. **Claude Code** means the Claude Code CLI and **Codex** means Codex, both running on your computer and able to read your source code. **Claude** means the map was opened in the Claude app, which answers from the map alone.
-- If neither is available, the bar explains what's needed. See [Troubleshooting](troubleshooting.md).
+- **Clic droit → Poser une question à ce sujet** sur un bloc ou une ligne l'ajoute à ta question comme contexte.
+- L'étiquette dans la barre montre qui répond. **Claude Code** veut dire la ligne de commande de Claude Code et **Codex** veut dire Codex, tous deux lancés sur ton ordinateur et capables de lire ton code source. **Claude** veut dire que la carte a été ouverte dans l'application Claude, qui répond à partir de la carte seule.
+- Rappel honnête : ce qui répond peut lire tes fichiers pour le faire, et ce qu'il lit part chez Anthropic ou OpenAI. Avec Claude Code, les fichiers de secrets sont interdits (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), mais le reste est lisible. Voir [Confidentialité et sécurité](privacy-and-security.md).
+- Si ni l'un ni l'autre n'est disponible, la barre explique ce qu'il faut. Voir [Dépannage](troubleshooting.md).
 
-## Blueprints
+## Les plans
 
-Everything above describes a map of existing code, which is what most maps are. A blueprint is the other kind: a map planned from a PRD or a spec before the code exists (see [Getting started](getting-started.md#plan-something-you-havent-built-yet)). It works the same way, with a few differences:
+Tout ce qui précède décrit une carte de code existant, ce que sont la plupart des cartes. Un plan est l'autre sorte : une carte prévue à partir d'un cahier des charges ou d'une spécification avant que le code existe (voir [Pour commencer](getting-started.md#planifier-une-appli-pas-encore-construite)). Il marche de la même façon, avec quelques différences :
 
-- **Dashed cards and a Blueprint label** beside the board's title show it's a plan. With nothing selected, the panel says which document it was planned from, the stack and the assumptions made.
-- **Review** replaces Health. It's a design review of the plan: endpoints anyone could use to change data, endpoints with no decision on who may use them, questions the PRD leaves open, and pieces nothing connects to. Each item has **Show on map** and **Resolve on the map**, which switches the Ask bar to Change and fills in a request to settle it. For an open question, type your answer after "My answer:" and press **Enter**. (When the map isn't served, the button is **Resolve with Claude** or **Resolve with Codex**, a request to paste instead.)
-- **Who may use it:** an endpoint's panel says whether anyone, signed-in people (and which ones), your own team, or another service may use it.
-- **Build it:** every part and file has **Build this with Claude** (or Codex), which shows a request to build just that piece the way the plan describes (its files, endpoints, what it relies on and any open questions), ready to copy into Claude Code or Codex.
-- **Ask and Change:** the Ask bar has a switch. **Ask** answers questions from the plan and the PRD. **Change** takes requests like "also plan out refunds" or "drop the admin page". It takes a few minutes; then the map redraws, the new and changed cards are highlighted as recent work, and a summary offers **Show N changes**, **Undo** and suggested next changes.
+- **Des blocs en pointillés et une étiquette Plan** à côté du titre du tableau montrent que c'est un plan. Sans sélection, le panneau dit à partir de quel document il a été planifié, la technologie et les hypothèses faites.
+- **Revue du plan** remplace la Santé. C'est une revue de conception du plan : adresses du serveur que tout le monde pourrait utiliser pour changer des données, adresses sans décision sur qui peut les utiliser, questions que le cahier des charges laisse ouvertes, et éléments reliés à rien. Chaque point a **Montrer sur la carte** et **Résoudre sur la carte**, qui passe la bulle de questions sur Modifier et remplit une demande pour le régler. Pour une question ouverte, tape ta réponse après « Ma réponse : » et appuie sur **Entrée**. (Quand la carte n'est pas servie, le bouton est **Résoudre avec Claude** ou **Résoudre avec Codex**, une demande à coller.)
+- **Qui peut l'utiliser :** le panneau d'une adresse du serveur dit si n'importe qui, les personnes connectées (et lesquelles), ton équipe, ou un autre service peut l'utiliser.
+- **La construire :** chaque partie et chaque fichier a **Construire ça avec Claude** (ou Codex), qui montre une demande pour construire cet élément comme le plan le décrit (ses fichiers, ses adresses du serveur, ce dont il dépend et les questions ouvertes), prête à copier dans Claude Code ou Codex.
+- **Demander et Modifier :** la bulle de questions a un interrupteur. **Demander** répond aux questions à partir du plan et du cahier des charges. **Modifier** prend des demandes comme « prévois aussi les remboursements » ou « retire la page d'administration ». Ça prend quelques minutes ; ensuite la carte se redessine, les blocs nouveaux et modifiés sont mis en avant comme travail récent, et un résumé propose **Montrer les N changements**, **Annuler** et des idées de changements suivants.
 
-## Right-click menus
+## Menus du clic droit
 
-| On | You get |
+| Sur | Tu obtiens |
 |---|---|
-| a card | Open · Show on the map · Ask about this · Show details · Copy name · Copy path (or endpoint) · Open in editor |
-| a line | Ask about this connection · Show details |
-| the background | Ask about this view · Up one level · Back to overview · Fit to screen · Search |
+| un bloc | Ouvrir · Montrer sur la carte · Poser une question à ce sujet · Afficher les détails · Copier le nom · Copier le chemin (ou l'adresse) · Ouvrir dans l'éditeur |
+| une ligne | Poser une question sur ce lien · Afficher les détails |
+| le fond | Poser une question sur cette vue · Remonter d'un niveau · Retour à la vue d'ensemble · Ajuster à l'écran · Chercher |
 
-**Open in editor** opens the file in VS Code (or another editor that handles `vscode://` links) at the right line.
+**Ouvrir dans l'éditeur** ouvre le fichier dans VS Code (ou un autre éditeur qui gère les liens `vscode://`) à la bonne ligne.

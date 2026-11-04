@@ -1,172 +1,181 @@
-# architecture.json schema
+# Schéma d'architecture.json
 
-`floorplan/architecture.json` describes the structure: subsystems, modules, external services, flows. Names and descriptions for individual files and routes go in `floorplan/descriptions/*.json` instead (see [writing-descriptions.md](writing-descriptions.md)). They're kept separate so parallel agents can write them without conflicts. `build.mjs` checks both against the scan and reports problems by field.
+`floorplan/architecture.json` décrit la structure : parties, modules, services extérieurs, parcours. Les noms et les descriptions des fichiers et des adresses du serveur prises une à une vont plutôt dans `floorplan/descriptions/*.json` (voir [writing-descriptions.md](writing-descriptions.md)). Les deux sont séparés pour que des agents en parallèle puissent les écrire sans conflit. `build.mjs` vérifie les deux par rapport au scan et signale les problèmes champ par champ.
 
-Contents: [Top level](#top-level) · [nodes](#nodes) · [Assignment rules](#how-files-get-assigned) · [edges](#edges) · [annotations](#annotations) · [flows](#flows) · [Recent work](#recent-work) · [Full example](#full-example)
+**Langue.** Tous les textes que ce fichier contient et que la personne verra (`summary`, `label`, `details`, `description`, `note`, `title`, `projet.summary`…) s'écrivent **en français, en langage simple, en tutoyant**, même si le code est en anglais. Les chemins, les méthodes et les URL restent tels quels. Les clés JSON ne se traduisent pas, sauf les trois clés de premier niveau `projet`, `parcours` et `visite`.
 
-## Top level
+Sommaire : [Premier niveau](#premier-niveau) · [nodes](#nodes) · [Règles d'affectation](#comment-les-fichiers-sont-affectés) · [edges](#edges) · [annotations](#annotations) · [parcours](#parcours) · [Travail récent](#travail-récent) · [Exemple complet](#exemple-complet)
 
-| field | type | required | meaning |
+## Premier niveau
+
+| champ | type | obligatoire | sens |
 |---|---|---|---|
-| `$schema` | `"floorplan/architecture@1"` | no | marker |
-| `project` | object | yes | `name` (string, required), `summary` (1–3 sentences), `entrypoints` (file paths) |
-| `nodes` | array | yes | subsystems and modules. See below |
-| `edges` | array | no | connections the scanner can't see |
-| `annotations` | array | no | notes pinned to specific files |
-| `flows` | array | no | guided walkthroughs through the board |
-| `tour` | array | no | the "Start here" tour shown on first open: 3–8 stops `{ "node": "<node id or file path>", "title": "…", "note": "…" }`, in plain language, in the order a newcomer should see them. The first flow is appended automatically |
-| `audience` | `"everyone"` \| `"developers"` | no | who names and descriptions are written for. Default `"everyone"`: plain language a non-technical owner understands (what it does for the business, in everyday words). `"developers"`: technical style for engineers |
-| `include` | string[] | no | file categories to map. Default `["code"]`. Others: `config`, `docs` |
-| `ignore` | string[] | no | globs for files to leave off the board entirely (generated code, vendored libs, fixtures) |
+| `$schema` | `"floorplan/architecture@1"` | non | repère |
+| `projet` | objet | oui | `name` (texte, obligatoire), `summary` (1 à 3 phrases), `entrypoints` (chemins de fichiers) |
+| `nodes` | tableau | oui | parties et modules. Voir plus bas |
+| `edges` | tableau | non | liens que le scan ne peut pas voir |
+| `annotations` | tableau | non | notes épinglées sur des fichiers précis |
+| `parcours` | tableau | non | visites guidées à travers le tableau |
+| `visite` | tableau | non | la visite « Commencer ici » montrée à la première ouverture : 3 à 8 étapes `{ "node": "<id de nœud ou chemin de fichier>", "title": "…", "note": "…" }`, en langage simple, dans l'ordre où une personne qui arrive doit les voir. Le premier parcours est ajouté automatiquement à la fin |
+| `audience` | `"everyone"` \| `"developers"` | non | pour qui les noms et les descriptions sont écrits. Par défaut `"everyone"` : langage simple qu'un propriétaire non technique comprend (ce que ça fait pour son activité, avec des mots de tous les jours). `"developers"` : style technique pour des ingénieurs |
+| `include` | string[] | non | catégories de fichiers à cartographier. Par défaut `["code"]`. Les autres : `config`, `docs` |
+| `ignore` | string[] | non | globs des fichiers à laisser complètement hors du tableau (code généré, bibliothèques copiées, jeux de test) |
 
 ## nodes
 
-Each node is a chip on the board. Hierarchy comes from `parent`. A node with no parent sits on the top-level board.
+Chaque nœud est une pastille sur le tableau. La hiérarchie vient de `parent`. Un nœud sans parent se trouve sur le tableau de premier niveau.
 
-| field | type | meaning |
+| champ | type | sens |
 |---|---|---|
-| `id` | string | unique; letters, digits, `_ - .`. Convention: dotted by parent (`api.orders`) |
-| `label` | string | short display name ("Orders API") |
-| `kind` | enum | `ui` `service` `worker` `library` `feature` `data` `config` `test` `script` `infra` `external` |
-| `parent` | string | id of the enclosing node |
-| `summary` | string | one sentence: what it's responsible for |
-| `details` | string | optional longer notes; blank lines separate paragraphs |
-| `paths` | string[] | globs claiming files (see below) |
-| `exclude` | string[] | globs to carve files back out of `paths`. **Inherited by all descendants**, e.g. `"exclude": ["**/*.test.tsx"]` on a frontend node keeps co-located tests out of every child, so a separate Tests node can claim them |
-| `packages` | string[] | **external nodes:** package names this node stands for, e.g. `"stripe"`, `"npm:@stripe/*"`, `"pypi:sqlalchemy"`. Imports of them become edges to this node |
-| `hosts` | string[] | **external nodes:** hostnames called from code, e.g. `"api.stripe.com"`, `"*.squareup.com"`. Calls become `http` edges |
-| `tags` | string[] | free-form, shown in the panel |
+| `id` | texte | unique ; lettres, chiffres, `_ - .`. Convention : pointé selon le parent (`api.orders`) |
+| `label` | texte | nom court affiché (« Commandes ») |
+| `kind` | énumération | `ui` `service` `worker` `library` `feature` `data` `config` `test` `script` `infra` `external` |
+| `parent` | texte | id du nœud qui l'englobe |
+| `summary` | texte | une phrase : de quoi il est responsable |
+| `details` | texte | notes plus longues, facultatives ; les lignes vides séparent les paragraphes |
+| `paths` | string[] | globs qui réclament des fichiers (voir plus bas) |
+| `exclude` | string[] | globs pour sortir des fichiers de `paths`. **Hérité par tous les descendants** : par exemple `"exclude": ["**/*.test.tsx"]` sur un nœud d'écrans garde les tests rangés à côté hors de chaque enfant, pour qu'un nœud Tests séparé puisse les réclamer |
+| `packages` | string[] | **nœuds extérieurs :** noms de paquets que ce nœud représente, par exemple `"stripe"`, `"npm:@stripe/*"`, `"pypi:sqlalchemy"`. Les imports de ces paquets deviennent des liens vers ce nœud |
+| `hosts` | string[] | **nœuds extérieurs :** noms d'hôtes appelés par le code, par exemple `"api.stripe.com"`, `"*.squareup.com"`. Les appels deviennent des liens `http` |
+| `tags` | string[] | libres, affichés dans le panneau |
 
-Kinds, briefly:
-- `ui`: frontends and apps
-- `service`: a deployable server
-- `worker`: background jobs and queues
-- `library`: shared code
-- `feature`: a vertical slice inside a service or UI
-- `data`: models, migrations, the DB layer
+Les genres (`kind`), en bref :
+- `ui` : écrans et applis
+- `service` : un serveur déployable
+- `worker` : tâches de fond et files d'attente
+- `library` : code partagé
+- `feature` : une tranche verticale à l'intérieur d'un service ou d'un écran
+- `data` : modèles, migrations, la couche base de données
 - `config`
 - `test`
-- `script`: one-off and ops scripts
-- `infra`: deploy, CI, IaC
-- `external`: databases and third-party APIs. These own no files.
+- `script` : scripts ponctuels et d'exploitation
+- `infra` : déploiement, intégration continue, infrastructure en code
+- `external` : bases de données et API tierces. Ils ne possèdent aucun fichier.
 
-### Glob syntax
-- `**` matches any number of directories, `*` stays within one path segment, `?` matches one character, `{a,b}` is alternation.
-- A whole folder name in brackets, like `[id]`, `[...slug]` or `[[...slug]]` (Next.js, SvelteKit), matches that folder literally: `app/orders/[id]/**`. Elsewhere, `[abc]` matches one of those characters.
-- A pattern with no wildcard also matches as a directory: `backend/app` equals `backend/app/**`.
-- Paths are relative to the codebase root. In a multi-repo root they start with the repo folder.
+### Syntaxe des globs
+- `**` correspond à n'importe quel nombre de dossiers, `*` reste dans un seul segment de chemin, `?` correspond à un caractère, `{a,b}` est une alternative.
+- Un nom de dossier entier entre crochets, comme `[id]`, `[...slug]` ou `[[...slug]]` (Next.js, SvelteKit), correspond littéralement à ce dossier : `app/orders/[id]/**`. Ailleurs, `[abc]` correspond à l'un de ces caractères.
+- Un motif sans joker correspond aussi comme dossier : `backend/app` équivaut à `backend/app/**`.
+- Les chemins sont relatifs à la racine du code. Dans une racine à plusieurs dépôts, ils commencent par le dossier du dépôt.
 
-### How files get assigned
-Every included file goes to exactly one node:
-1. Collect the nodes whose `paths` match the file and whose `exclude` doesn't.
-2. The **deepest** node wins, so a child beats its parent. You can give a parent a broad glob (`web/**`) and children narrower ones; files no child claims stay on the parent.
-3. Between nodes at the same depth, the glob with the longer literal prefix wins. Real ties are warned about.
-4. Files no node claims go to an automatic **Unassigned** chip. Keep it under ~10%.
+### Comment les fichiers sont affectés
+Chaque fichier inclus va dans un seul nœud :
+1. Rassemble les nœuds dont les `paths` correspondent au fichier et dont l'`exclude` ne le retire pas.
+2. Le nœud **le plus profond** gagne : un enfant l'emporte donc sur son parent. Tu peux donner à un parent un glob large (`web/**`) et à ses enfants des globs plus étroits ; les fichiers qu'aucun enfant ne réclame restent sur le parent.
+3. Entre nœuds de même profondeur, le glob dont le début littéral est le plus long gagne. Les vraies égalités sont signalées par un avertissement.
+4. Les fichiers qu'aucun nœud ne réclame vont dans une pastille automatique **non affectés**. Garde-la sous ~10 %.
 
-In the viewer, a node with more than ~24 files of its own groups them into folder chips automatically, so you don't need a node for every directory. Make a node when it means something.
+Dans la carte, un nœud qui a plus d'environ 24 fichiers à lui regroupe automatiquement ces fichiers en pastilles de dossiers : pas besoin d'un nœud pour chaque dossier. Fais un nœud quand il a un sens.
 
 ## edges
 
-Only add what static analysis can't find. Imports (`import`) and HTTP calls matched to routes (`http`) are already in the scan.
+N'ajoute que ce que l'analyse du code ne trouve pas. Les imports (`import`) et les appels HTTP reliés à des adresses du serveur (`http`) sont déjà dans le scan.
 
-| field | type | meaning |
+| champ | type | sens |
 |---|---|---|
-| `from`, `to` | string | node id **or** file path |
-| `kind` | enum | `import` `call` `http` `rpc` `event` `queue` `data` `config` |
-| `label` | string | short, e.g. `"POST /orders"`, `"order.paid"`, `"reads/writes"` |
-| `description` | string | optional sentence shown when the trace is clicked |
+| `from`, `to` | texte | id de nœud **ou** chemin de fichier |
+| `kind` | énumération | `import` `call` `http` `rpc` `event` `queue` `data` `config` |
+| `label` | texte | court, par exemple `"POST /orders"`, `"order.paid"`, `"lit et écrit"` |
+| `description` | texte | phrase facultative affichée quand on clique sur le tracé |
 
-Good candidates:
-- service → database (`data`)
-- publisher → queue → consumer (`queue` / `event`)
-- webhooks coming in from third parties (`http`, from the external node to the handler)
-- cron/scheduler → job (`call`)
-- Firebase background functions (schedules, Firestore/Storage/Pub/Sub triggers, from the scan's FIREBASE FUNCTIONS list) → a `worker` node; link the collection or topic that triggers them (`event`)
-- calls through env-configured base URLs that the matcher missed (`http`)
+Bons candidats :
+- service → base de données (`data`)
+- émetteur → file d'attente → consommateur (`queue` / `event`)
+- webhooks entrants envoyés par des tiers (`http`, du nœud extérieur vers le gestionnaire)
+- tâche planifiée → job (`call`)
+- fonctions Firebase en arrière-plan (planifiées, déclenchées par Firestore, Storage ou Pub/Sub, d'après la liste FIREBASE FUNCTIONS du scan) → un nœud `worker` ; relie la collection ou le sujet qui les déclenche (`event`)
+- appels passant par des URL de base données par l'environnement que la mise en correspondance a ratés (`http`)
 
 ## annotations
 
-`{ "path": "<file>", "note": "…", "tags": ["hotspot"] }` pins a note to a file. The file's chip gets an accent outline. Use these sparingly, for god-files, tricky invariants, or deprecated code still in use.
+`{ "path": "<fichier>", "note": "…", "tags": ["hotspot"] }` épingle une note sur un fichier. Le bloc du fichier reçoit un contour de couleur. Utilise-les avec parcimonie, pour les fichiers énormes qui font tout, les règles délicates, ou le code obsolète encore utilisé.
 
-## flows
+## parcours
+
+Clé de premier niveau : `parcours`.
 
 ```json
-{ "id": "checkout", "title": "Checkout", "description": "optional",
-  "steps": [ { "node": "web.cart", "note": "User clicks Pay" }, { "node": "api.orders", "note": "Creates the order" } ] }
+{ "id": "checkout", "title": "Commander", "description": "facultatif",
+  "steps": [ { "node": "web.cart", "note": "La personne clique sur Payer" }, { "node": "api.orders", "note": "Crée la commande" } ] }
 ```
-- Each step's `node` is a node id or a file path. There must be at least 2 steps.
-- The viewer moves to the board where each pair of consecutive steps is visible and animates a signal between them.
-- Write the notes as a narration a new engineer would want.
+- Le `node` de chaque étape est un id de nœud ou un chemin de fichier. Il faut au moins 2 étapes.
+- La carte se place sur le tableau où chaque paire d'étapes consécutives est visible, et anime un signal entre elles.
+- Écris les notes comme le commentaire dont une personne qui arrive aurait besoin, en langage simple.
 
-## recent work
+## Travail récent
 
-`floorplan/recent-work.json` is a separate file, rewritten on every make and update. It holds what was just worked on, framed against what the user asked for. The viewer gives those cards a green "Changed"/"New" tag, shows "N changed" on the parts containing them, adds each `note` to the card's hover, and lists the tasks under a **Recent work** button and in the overview panel.
+`floorplan/recent-work.json` est un fichier à part, réécrit à chaque création et à chaque mise à jour. Il contient ce sur quoi on vient de travailler, présenté par rapport à ce que la personne avait demandé. La carte donne à ces blocs une étiquette verte « Modifié » ou « Nouveau », affiche « N modifié(s) » sur les parties qui les contiennent, ajoute chaque `note` au survol du bloc, et liste les tâches sous un bouton **Travail récent** et dans le panneau de vue d'ensemble.
 
 ```json
 {
   "updatedAt": "2026-10-27T10:30:00Z",
   "tasks": [
     {
-      "title": "Refunds from the order page",
-      "request": "Let staff refund an order straight from its order page",
-      "summary": "Staff can now refund all or part of an order from its page. The money goes back to the customer's card through Stripe, and they get an email. Refunds over $500 need a manager.",
+      "title": "Remboursement depuis la commande",
+      "request": "Que le personnel puisse rembourser une commande directement depuis sa page",
+      "summary": "Le personnel peut maintenant rembourser tout ou partie d'une commande depuis sa page. L'argent retourne sur la carte du client par Stripe, et il reçoit un e-mail. Au-delà de 500 €, il faut l'accord d'un responsable.",
       "items": [
-        { "ref": "shop-api/app/services/refunds.py", "change": "new", "note": "New: works out how much to refund, sends it back through Stripe and records it on the order. This is the heart of what was asked." },
-        { "ref": "POST /api/orders/<int:order_id>/refund", "change": "new", "note": "The request the Refund button sends; it checks the manager limit before anything is refunded." }
+        { "ref": "shop-api/app/services/refunds.py", "change": "new", "note": "Nouveau : calcule la somme à rembourser, la renvoie par Stripe et l'enregistre sur la commande. C'est le cœur de ce qui était demandé." },
+        { "ref": "POST /api/orders/<int:order_id>/refund", "change": "new", "note": "La demande qu'envoie le bouton Rembourser ; elle vérifie la limite du responsable avant tout remboursement." }
       ]
     }
   ]
 }
 ```
 
-| field | meaning |
+| champ | sens |
 |---|---|
-| `tasks[].title` | 2–5 words, shown on hover and as the board title |
-| `tasks[].request` | what the user asked for, in their words (shortened). Shown as "You asked: …" |
-| `tasks[].summary` | 1–2 sentences: what was done toward it, and where it stands. Mention deletions here; deleted files aren't on the map |
-| `items[].ref` | a file path, a node id, or `"METHOD /path"` exactly as on the map. Refs that aren't on the map are left out with a warning |
-| `items[].change` | `"new"` or `"changed"` (default) |
-| `items[].note` | 1–2 plain sentences: what changed on this card, and how it serves the request |
+| `tasks[].title` | 2 à 5 mots, affichés au survol et comme titre du tableau |
+| `tasks[].request` | ce que la personne a demandé, avec ses mots (raccourci). Affiché comme « Tu as demandé : … » |
+| `tasks[].summary` | 1 à 2 phrases : ce qui a été fait pour y répondre, et où ça en est. Mentionne ici les suppressions ; les fichiers supprimés ne sont pas sur la carte |
+| `items[].ref` | un chemin de fichier, un id de nœud ou `"METHODE /chemin"` exactement comme sur la carte. Les références qui ne sont pas sur la carte sont laissées de côté avec un avertissement |
+| `items[].change` | `"new"` ou `"changed"` (par défaut) |
+| `items[].note` | 1 à 2 phrases simples : ce qui a changé sur ce bloc, et en quoi ça sert la demande |
 
-`{ "tasks": [] }` clears all highlights.
+`{ "tasks": [] }` efface toutes les mises en avant.
 
-## Full example
+## Exemple complet
 
-A frontend repo and a backend repo side by side:
+Un dépôt d'écrans et un dépôt de serveur côte à côte :
 
 ```json
 {
   "$schema": "floorplan/architecture@1",
-  "project": {
+  "projet": {
     "name": "Acme Shop",
-    "summary": "Next.js storefront talking to a Flask API over REST; Postgres for storage; Stripe for payments.",
+    "summary": "La boutique en ligne : les clients commandent depuis le site, qui parle à un serveur central ; les commandes sont gardées dans une base de données et les paiements passent par Stripe.",
     "entrypoints": ["shop-api/app.py", "shop-web/src/app/page.tsx"]
   },
   "ignore": ["shop-api/migrations/versions/**"],
   "nodes": [
-    { "id": "web", "label": "Storefront", "kind": "ui", "summary": "Next.js app router UI.", "paths": ["shop-web/src"] },
+    { "id": "web", "label": "Site de la boutique", "kind": "ui", "summary": "Le site que les clients utilisent pour parcourir le catalogue et commander.", "paths": ["shop-web/src"] },
     { "id": "web.pages", "parent": "web", "label": "Pages", "kind": "feature", "paths": ["shop-web/src/app"] },
-    { "id": "web.api", "parent": "web", "label": "API client", "kind": "library", "summary": "Typed fetch wrapper for every backend call.", "paths": ["shop-web/src/lib/api*"] },
-    { "id": "api", "label": "Shop API", "kind": "service", "summary": "Flask REST API.", "paths": ["shop-api/app.py", "shop-api/app"] },
-    { "id": "api.routes", "parent": "api", "label": "Routes", "kind": "feature", "paths": ["shop-api/app/routes"] },
-    { "id": "api.models", "parent": "api", "label": "Models", "kind": "data", "paths": ["shop-api/app/models"] },
+    { "id": "web.api", "parent": "web", "label": "Liaison avec le serveur", "kind": "library", "summary": "Envoie au serveur central chaque demande que le site fait.", "paths": ["shop-web/src/lib/api*"] },
+    { "id": "api", "label": "Serveur principal", "kind": "service", "summary": "Le serveur central qui garde les produits, les commandes et les paiements.", "paths": ["shop-api/app.py", "shop-api/app"] },
+    { "id": "api.routes", "parent": "api", "label": "Demandes reçues", "kind": "feature", "paths": ["shop-api/app/routes"] },
+    { "id": "api.models", "parent": "api", "label": "Fiches enregistrées", "kind": "data", "paths": ["shop-api/app/models"] },
     { "id": "tests", "label": "Tests", "kind": "test", "paths": ["shop-api/tests", "shop-web/**/*.test.{ts,tsx}"] },
-    { "id": "pg", "label": "Postgres", "kind": "external", "packages": ["pypi:sqlalchemy", "pypi:psycopg2"] },
+    { "id": "pg", "label": "Base de données", "kind": "external", "packages": ["pypi:sqlalchemy", "pypi:psycopg2"] },
     { "id": "stripe", "label": "Stripe", "kind": "external", "packages": ["stripe"], "hosts": ["api.stripe.com"] }
   ],
   "edges": [
-    { "from": "stripe", "to": "api.routes", "kind": "http", "label": "webhooks", "description": "payment_intent.succeeded marks orders paid." }
+    { "from": "stripe", "to": "api.routes", "kind": "http", "label": "alertes de paiement", "description": "Stripe prévient quand un paiement a réussi, et la commande est marquée payée." }
   ],
   "annotations": [
-    { "path": "shop-api/app/routes/orders.py", "note": "All order state transitions live here.", "tags": ["hotspot"] }
+    { "path": "shop-api/app/routes/orders.py", "note": "Tous les changements d'état d'une commande passent par ce fichier.", "tags": ["hotspot"] }
   ],
-  "flows": [
-    { "id": "checkout", "title": "Checkout", "steps": [
-      { "node": "web.pages", "note": "Cart page submits the order" },
-      { "node": "web.api", "note": "POST /api/orders" },
-      { "node": "api.routes", "note": "Validates and creates the order" },
-      { "node": "stripe", "note": "Creates a PaymentIntent" }
+  "parcours": [
+    { "id": "checkout", "title": "Commander", "steps": [
+      { "node": "web.pages", "note": "La page du panier envoie la commande" },
+      { "node": "web.api", "note": "Fait la demande POST /api/orders" },
+      { "node": "api.routes", "note": "Vérifie la commande et la crée" },
+      { "node": "stripe", "note": "Prépare le paiement" }
     ]}
+  ],
+  "visite": [
+    { "node": "web", "title": "Ce que voient les clients", "note": "C'est le site de la boutique : les clients y parcourent le catalogue et passent commande." },
+    { "node": "api", "title": "Le serveur principal", "note": "Il garde les produits, les commandes et les paiements. Le site lui envoie chaque demande." },
+    { "node": "stripe", "title": "Les paiements", "note": "Stripe prend les paiements par carte à la place de la boutique, et la prévient quand ils ont réussi." }
   ]
 }
 ```

@@ -1,190 +1,169 @@
-# Developing Floorplan
+# Développer Floorplan (cette copie)
 
-## Repo layout
+Cette page décrit ce dépôt tel qu'il est : une copie française et non officielle de Floorplan (de Hayden Smith, licence MIT), partie de la version 0.6.3 de l'auteur. Elle n'est reliée à aucun dépôt de l'auteur et ne publie rien vers lui. Les noms de fichiers cités ci-dessous sont ceux du code actuel ; certains seront renommés en français plus tard.
+
+## Organisation du dépôt
 
 ```
 .claude-plugin/
-  plugin.json          the plugin: name, version, author
-  marketplace.json     this repo as its own one-plugin marketplace
+  plugin.json          le plugin : nom, version, auteur
+  marketplace.json     ce dépôt comme sa propre source d'un seul plugin
   icon.png
 .codex-plugin/
-  plugin.json          the same plugin for Codex (same skill, same version)
+  plugin.json          le même plugin pour Codex (même compétence, même version)
   icon.png
 .agents/plugins/
-  marketplace.json     this repo as a Codex marketplace
+  marketplace.json     ce dépôt comme source pour Codex
 skills/floorplan/
-  SKILL.md             the workflow Claude and Codex follow
-  agents/openai.yaml   how Codex lists the skill
-  references/          formats and style guides Claude reads while working
-    schema.md                architecture.json and recent-work.json
-    choosing-boundaries.md   how to carve a codebase into a good map
-    writing-descriptions.md  plain-language names and descriptions
-    blueprint.md             plan.json, for a map planned from a PRD
-  scripts/             Node.js, no dependencies; Claude runs these
-    status.mjs     is there a map, and how stale is it (runs when the skill loads)
-    scan.mjs       repos, files, imports, endpoints, requests → .cache/scan.json
-    plan.mjs       a blueprint's plan.json → the same .cache/scan.json
-    build.mjs      validate, assign files, connect, Health, screens → graph.json + index.html
-    describe.mjs   worksheets for Claude to name and describe files and endpoints
-    refresh.mjs    incremental update: re-scan, carry over, flag changes, rebuild
-    recent.mjs     facts for marking recent work
-    open.mjs       start or reuse the map's server, and open the browser
-    lib/           extraction, import resolution, route matching, Health, screens, which agent is running, helpers
+  SKILL.md             le déroulé que suivent Claude et Codex
+  agents/openai.yaml   comment Codex présente la compétence
+  references/          formats et guides de style que Claude lit en travaillant
+    schema.md                architecture.json et recent-work.json
+    choosing-boundaries.md   comment découper un projet en une bonne carte
+    writing-descriptions.md  noms et descriptions en langage simple
+    blueprint.md             plan.json, pour une carte prévue à partir d'un cahier des charges
+  scripts/             Node.js, sans dépendance ; Claude les lance
+    status.mjs     y a-t-il une carte, et depuis quand n'est-elle plus à jour (se lance au chargement de la compétence)
+    scan.mjs       dépôts, fichiers, imports, adresses du serveur, appels → .cache/scan.json
+    plan.mjs       le plan.json d'un plan → le même .cache/scan.json
+    build.mjs      vérifier, affecter les fichiers, relier, santé, écrans → graph.json + index.html
+    describe.mjs   feuilles de travail pour que Claude nomme et décrive les fichiers et adresses du serveur
+    refresh.mjs    mise à jour incrémentale : nouvelle analyse, report, signalement des changements, reconstruction
+    recent.mjs     les faits pour marquer le travail récent
+    open.mjs       démarrer ou réutiliser le serveur de la carte, et ouvrir le navigateur
+    lib/           extraction, résolution des imports, mise en relation des routes, santé, écrans, quel agent tourne, utilitaires
   assets/
-    viewer.html    the map (template the build fills in)
-    ui/            viewer extensions: Theme button, blueprints, glossary, Health, recent work, screens, tour, waitlist card
-    graph-query.js shared map lookups (viewer, query.mjs, Ask instructions)
-    serve.mjs      copied into each project's floorplan/ folder; answers through Claude Code or Codex
-    query-cli.mjs  becomes floorplan/query.mjs
+    viewer.html    la carte (le gabarit que la construction remplit)
+    ui/            extensions de la visionneuse : bouton de thème, plans, glossaire, santé, travail récent, écrans, visite guidée, export
+    graph-query.js recherches partagées dans la carte (visionneuse, query.mjs, consignes de la bulle de questions)
+    serve.mjs      copié dans le dossier floorplan/ de chaque projet ; répond par Claude Code ou Codex
+    query-cli.mjs  devient floorplan/query.mjs
     logo.png, favicon.png
-    vendor/        bundled layout engine (elkjs) and fonts, with their licenses
-tests/                 regression tests and the sample projects they map
-tools/checksums.mjs    writes CHECKSUMS.txt for a release, and checks an installed copy against it
-CHECKSUMS.txt          SHA-256 of every file the plugin runs from, as of the last release
-docs/                  these guides
+    vendor/        moteur de mise en page (elkjs) et polices intégrés, avec leurs licences
+tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
+tools/checksums.mjs    écrit CHECKSUMS.txt, et compare une copie installée avec lui
+CHECKSUMS.txt          SHA-256 de chaque fichier d'où le plugin tourne
+docs/                  ces guides
+.github/workflows/     les tests sur GitHub, à la demande seulement
 ```
 
-## Try your working copy
+## Essayer ta copie de travail
 
-Install from your local folder instead of GitHub:
+Installe depuis ton dossier local :
 
 ```bash
-claude plugin marketplace add /path/to/floorplan
-claude plugin install floorplan@floorplan
+claude plugin marketplace add /chemin/vers/floorplan-fr
+claude plugin install floorplan-fr@floorplan-fr
 ```
 
-A plugin installed from a local folder runs straight from it, so edits apply in the next session with no update step.
+Un plugin installé depuis un dossier local tourne directement depuis lui, donc tes modifications s'appliquent à la session suivante, sans étape de mise à jour.
 
-To try it in Codex, see [Trying a working copy](codex.md#trying-a-working-copy). Codex copies a local plugin when you add it, so run `codex plugin add floorplan@floorplan` again after each change. `--agent claude|codex` on build.mjs (or `FLOORPLAN_AGENT`) and `--engine claude|codex` on serve.mjs let you try either agent's map from anywhere.
+Pour l'essayer dans Codex, voir [Essayer ta copie de travail](codex.md#essayer-ta-copie-de-travail). Codex copie un plugin local quand tu l'ajoutes, donc relance `codex plugin add floorplan-fr@floorplan-fr` après chaque changement. `--agent claude|codex` sur build.mjs (ou `FLOORPLAN_AGENT`) et `--engine claude|codex` sur serve.mjs te laissent essayer la carte de l'un ou l'autre agent de n'importe où.
 
-The scripts also run on their own, which is the fastest way to work on them:
+Les scripts se lancent aussi seuls, ce qui est le moyen le plus rapide d'y travailler :
 
 ```bash
-node skills/floorplan/scripts/scan.mjs /path/to/project
-node skills/floorplan/scripts/build.mjs /path/to/project
-node skills/floorplan/scripts/open.mjs /path/to/project
+node skills/floorplan/scripts/scan.mjs /chemin/vers/un/projet
+node skills/floorplan/scripts/build.mjs /chemin/vers/un/projet
+node skills/floorplan/scripts/open.mjs /chemin/vers/un/projet
 ```
 
-`build.mjs` needs a `floorplan/architecture.json` in the project, so run the skill once first, or write a small one by hand ([schema](../skills/floorplan/references/schema.md)).
+`build.mjs` a besoin d'un `floorplan/architecture.json` dans le projet : lance la compétence une fois d'abord, ou écris-en un petit à la main ([format](../skills/floorplan/references/schema.md)). Dans le fichier, les clés `project`, `flows` et `tour` s'appellent maintenant `projet`, `parcours` et `visite`.
 
 ## Tests
 
 ```bash
-npm test
+node --test
 ```
 
-The tests use Node's built-in test runner, so there's nothing to install (`npm test` is the same as `node --test`). GitHub runs them on every push and pull request on Linux and Windows with Node 18, 20 and 22, and on macOS weekly and on demand (Actions → macOS → Run workflow), since its macOS machines are often all busy.
+Les tests utilisent le lanceur de tests intégré à Node : il n'y a rien à installer (`npm test` fait la même chose). **On les lance sur le PC de la personne qui tient ce dépôt, avec `node --test`, avant chaque enregistrement important.** Ceux de GitHub ne tournent qu'à la demande : Actions → Tests → Run workflow. Ils couvrent alors Linux et Windows avec Node 18, 20 et 22. Rien ne se lance tout seul à chaque envoi.
 
-| File | What it checks |
+| Fichier | Ce qu'il vérifie |
 |---|---|
-| `parsing.test.mjs` | imports, endpoints, web requests and doc comments, per language and framework |
-| `helpers-lib.test.mjs` | globs, file types, command-line flags, fallback names |
-| `secrets.test.mjs` | Health finds secrets, masks them, and ignores placeholders |
-| `health.test.mjs` | which endpoints Health calls open to anyone (FastAPI and Express samples in `fixtures/`) |
-| `public-by-design.test.mjs` | what Health leaves alone because it's public on purpose (feeds, addresses a project publishes, cached responses, routes with nothing private, Payload CMS, tracker tokens, files a tool opens), each with a near miss it must still report |
-| `stack-health.test.mjs` | Health's checks for Supabase row-level security, Firebase rules, Stripe webhook signatures, secret keys in public variables and CORS, with look-alikes each must leave alone, and a whole sample app done wrong and done right |
-| `django.test.mjs` | Django: an app's `urls.py` included under a prefix, and the website's requests matched to it |
-| `fastify.test.mjs` | Fastify: plugins registered with a prefix, nested registers, and the website's requests reaching the right plugin (sample in `fixtures/`) |
-| `route-table-keys.test.mjs` | route tables keyed by `"METHOD /path"` in JavaScript and Python: which tables count, each entry's handler, the website's requests reaching them, and Health staying quiet about their sign-in (sample in `fixtures/`) |
-| `firebase.test.mjs` | Firebase Cloud Functions: callables and onRequest functions as endpoints, the website's calls to them, Screens, Health, background functions (React + Firebase sample in `fixtures/`) |
-| `blueprint.test.mjs` | a map planned from a PRD before any code exists: plan.json errors, endpoints and calls, Screens, the design review, refreshing and switching to the real code (sample PRD in `fixtures/`) |
-| `blueprint-change.test.mjs` | changing a blueprint from the map: the agent's updated plan is checked, saved and highlighted, retried once when it fails the checks, and undone (stand-in CLI in `fixtures/fake-cli/`) |
-| `large-files.test.mjs` | files over the scan's size limit stay on the map with their line count, and the scan, Health and the map say they weren't read |
-| `sample-app.test.mjs` | a whole map of a two-repo shop: endpoints, cross-repo requests, Health, offline map, no secret values written, updates |
-| `serve.test.mjs` | the map's server: 127.0.0.1 only, its own host names only, token and same-origin checks, nothing served from outside its folder |
-| `export.test.mjs` | exporting a copy to share: what's left out by default, the extras when asked, the Export button's endpoint |
-| `phone.test.mjs` | phone and tablet layout: the top bar wraps instead of overflowing, icon-only buttons keep a name, 44 px touch targets, the details sheet that opens when a box is tapped, the zoom buttons in the top row, the folding description and the AI-tool note shown only while asking (checks on the built page, not a real screen) |
-| `ask.test.mjs` | asking through Claude Code or Codex: which one is used, read-only, follow-ups, sign-in errors (stand-in CLIs in `fixtures/fake-cli/`) |
-| `agents.test.mjs` | telling Claude Code from Codex, and what a map built by each records and writes |
-| `release.test.mjs` | the version agrees across both plugins' `plugin.json`, the README badge, the changelog and `CHECKSUMS.txt` |
-| `supply-chain.test.mjs` | what the plugin can do stays what [Is it safe to install?](is-it-safe.md) says: no hooks, MCP servers or dependencies, one outbound request, a fixed list of programs and pre-approved scripts, no code loaded at run time, the vendored layout engine unchanged |
-| `touch.test.mjs` | touch gestures: a drag follows one finger and ends on a cancelled touch, two-finger pinch and pan, nothing re-fits the map mid-gesture (checks on the built page, not a real screen) |
+| `parsing.test.mjs` | imports, adresses du serveur, appels et commentaires de documentation, par langage et par framework |
+| `helpers-lib.test.mjs` | motifs de fichiers, genres de fichiers, options de ligne de commande, noms de secours |
+| `secrets.test.mjs` | la Santé trouve les secrets, n'en garde que la longueur, et ignore les valeurs factices |
+| `false-positives.test.mjs` | les fausses alertes de la Santé (empreintes de mots de passe, sauvegardes chiffrées) et la sortie « Pas un problème » |
+| `health.test.mjs` | quelles adresses du serveur la Santé juge ouvertes à tous (exemples FastAPI et Express dans `fixtures/`) |
+| `public-by-design.test.mjs` | ce que la Santé laisse tranquille parce que c'est public exprès (flux, adresses qu'un projet publie, réponses en cache, routes sans rien de privé, Payload CMS, jetons d'outils de suivi, fichiers qu'un outil ouvre), chacun avec un cas voisin qu'elle doit quand même signaler |
+| `stack-health.test.mjs` | les contrôles de la Santé pour la sécurité des lignes de Supabase, les règles Firebase, les signatures des webhooks Stripe, les clés secrètes dans les variables publiques et le CORS, avec des cas voisins qu'ils doivent laisser, et toute une appli d'exemple mal faite puis bien faite |
+| `django.test.mjs` | Django : le `urls.py` d'une appli inclus sous un préfixe, et les appels du site associés |
+| `fastify.test.mjs` | Fastify : plugins enregistrés avec un préfixe, enregistrements imbriqués, et les appels du site qui atteignent le bon plugin (exemple dans `fixtures/`) |
+| `route-table-keys.test.mjs` | tables de routes indexées par `"MÉTHODE /chemin"` en JavaScript et en Python : quelles tables comptent, le gestionnaire de chaque entrée, les appels du site qui les atteignent, et la Santé qui ne dit rien de leur connexion (exemple dans `fixtures/`) |
+| `firebase.test.mjs` | Firebase Cloud Functions : fonctions appelables et `onRequest` comme adresses du serveur, les appels du site vers elles, Écrans, Santé, tâches de fond (exemple React + Firebase dans `fixtures/`) |
+| `blueprint.test.mjs` | une carte prévue à partir d'un cahier des charges avant tout code : erreurs de plan.json, adresses et appels, Écrans, revue du plan, mise à jour et passage au vrai code (cahier des charges d'exemple dans `fixtures/`) |
+| `blueprint-change.test.mjs` | modifier un plan depuis la carte : le plan mis à jour de l'agent est vérifié, enregistré et mis en avant, retenté une fois s'il échoue aux contrôles, et annulé (ligne de commande de remplacement dans `fixtures/fake-cli/`) |
+| `large-files.test.mjs` | les fichiers au-dessus de la limite de taille de l'analyse restent sur la carte avec leur nombre de lignes, et l'analyse, la Santé et la carte disent qu'ils n'ont pas été lus |
+| `sample-app.test.mjs` | une carte complète d'une boutique en deux dépôts : adresses du serveur, appels entre dépôts, Santé, carte hors connexion, aucune valeur de secret écrite, mises à jour |
+| `serve.test.mjs` | le serveur de la carte : seulement `127.0.0.1`, seulement ses propres noms d'hôte, vérifications du jeton et de l'origine, rien servi hors de son dossier |
+| `export.test.mjs` | exporter une copie à partager : ce qui est laissé de côté par défaut, les ajouts demandés, l'adresse du bouton Exporter |
+| `phone.test.mjs` | disposition téléphone et tablette : la barre du haut passe à la ligne au lieu de déborder, les boutons à icône seule gardent un nom, zones tactiles de 44 px, la feuille de détails qui s'ouvre quand on touche un bloc, les boutons de zoom sur la première ligne, la description qui se replie et la note sur l'outil d'IA affichée seulement pendant une question (contrôles sur la page construite, pas sur un vrai écran) |
+| `ask.test.mjs` | poser des questions par Claude Code ou Codex : lequel est utilisé, lecture seule, fichiers de secrets interdits, serveurs MCP non chargés, questions de suite, erreurs de connexion (lignes de commande de remplacement dans `fixtures/fake-cli/`) |
+| `agents.test.mjs` | distinguer Claude Code de Codex, et ce que consigne et écrit une carte faite par chacun |
+| `release.test.mjs` | la version est la même partout où elle est écrite (les deux `plugin.json`, le journal des changements, `CHECKSUMS.txt`) |
+| `supply-chain.test.mjs` | ce que le plugin peut faire reste ce que dit [Est-ce sûr à installer ?](is-it-safe.md) : ni crochets, ni serveurs MCP, ni dépendances, aucune requête sortante, une liste fixe de programmes et de scripts autorisés d'avance, aucun code chargé à l'exécution, le moteur de mise en page intégré inchangé |
+| `theme.test.mjs` | clair et sombre : la carte construite contient les deux thèmes, en choisit un avant de dessiner, et n'a qu'un bouton de thème |
+| `touch.test.mjs` | gestes tactiles : un glissement suit un doigt et finit sur un toucher annulé, pincement et déplacement à deux doigts, rien ne recadre la carte en plein geste (contrôles sur la page construite, pas sur un vrai écran) |
 
-Sample projects are written to a temp folder by `helpers.mjs` (`shopApp()`) or copied from `tests/fixtures/`. Anything secret-looking is assembled at runtime, so no real-looking key is ever committed.
+Les projets d'exemple sont écrits dans un dossier temporaire par `helpers.mjs` (`shopApp()`) ou copiés depuis `tests/fixtures/`. Tout ce qui ressemble à un secret est assemblé à l'exécution, donc aucune fausse clé crédible n'est jamais enregistrée.
 
-When you fix a bug in what Floorplan detects, add a sample that shows it, and check the test fails without your fix.
+Quand tu corriges un défaut de ce que Floorplan détecte, ajoute un exemple qui le montre, et vérifie que le test échoue sans ta correction.
 
-## Extending the viewer
+## Étendre la visionneuse
 
-Files in `skills/floorplan/assets/ui/` are inlined into every map, in name order. They talk to the viewer only through `window.Floorplan`, which offers:
-- the graph and lookups;
-- navigation (`go`, `open`, `reveal`, `showBoard`, `playFlow`);
-- `addHeaderButton` and `addPanelSection('overview' | 'item', fn)`;
-- `modal`, `toast`, `store`;
-- events (`on('ready' | 'render' | 'panel' | 'technical')`);
-- `exported`, set in an exported copy: leave out anything there that needs Claude, Codex or the map's server.
+Les fichiers de `skills/floorplan/assets/ui/` sont insérés dans chaque carte, dans l'ordre de leur nom. Ils ne parlent à la visionneuse que par `window.Floorplan` (chaque fichier le reprend sous le nom `CARTE`), qui offre :
+- le graphe et les recherches ;
+- la navigation (`aller`, `ouvrir`, `reveler`, `montrerTableau`, `jouerParcours`) ;
+- `ajouterBoutonEntete` et `ajouterSectionPanneau('overview' | 'item', fn)` ;
+- `fenetre`, `message`, `stockage` ;
+- des événements (`sur('ready' | 'render' | 'panel' | 'technical')`) ;
+- `exporte`, défini dans une copie exportée : laisse de côté tout ce qui a besoin de Claude, de Codex ou du serveur de la carte.
 
-`20-health.js` and `25-recent.js` are good examples.
+`20-health.js` et `25-recent.js` sont de bons exemples.
 
-## Adding an agent
+## Ajouter un agent
 
-There are two lists, and an agent can be on one or both:
-- **The agent that built the map**, in `scripts/lib/agent.mjs`: an entry in `DETECT` that recognises it from the variables it sets for every command it runs. The map records it, so its prompts name the right agent.
-- **The agent that answers questions**, in `assets/serve.mjs`: an entry in `ENGINES` with its name, where to get it, `find` (where its CLI lives, plus a `--<name> <path>` override) and `run` (the arguments and how to read its output into progress and an answer).
+Il y a deux listes, et un agent peut être sur l'une ou les deux :
+- **L'agent qui a fait la carte**, dans `scripts/lib/agent.mjs` : une entrée de `DETECT` qui le reconnaît grâce aux variables qu'il définit pour chaque commande qu'il lance. La carte l'enregistre, pour que ses demandes nomment le bon agent.
+- **L'agent qui répond aux questions**, dans `assets/serve.mjs` : une entrée de `ENGINES` avec son nom, où le trouver, `find` (où se trouve sa ligne de commande, plus une option `--<nom> <chemin>`) et `run` (les arguments et comment lire sa sortie en progression et en réponse).
 
-An engine must be read-only in a way its CLI enforces, not only because the prompt asks; if it can't be, say so plainly in the docs. Set `structured: true` only when the CLI holds answers to the schema, because changing a blueprint from the map relies on it; without it, the map doesn't offer Change. Never take the command to run from the page or from saved settings. Add a stand-in CLI to `tests/fixtures/fake-cli/` and tests like `ask.test.mjs`.
+Un moteur doit être en lecture seule d'une façon que sa ligne de commande impose, pas seulement parce que la consigne le demande ; s'il ne peut pas l'être, dis-le clairement dans les docs. Dis aussi clairement s'il ne peut pas interdire les fichiers de secrets, comme c'est le cas de Codex aujourd'hui. Mets `structured: true` seulement quand la ligne de commande tient les réponses au schéma, parce que modifier un plan depuis la carte en dépend ; sans lui, la carte ne propose pas Modifier. Ne prends jamais la commande à lancer dans la page ni dans des réglages enregistrés. Ajoute une ligne de commande de remplacement dans `tests/fixtures/fake-cli/` et des tests comme `ask.test.mjs`.
 
-## Guidelines
+## Règles
 
-- **No dependencies.** The scripts must run anywhere Node 18+ does, with nothing to install.
-- **Plain language first.** Anything the map shows people should make sense to an app's owner, not just its engineers.
-- **Never store or print secret values.** Health findings record where a secret is and a masked hint, never the value.
-- **Keep examples generic.** Code comments, docs and prompts must not describe any real private project.
+- **Aucune dépendance.** Les scripts doivent tourner partout où tourne Node 18+, sans rien à installer.
+- **Du langage simple d'abord.** Tout ce que la carte montre doit avoir du sens pour la personne qui possède l'appli, pas seulement pour ses ingénieurs.
+- **Ne jamais enregistrer ni afficher une valeur de secret, ni un seul de ses caractères.** Les constats de la Santé disent où est un secret et sa longueur, jamais la valeur.
+- **Rien vers l'extérieur, rien hors de `floorplan/`.** Pas de requête sortante, pas d'écriture dans `CLAUDE.md`, `CLAUDE.local.md`, `.git/info/exclude` ni dans le dossier personnel. `supply-chain.test.mjs` vérifie une partie de cela ; le reste, c'est à toi de le tenir.
+- **Garde les exemples génériques.** Les commentaires du code, les docs et les demandes ne doivent décrire aucun vrai projet privé, et ne contenir ni nom de personne, ni adresse e-mail, ni chemin d'ordinateur.
+- **Tout en français** : noms, commentaires, textes vus par la personne (tutoiement, langage simple). Les motifs de détection qui lisent le code d'un projet analysé restent en anglais.
 
-## Maintaining
+## Tenir ce dépôt
 
-### Branches and commits
+### Branches et enregistrements
 
-- `main` is always releasable. Every change reaches it through its own branch, merged with a merge commit (`git merge --no-ff`), so each change reads as one unit in the history.
-- Name branches by what they are, with the issue number when there is one:
-  - `fix/4-fastapi-annotated-guards`
-  - `feat/codex-support`
-  - `docs/…`, `chore/…`
+- `main` reste toujours utilisable. Un gros changement passe par sa propre branche, fusionnée ensuite (`git merge --no-ff`), pour qu'il se lise comme un tout dans l'historique.
+- Nomme les branches d'après ce qu'elles sont : `fix/…`, `feat/…`, `docs/…`, `chore/…`.
+- Un message d'enregistrement commence par un court résumé à l'impératif (« Corriger la détection de Fastify »), et le corps dit pourquoi.
 
-  A branch made with GitHub's **Create a branch** button on an issue (`2-reaching-outside-repo`) is fine too.
-- Commit messages start with a short summary in the imperative ("Bundle the layout engine"), and the body says why.
-  - `Fixes #N` in a commit or merge message closes the issue when it reaches `main`.
-  - `Refs #N` links it without closing.
-- **Contributors' pull requests keep their commits and authorship.** Merge them with a merge commit ("Merge pull request #N from user/branch"), and resolve `CHANGELOG.md` conflicts by keeping both entries.
-- Delete branches once merged.
+### Versions et journal des changements
 
-### Versions and the changelog
+- Une version de cette copie est une **marque Git**, par exemple `fr-1`, `fr-2`. La marque `auteur-0.6.3` est le code de l'auteur d'origine, avant la réécriture.
+- Chaque changement que les gens remarqueront ajoute une ligne dans la section `## Version française` du `CHANGELOG.md` : en langage simple, avec la version de l'auteur d'où vient une correction reprise. Le reste du fichier, ce sont les journaux de l'auteur, gardés tels quels en anglais ; **ne touche pas aux titres `## 0.6.3 (…)`**, un test les lit.
+- Si tu changes le numéro de version dans les deux `plugin.json`, le journal et `CHECKSUMS.txt` doivent suivre, sinon `release.test.mjs` échoue.
 
-- Versions follow [semantic versioning](https://semver.org). Before 1.0:
-  - a patch (0.1.x) for fixes and small improvements;
-  - a minor version (0.x.0) for new features, or anything that changes what people install or run.
-- **Users only receive an update when the version changes**, so release fixes promptly rather than leaving them on `main`.
-- Every change people will notice adds a line under `## Unreleased` at the top of `CHANGELOG.md`:
-  - in plain language;
-  - crediting whoever reported or fixed it, e.g. "Reported by @name in #1, fixed by @name in #3".
+### Marquer une version
 
-### Releasing
+1. Lance les tests : `node --test`. Ils doivent tous passer.
+2. Régénère les empreintes : `node tools/checksums.mjs`.
+3. Ajoute la ligne du changement dans le journal.
+4. Enregistre, puis marque : `git tag -a fr-N -m "résumé en une ligne"`.
+5. Pour revenir à une version, voir [Revenir en arrière](getting-started.md#revenir-en-arrière).
 
-1. On an up-to-date `main`, run the tests and check the manifests, including the official plugin directory's requirements:
-   ```bash
-   npm test
-   claude plugin validate . --profile directory
-   ```
-2. Bump `version` in `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`, and the version badge in `README.md`.
-3. Rename `## Unreleased` in `CHANGELOG.md` to `## X.Y.Z (YYYY-MM-DD)`.
-4. Write the release's fingerprints, after the version bump:
-   ```bash
-   node tools/checksums.mjs
-   ```
-5. Commit as `Floorplan X.Y.Z: <one-line headline>` and push `main`.
-6. Tag and push the tag. This also checks that `plugin.json` and the marketplace entry agree:
-   ```bash
-   claude plugin tag . -m "Floorplan %s" --push
-   ```
-7. On GitHub, publish a release from the tag (`floorplan--vX.Y.Z`), titled `Floorplan X.Y.Z`, with that version's changelog section as its notes.
-8. Reply on every issue and pull request the release fixes: what changed, the version, and how to get it (`claude plugin update floorplan@floorplan`).
+### Reprendre une correction de l'auteur
 
-### Issues and pull requests
+Voir [Reprendre une correction de l'auteur](getting-started.md#reprendre-une-correction-de-lauteur) : on lit son journal, on refait la correction à la main avec les noms français, on repasse les tests, on marque une version.
 
-- Reply to new issues within a few days, even if only to say you've seen them.
-  - Label each one (`bug`, `enhancement`, `question`).
-  - Assign yourself when you pick it up.
-- Ask for the shape of a problem, never for private code, secrets or screenshots of a private map.
-- Thank contributors, and credit them in the changelog and release notes.
-- Close an issue with a comment that names the release containing the fix.
-- Security reports go through [SECURITY.md](../SECURITY.md), privately. Don't discuss them in public issues until a fix is released.
+### Contributions et sécurité
+
+Il n'y a pas de modèle de ticket ni de demande de fusion : écris à la personne qui tient le dépôt. Les failles de sécurité passent par [SECURITY.md](../SECURITY.md), en privé.

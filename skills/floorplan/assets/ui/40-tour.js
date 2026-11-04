@@ -1,12 +1,12 @@
-// "Start here": a calm one-minute tour on first open. What the app is, its main parts, the outside
-// services it leans on, then one real path traced end to end. Steps come from graph.tour (written by
-// Claude in architecture.json) or are built from the map itself.
+// « Commencer ici » : une visite guidée calme d'une minute à la première ouverture. Ce qu'est l'appli, ses parties principales, les services
+// extérieurs dont elle dépend, puis un vrai parcours suivi de bout en bout. Les étapes viennent de graphe.visite (écrit par
+// Claude dans architecture.json) ou sont construites à partir de la carte elle-même.
 (() => {
   const CARTE = window.Floorplan;
   if (!CARTE) return;
   const G = CARTE.graphe;
   const { h } = CARTE;
-  const SEEN = 'tour-seen:' + (G.projet?.name || G.meta?.rootName || 'map');
+  const VU = 'tour-seen:' + (G.projet?.name || G.meta?.rootName || 'map');
 
   const style = document.createElement('style');
   style.textContent = `
@@ -28,144 +28,144 @@
 `;
   document.head.appendChild(style);
 
-  // ---------- steps ----------
-  const clip = (s, max = 230) => {
+  // ---------- étapes ----------
+  const couper = (s, maxi = 230) => {
     s = String(s || '').trim();
-    if (s.length <= max) return s;
-    const cut = s.slice(0, max);
-    const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('; '));
-    return end > 80 ? cut.slice(0, end + 1) : cut.replace(/\s+\S*$/, '') + '…';
+    if (s.length <= maxi) return s;
+    const coupe = s.slice(0, maxi);
+    const terminer = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf('; '));
+    return terminer > 80 ? coupe.slice(0, terminer + 1) : coupe.replace(/\s+\S*$/, '') + '…';
   };
-  const listOf = (names) => names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-  const tops = G.nodes.filter((n) => !n.parent && n.id !== 'unassigned');
-  const bySize = (a, b) => (b.stats?.files || 0) - (a.stats?.files || 0);
-  const screensOf = (id) => (G.ecrans || []).filter((s) => s.app === id).length;
+  const listeDe = (noms) => noms.length <= 1 ? noms.join('') : `${noms.slice(0, -1).join(', ')} et ${noms[noms.length - 1]}`;
+  const racines = G.nodes.filter((n) => !n.parent && n.id !== 'unassigned');
+  const parTaille = (a, b) => (b.stats?.files || 0) - (a.stats?.files || 0);
+  const ecransDe = (id) => (G.ecrans || []).filter((s) => s.app === id).length;
 
-  function flowStep() {
+  function etapeParcours() {
     const f = (G.parcours || []).find((x) => !x.custom) || (G.parcours || [])[0];
     if (!f || !f.steps?.length) return null;
-    return { ref: 'root', flow: f.id, kicker: 'One real path', title: f.title, note: `${f.description ? clip(f.description, 160) + ' ' : ''}Press Play to follow it through the code, one step at a time.` };
+    return { ref: 'root', flow: f.id, kicker: 'Un vrai parcours', title: f.title, note: `${f.description ? couper(f.description, 160) + ' ' : ''}Appuie sur Lancer pour le suivre dans le code, une étape à la fois.` };
   }
-  function autoSteps() {
+  function etapesAuto() {
     const p = G.projet || {};
-    const steps = [{ ref: 'root', kicker: 'The codebase', title: p.name || 'This codebase', note: clip(p.summary) || 'A map of the main parts of this app and how they talk to each other.' }];
-    const ui = tops.filter((n) => n.kind === 'ui').sort(bySize).slice(0, 2);
-    for (const n of ui) {
-      const k = screensOf(n.id);
-      steps.push({ ref: 'n:' + n.id, kicker: 'What people use', title: n.label, note: clip(n.summary, 200) + (k > 1 ? ` It has ${k} screens.` : '') });
+    const etapes = [{ ref: 'root', kicker: 'Le projet', title: p.name || 'Ce projet', note: couper(p.summary) || 'Une carte des parties principales de cette appli et de la façon dont elles se parlent.' }];
+    const interfaces = racines.filter((n) => n.kind === 'ui').sort(parTaille).slice(0, 2);
+    for (const n of interfaces) {
+      const k = ecransDe(n.id);
+      etapes.push({ ref: 'n:' + n.id, kicker: 'Ce que les gens utilisent', title: n.label, note: couper(n.summary, 200) + (k > 1 ? ` Elle compte ${k} écrans.` : '') });
     }
-    let back = tops.filter((n) => n.kind === 'service' || n.kind === 'worker').sort(bySize);
-    if (!back.length) back = tops.filter((n) => !['ui', 'external', 'test', 'script', 'config', 'infra', 'misc'].includes(n.kind)).sort(bySize);
-    for (const n of back.slice(0, ui.length > 1 ? 1 : 2)) steps.push({ ref: 'n:' + n.id, kicker: 'Behind the scenes', title: n.label, note: clip(n.summary, 200) });
-    const data = tops.find((n) => n.kind === 'data' && !back.includes(n));
-    if (data && steps.length < 5) steps.push({ ref: 'n:' + data.id, kicker: 'Where the data lives', title: data.label, note: clip(data.summary, 200) });
-    const ext = tops.filter((n) => n.kind === 'external');
-    if (ext.length) {
-      steps.push({
-        ref: ext.length === 1 ? 'n:' + ext[0].id : 'root', kicker: 'Outside services', title: ext.length === 1 ? ext[0].label : `${ext.length} outside services`,
-        note: ext.length === 1 ? clip(ext[0].summary, 200) : `It also relies on ${listOf(ext.slice(0, 6).map((n) => n.label))}${ext.length > 6 ? ` and ${ext.length - 6} more` : ''}. They sit at the edge of the map; the lines show which parts talk to them.`,
+    let arriere = racines.filter((n) => n.kind === 'service' || n.kind === 'worker').sort(parTaille);
+    if (!arriere.length) arriere = racines.filter((n) => !['ui', 'external', 'test', 'script', 'config', 'infra', 'misc'].includes(n.kind)).sort(parTaille);
+    for (const n of arriere.slice(0, interfaces.length > 1 ? 1 : 2)) etapes.push({ ref: 'n:' + n.id, kicker: 'Dans les coulisses', title: n.label, note: couper(n.summary, 200) });
+    const donnees = racines.find((n) => n.kind === 'data' && !arriere.includes(n));
+    if (donnees && etapes.length < 5) etapes.push({ ref: 'n:' + donnees.id, kicker: 'Où vivent les données', title: donnees.label, note: couper(donnees.summary, 200) });
+    const exterieurs = racines.filter((n) => n.kind === 'external');
+    if (exterieurs.length) {
+      etapes.push({
+        ref: exterieurs.length === 1 ? 'n:' + exterieurs[0].id : 'root', kicker: 'Services extérieurs', title: exterieurs.length === 1 ? exterieurs[0].label : `${exterieurs.length} services extérieurs`,
+        note: exterieurs.length === 1 ? couper(exterieurs[0].summary, 200) : `Elle s’appuie aussi sur ${listeDe(exterieurs.slice(0, 6).map((n) => n.label))}${exterieurs.length > 6 ? ` et ${exterieurs.length - 6} autres` : ''}. Ils sont au bord de la carte ; les lignes montrent quelles parties leur parlent.`,
       });
     }
-    return steps;
+    return etapes;
   }
-  function buildSteps() {
-    const own = (G.visite || []).filter((s) => s && s.ref && (s.ref === 'root' || CARTE.existe(s.ref))).map((s) => ({ ref: s.ref, title: s.title || CARTE.infos(s.ref).name, note: s.note || CARTE.infos(s.ref).desc || '', kicker: '' }));
-    const steps = own.length >= 2 ? own : autoSteps();
-    const fl = flowStep();
-    if (fl && !steps.some((s) => s.flow) && steps.length < 9) steps.push(fl);
-    return steps.filter((s) => s.ref === 'root' || CARTE.existe(s.ref)).slice(0, 9);
+  function construireEtapes() {
+    const propres = (G.visite || []).filter((s) => s && s.ref && (s.ref === 'root' || CARTE.existe(s.ref))).map((s) => ({ ref: s.ref, title: s.title || CARTE.infos(s.ref).name, note: s.note || CARTE.infos(s.ref).desc || '', kicker: '' }));
+    const etapes = propres.length >= 2 ? propres : etapesAuto();
+    const parcoursEtape = etapeParcours();
+    if (parcoursEtape && !etapes.some((s) => s.flow) && etapes.length < 9) etapes.push(parcoursEtape);
+    return etapes.filter((s) => s.ref === 'root' || CARTE.existe(s.ref)).slice(0, 9);
   }
 
-  // ---------- card ----------
-  const card = document.createElement('div');
-  card.id = 'tour';
-  card.className = 'glass';
-  card.hidden = true;
-  card.setAttribute('role', 'dialog');
-  card.setAttribute('aria-label', 'Start here tour');
-  document.body.appendChild(card);
-  let steps = [], at = -1;
-  const active = () => at >= 0;
+  // ---------- bulle ----------
+  const bulle = document.createElement('div');
+  bulle.id = 'tour';
+  bulle.className = 'glass';
+  bulle.hidden = true;
+  bulle.setAttribute('role', 'dialog');
+  bulle.setAttribute('aria-label', 'Visite guidée Commencer ici');
+  document.body.appendChild(bulle);
+  let etapes = [], pos = -1;
+  const actif = () => pos >= 0;
 
-  function go(s) {
+  function allerA(s) {
     if (!s.ref || s.ref === 'root') { CARTE.aller('root', { select: null }); return; }
     const parent = CARTE.parentDe(s.ref) || 'root';
-    if (parent === 'root') CARTE.aller('root', { select: s.ref }); // stay on the overview, just highlight the card
+    if (parent === 'root') CARTE.aller('root', { select: s.ref }); // reste sur la vue d'ensemble, met juste le bloc en valeur
     else CARTE.reveler(s.ref);
   }
-  function render() {
-    const s = steps[at], last = at === steps.length - 1;
-    const tip = last ? `Replay this tour any time from <b>Start here</b> at the top.${window.FloorplanScreens ? ' <b>Screens</b> shows everything behind any page.' : ''}` : '';
-    card.innerHTML = `<button class="btn icon tx" data-x title="Close (Esc)">${CARTE.iconeI('x')}</button>
-      <div class="tk"><span>Start here</span><i></i><span>${at + 1} of ${steps.length}</span>${s.kicker ? `<i></i><span>${h(s.kicker)}</span>` : ''}</div>
-      <div class="tt">${h(s.title)}</div>${s.note ? `<div class="tn">${h(s.note)}</div>` : ''}${tip ? `<div class="tip">${tip}</div>` : ''}
-      <div class="tf"><div class="dots">${steps.map((_, k) => `<i class="${k <= at ? 'on' : ''}"></i>`).join('')}</div>
-        ${at > 0 ? `<button class="btn icon soft" data-back title="Back (←)">${CARTE.iconeI('left')}</button>` : `<button class="btn" data-x>Skip</button>`}
-        ${s.flow ? `<button class="btn primary" data-play>${CARTE.iconeI('right')}Play it</button>${last ? '' : '<button class="btn soft" data-next>Next</button>'}` : `<button class="btn primary" data-next>${last ? 'Done' : 'Next'}</button>`}
+  function dessiner() {
+    const s = etapes[pos], derniere = pos === etapes.length - 1;
+    const astuce = derniere ? `Relance cette visite quand tu veux avec <b>Commencer ici</b>, en haut.${window.FloorplanScreens ? ' <b>Écrans</b> montre tout ce qu’il y a derrière chaque page.' : ''}` : '';
+    bulle.innerHTML = `<button class="btn icon tx" data-x title="Fermer (Échap)">${CARTE.iconeI('x')}</button>
+      <div class="tk"><span>Commencer ici</span><i></i><span>${pos + 1} sur ${etapes.length}</span>${s.kicker ? `<i></i><span>${h(s.kicker)}</span>` : ''}</div>
+      <div class="tt">${h(s.title)}</div>${s.note ? `<div class="tn">${h(s.note)}</div>` : ''}${astuce ? `<div class="tip">${astuce}</div>` : ''}
+      <div class="tf"><div class="dots">${etapes.map((_, k) => `<i class="${k <= pos ? 'on' : ''}"></i>`).join('')}</div>
+        ${pos > 0 ? `<button class="btn icon soft" data-back title="Précédent (←)">${CARTE.iconeI('left')}</button>` : `<button class="btn" data-x>Passer</button>`}
+        ${s.flow ? `<button class="btn primary" data-play>${CARTE.iconeI('right')}Lancer</button>${derniere ? '' : '<button class="btn soft" data-next>Suivant</button>'}` : `<button class="btn primary" data-next>${derniere ? 'Terminé' : 'Suivant'}</button>`}
       </div>`;
-    card.querySelectorAll('[data-x]').forEach((b) => b.onclick = end);
-    card.querySelector('[data-back]')?.addEventListener('click', back);
-    card.querySelector('[data-next]')?.addEventListener('click', next);
-    card.querySelector('[data-play]')?.addEventListener('click', () => { const id = s.flow; end(); CARTE.demarrerParcours(id); });
+    bulle.querySelectorAll('[data-x]').forEach((b) => b.onclick = terminer);
+    bulle.querySelector('[data-back]')?.addEventListener('click', arriere);
+    bulle.querySelector('[data-next]')?.addEventListener('click', suivant);
+    bulle.querySelector('[data-play]')?.addEventListener('click', () => { const id = s.flow; terminer(); CARTE.demarrerParcours(id); });
   }
-  // sit above the zoom controls, and above the Ask bar (and its notices) where they overlap
-  function place() {
-    let bottom = 76;
-    const ask = document.getElementById('ask');
-    if (ask) {
-      const a = ask.getBoundingClientRect(), c = card.getBoundingClientRect();
-      const top = [...ask.children].filter((x) => x.offsetParent && x.getBoundingClientRect().height > 0).reduce((m, x) => Math.min(m, x.getBoundingClientRect().top), a.bottom);
-      if (a.width && a.left < 16 + c.width + 12 && top < innerHeight) bottom = Math.max(bottom, innerHeight - top + 12);
+  // se place au-dessus des boutons de zoom, et au-dessus de la bulle de questions (et de ses avis) là où elles se chevauchent
+  function placer() {
+    let bas = 76;
+    const bulleQuestions = document.getElementById('ask');
+    if (bulleQuestions) {
+      const a = bulleQuestions.getBoundingClientRect(), c = bulle.getBoundingClientRect();
+      const haut = [...bulleQuestions.children].filter((x) => x.offsetParent && x.getBoundingClientRect().height > 0).reduce((m, x) => Math.min(m, x.getBoundingClientRect().top), a.bottom);
+      if (a.width && a.left < 16 + c.width + 12 && haut < innerHeight) bas = Math.max(bas, innerHeight - haut + 12);
     }
-    card.style.bottom = Math.min(bottom, Math.max(76, innerHeight - card.offsetHeight - 80)) + 'px';
+    bulle.style.bottom = Math.min(bas, Math.max(76, innerHeight - bulle.offsetHeight - 80)) + 'px';
   }
-  window.addEventListener('resize', () => { if (active()) place(); });
-  function show(i) {
-    at = i;
-    card.hidden = false;
-    render();
-    place();
-    go(steps[at]);
-    if (at === 0) setTimeout(() => CARTE.ajuster(true), 450);
+  window.addEventListener('resize', () => { if (actif()) placer(); });
+  function montrer(i) {
+    pos = i;
+    bulle.hidden = false;
+    dessiner();
+    placer();
+    allerA(etapes[pos]);
+    if (pos === 0) setTimeout(() => CARTE.ajuster(true), 450);
   }
-  function next() { if (at >= steps.length - 1) end(); else show(at + 1); }
-  function back() { if (at > 0) show(at - 1); }
-  function end() {
-    if (!active()) return;
-    at = -1;
-    card.hidden = true;
-    CARTE.stockage.set(SEEN, true);
+  function suivant() { if (pos >= etapes.length - 1) terminer(); else montrer(pos + 1); }
+  function arriere() { if (pos > 0) montrer(pos - 1); }
+  function terminer() {
+    if (!actif()) return;
+    pos = -1;
+    bulle.hidden = true;
+    CARTE.stockage.set(VU, true);
     if (CARTE.etat.container === 'root') CARTE.selectionner(null);
   }
-  function start() {
-    steps = buildSteps();
-    if (steps.length < 2) { CARTE.message('There is not enough on this map for a tour yet.'); return; }
-    CARTE.stockage.set(SEEN, true);
-    show(0);
+  function demarrer() {
+    etapes = construireEtapes();
+    if (etapes.length < 2) { CARTE.message('Il n’y a pas encore assez de choses sur cette carte pour une visite guidée.'); return; }
+    CARTE.stockage.set(VU, true);
+    montrer(0);
   }
 
-  const tourBtn = CARTE.ajouterBoutonEntete({ id: 'tour-btn', label: 'Start here', icon: 'home', title: 'A one-minute tour of this codebase', onClick: () => (active() ? end() : start()) });
-  const ic = tourBtn.querySelector('svg');
-  if (ic) ic.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/>'; // compass
+  const boutonVisite = CARTE.ajouterBoutonEntete({ id: 'tour-btn', label: 'Commencer ici', icon: 'home', title: 'Une visite guidée d’une minute de ce projet', onClick: () => (actif() ? terminer() : demarrer()) });
+  const ico = boutonVisite.querySelector('svg');
+  if (ico) ico.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8z"/>'; // boussole
   window.addEventListener('keydown', (ev) => {
-    if (!active() || ev.target?.tagName === 'INPUT' || ev.target?.tagName === 'TEXTAREA') return;
-    if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); end(); }
-    else if (!CARTE.etat.flow && ev.key === 'ArrowRight') { ev.stopPropagation(); ev.preventDefault(); next(); }
-    else if (!CARTE.etat.flow && ev.key === 'ArrowLeft') { ev.stopPropagation(); ev.preventDefault(); back(); }
+    if (!actif() || ev.target?.tagName === 'INPUT' || ev.target?.tagName === 'TEXTAREA') return;
+    if (ev.key === 'Escape') { ev.stopPropagation(); ev.preventDefault(); terminer(); }
+    else if (!CARTE.etat.flow && ev.key === 'ArrowRight') { ev.stopPropagation(); ev.preventDefault(); suivant(); }
+    else if (!CARTE.etat.flow && ev.key === 'ArrowLeft') { ev.stopPropagation(); ev.preventDefault(); arriere(); }
   }, true);
-  // a guided flow takes over the canvas: step aside
-  CARTE.sur('render', () => { if (active() && CARTE.etat.flow) end(); });
+  // un parcours guidé prend toute la place : on s'efface
+  CARTE.sur('render', () => { if (actif() && CARTE.etat.flow) terminer(); });
 
-  // first visit: start on its own, unless the link points somewhere specific
-  let auto = false;
-  const maybeAuto = () => {
-    if (auto) return;
-    auto = true;
-    if (CARTE.stockage.get(SEEN, false) || location.hash.length > 1) return;
-    setTimeout(() => { if (!active() && !CARTE.etat.flow && CARTE.etat.container === 'root') start(); }, 700);
+  // première visite : démarre toute seule, sauf si le lien mène à un endroit précis
+  let dejaLance = false;
+  const lancerSiPremiereFois = () => {
+    if (dejaLance) return;
+    dejaLance = true;
+    if (CARTE.stockage.get(VU, false) || location.hash.length > 1) return;
+    setTimeout(() => { if (!actif() && !CARTE.etat.flow && CARTE.etat.container === 'root') demarrer(); }, 700);
   };
-  CARTE.sur('ready', maybeAuto);
-  if (CARTE.etat.layout) maybeAuto();
+  CARTE.sur('ready', lancerSiPremiereFois);
+  if (CARTE.etat.layout) lancerSiPremiereFois();
 
-  window.FloorplanTour = { start, end, active };
+  window.FloorplanTour = { start: demarrer, end: terminer, active: actif };
 })();

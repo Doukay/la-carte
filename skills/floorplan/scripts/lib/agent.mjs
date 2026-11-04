@@ -1,15 +1,15 @@
-// Which coding agent is running the skill: Claude Code or Codex. The map records it, so its Ask bar and
-// "Fix with …" prompts name the right one, and serve.mjs answers through the same CLI.
-// --agent <name> (or FLOORPLAN_AGENT) decides; otherwise each agent is recognised by the variables it sets
-// for every command it runs, and anything else is taken to be Claude Code. Adding an agent is an entry here.
-const DETECT = {
-  claude: () => false, // the default
+// Quel agent de code fait tourner le skill : Claude Code ou Codex. La carte l’enregistre, pour que sa bulle de questions et
+// ses demandes « Corriger avec … » nomment le bon, et pour que serve.mjs réponde par la même CLI.
+// --agent <nom> (ou FLOORPLAN_AGENT) décide ; sinon chaque agent se reconnaît aux variables qu’il définit
+// pour chaque commande qu’il lance, et tout le reste est pris pour Claude Code. Ajouter un agent, c’est ajouter une entrée ici.
+const DETECTION = {
+  claude: () => false, // celui par défaut
   codex: (env) => !!(env.CODEX_THREAD_ID || env.CODEX_SESSION_ID),
 };
-export const AGENTS = Object.keys(DETECT);
+export const AGENTS = Object.keys(DETECTION);
 
-export function detecterAgent(args = {}, env = process.env) {
-  const v = String(args.agent || env.FLOORPLAN_AGENT || '').toLowerCase();
+export function detecterAgent(params = {}, env = process.env) {
+  const v = String(params.agent || env.FLOORPLAN_AGENT || '').toLowerCase();
   if (AGENTS.includes(v)) return v;
-  return AGENTS.find((a) => DETECT[a](env)) || 'claude';
+  return AGENTS.find((a) => DETECTION[a](env)) || 'claude';
 }

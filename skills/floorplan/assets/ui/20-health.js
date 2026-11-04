@@ -1,70 +1,70 @@
-// Health check panel: plain-language warnings from graph.health (lib/health.mjs) — leaked keys,
-// endpoints anyone can call, unused and oversized files — each with "Show on map" and a ready
-// prompt to paste into Claude Code or Codex. Talks to the viewer only through window.Floorplan.
+// Panneau du contrôle de santé : des avertissements en langage simple tirés de graphe.sante (lib/health.mjs) — clés qui fuient,
+// adresses du serveur ouvertes à tous, fichiers inutilisés ou trop gros — chacun avec « Voir sur la carte » et une demande
+// toute prête à coller dans Claude Code ou Codex. Ne parle au visualiseur que par window.Floorplan.
 (() => {
   const CARTE = window.Floorplan;
-  // an exported copy without Health leaves the button out: an empty list would read as "all clear"
+  // une copie exportée sans la Santé laisse le bouton de côté : une liste vide se lirait comme « tout va bien »
   if (!CARTE || (CARTE.exporte && !CARTE.graphe.sante)) return;
   const { h } = CARTE;
   const A = CARTE.agent || { name: 'Claude', app: 'Claude Code' };
-  const issues = (CARTE.graphe.sante && CARTE.graphe.sante.problemes) || [];
-  // a blueprint (planned, not built) gets a design review of the plan instead of a code check
+  const problemes = (CARTE.graphe.sante && CARTE.graphe.sante.problemes) || [];
+  // un plan (prévu, pas construit) a droit à une revue du plan plutôt qu'à un contrôle du code
   const PLAN = !!CARTE.graphe.meta.ebauche;
-  const FIX = PLAN ? 'Resolve' : 'Fix';
-  const CHECK = PLAN ? 'design review' : 'health check';
+  const VERBE = PLAN ? 'Résoudre' : 'Corriger';
+  const CONTROLE = PLAN ? 'la revue du plan' : 'le contrôle de santé';
 
-  // ---------- "not a problem" ----------
-  // Saved by serve.mjs to floorplan/health-dismissed.json (build folds it into graph.health.dismissed);
-  // a map opened without the server keeps them in this browser. A dismissal covers the issue as it was: it
-  // shows again if it gets more or less serious or finds something new in a file (counted per file, so an
-  // edit higher up doesn't bring it back; the same rule as dismissalFor in lib/health.mjs).
-  const SERVER = window.FLOORPLAN_SERVER;
-  const STORE_KEY = 'health-dismissed:' + (CARTE.graphe.meta.rootName || '');
-  const built = (CARTE.graphe.sante && CARTE.graphe.sante.dismissed) || [];
-  let dismissed = CARTE.exporte || SERVER ? built : CARTE.stockage.get(STORE_KEY, built);
-  const locsOf = (issue) => (issue.locations || []).map((l) => `${l.file}:${l.line}`);
-  const dismissalOf = (issue) => {
-    const d = dismissed.find((x) => x.id === issue.id);
+  // ---------- « pas un problème » ----------
+  // Enregistré par serve.mjs dans floorplan/health-dismissed.json (build le range dans graphe.sante.dismissed) ;
+  // une carte ouverte sans le serveur les garde dans ce navigateur. Un rejet couvre le problème tel qu'il était : il
+  // réapparaît s'il devient plus ou moins grave ou s'il trouve quelque chose de nouveau dans un fichier (compté par fichier, donc une
+  // modification plus haut ne le fait pas revenir ; c'est la même règle que rejetPour dans lib/health.mjs).
+  const SERVEUR = window.FLOORPLAN_SERVER;
+  const CLE_STOCKAGE = 'health-dismissed:' + (CARTE.graphe.meta.rootName || '');
+  const construits = (CARTE.graphe.sante && CARTE.graphe.sante.dismissed) || [];
+  let rejetes = CARTE.exporte || SERVEUR ? construits : CARTE.stockage.get(CLE_STOCKAGE, construits);
+  const lieuxDe = (issue) => (issue.locations || []).map((l) => `${l.file}:${l.line}`);
+  const rejetDe = (issue) => {
+    const d = rejetes.find((x) => x.id === issue.id);
     if (!d || (d.severity && d.severity !== issue.severity)) return null;
     const left = new Map();
     for (const loc of d.locations || []) { const f = String(loc).replace(/:[^:]*$/, ''); left.set(f, (left.get(f) || 0) + 1); }
     for (const l of issue.locations || []) { const n = left.get(l.file) || 0; if (!n) return null; left.set(l.file, n - 1); }
     return d;
   };
-  const canDismiss = !CARTE.exporte;
-  async function saveDismissal(issue, reason) {
-    const rec = { id: issue.id, severity: issue.severity, locations: locsOf(issue), ...(reason ? { reason } : {}) };
-    if (SERVER) {
-      const r = await fetch('/api/health/dismissed', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVER.token }, body: JSON.stringify(rec) }).then((x) => x.json()).catch(() => null);
-      if (!r) { CARTE.message('Couldn’t reach the map server, so this wasn’t saved.'); return false; }
-      dismissed = r.dismissed;
+  const peutRejeter = !CARTE.exporte;
+  async function enregistrerRejet(issue, raison) {
+    const enregistrement = { id: issue.id, severity: issue.severity, locations: lieuxDe(issue), ...(raison ? { reason: raison } : {}) };
+    if (SERVEUR) {
+      const r = await fetch('/api/health/dismissed', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVEUR.token }, body: JSON.stringify(enregistrement) }).then((x) => x.json()).catch(() => null);
+      if (!r) { CARTE.message('Impossible de joindre le serveur de la carte, donc ce n’est pas enregistré.'); return false; }
+      rejetes = r.dismissed;
     } else {
-      dismissed = [...dismissed.filter((x) => x.id !== issue.id), { ...rec, at: new Date().toISOString() }];
-      CARTE.stockage.set(STORE_KEY, dismissed);
+      rejetes = [...rejetes.filter((x) => x.id !== issue.id), { ...enregistrement, at: new Date().toISOString() }];
+      CARTE.stockage.set(CLE_STOCKAGE, rejetes);
     }
     return true;
   }
-  async function undoDismissal(issue) {
-    if (SERVER) {
-      const r = await fetch('/api/health/dismissed', { method: 'DELETE', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVER.token }, body: JSON.stringify({ id: issue.id }) }).then((x) => x.json()).catch(() => null);
-      if (!r) { CARTE.message('Couldn’t reach the map server.'); return; }
-      dismissed = r.dismissed;
+  async function annulerRejet(issue) {
+    if (SERVEUR) {
+      const r = await fetch('/api/health/dismissed', { method: 'DELETE', headers: { 'content-type': 'application/json', 'x-floorplan-token': SERVEUR.token }, body: JSON.stringify({ id: issue.id }) }).then((x) => x.json()).catch(() => null);
+      if (!r) { CARTE.message('Impossible de joindre le serveur de la carte.'); return; }
+      rejetes = r.dismissed;
     } else {
-      dismissed = dismissed.filter((x) => x.id !== issue.id);
-      CARTE.stockage.set(STORE_KEY, dismissed);
+      rejetes = rejetes.filter((x) => x.id !== issue.id);
+      CARTE.stockage.set(CLE_STOCKAGE, rejetes);
     }
-    refresh();
+    actualiser();
   }
 
-  const SEV = {
-    high: { color: 'var(--sev-high)', group: 'Fix these first', word: 'important' },
-    medium: { color: 'var(--sev-medium)', group: 'Worth fixing soon', word: 'worth fixing' },
-    low: { color: 'var(--sev-low)', group: 'Good to tidy up', word: 'minor' },
+  const GRAVITE = {
+    high: { color: 'var(--sev-high)', group: 'À corriger en premier', word: 'à voir d’abord' },
+    medium: { color: 'var(--sev-medium)', group: 'À corriger bientôt', word: 'à corriger bientôt' },
+    low: { color: 'var(--sev-low)', group: 'À ranger quand tu peux', word: 'à ranger' },
   };
-  const ORDER = ['high', 'medium', 'low'];
-  const active = () => issues.filter((i) => !dismissalOf(i));
-  const count = (sev) => active().filter((i) => i.severity === sev).length;
-  const urgent = () => count('high') + count('medium');
+  const ORDRE = ['high', 'medium', 'low'];
+  const actifs = () => problemes.filter((i) => !rejetDe(i));
+  const compter = (gravite) => actifs().filter((i) => i.severity === gravite).length;
+  const urgents = () => compter('high') + compter('medium');
 
   CARTE.icones.sante = '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>';
   CARTE.icones.check = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
@@ -96,159 +96,159 @@
   document.head.appendChild(style);
 
   // ---------- actions ----------
-  let isOpen = false, openedAt = null;
-  const where = () => JSON.stringify([CARTE.etat.selected, CARTE.etat.container]);
-  function closeList() { isOpen = false; CARTE.fermerPanneau(); }
-  function showOnMap(issue) {
-    const items = (issue.items || []).filter((id) => CARTE.existe(id)).map((id) => ({ id, note: (issue.notes && issue.notes[id]) || '' }));
-    if (!items.length) { CARTE.message(`This one isn’t on the map. Use “${FIX} with ${A.name}” instead.`); return; }
-    if (isOpen) closeList();
-    CARTE.montrerTableau({ title: issue.title, question: issue.detail, items });
+  let estOuverte = false, ouverteA = null;
+  const position = () => JSON.stringify([CARTE.etat.selected, CARTE.etat.container]);
+  function fermerListe() { estOuverte = false; CARTE.fermerPanneau(); }
+  function montrerSurCarte(issue) {
+    const elements = (issue.items || []).filter((id) => CARTE.existe(id)).map((id) => ({ id, note: (issue.notes && issue.notes[id]) || '' }));
+    if (!elements.length) { CARTE.message(`Celui-ci n’est pas sur la carte. Utilise plutôt « ${VERBE} avec ${A.name} ».`); return; }
+    if (estOuverte) fermerListe();
+    CARTE.montrerTableau({ title: issue.title, question: issue.detail, items: elements });
   }
-  // a served blueprint settles review items on the map: the request goes into the Ask bar's Change mode,
-  // for the person to finish (an open question needs their answer) or edit, then send
-  const here = (issue) => PLAN && !!issue.change && !!CARTE.peutChanger?.();
-  function resolveHere(issue) {
-    if (isOpen) closeList();
-    if (!CARTE.preparerChangement(issue.change)) { fixWith(issue); return; }
-    CARTE.message(issue.kind === 'question' ? 'Type your answer, then press Enter' : 'Edit the request if you like, then press Enter');
+  // un plan servi règle les points de la revue sur la carte : la demande va dans le mode Modifier de la bulle de questions,
+  // pour que la personne la termine (une question ouverte attend sa réponse) ou la modifie, puis l'envoie
+  const ici = (issue) => PLAN && !!issue.change && !!CARTE.peutChanger?.();
+  function resoudreIci(issue) {
+    if (estOuverte) fermerListe();
+    if (!CARTE.preparerChangement(issue.change)) { corrigerAvec(issue); return; }
+    CARTE.message(issue.kind === 'question' ? 'Écris ta réponse, puis appuie sur Entrée' : 'Modifie la demande si tu veux, puis appuie sur Entrée');
   }
-  function fixWith(issue) {
+  function corrigerAvec(issue) {
     CARTE.fenetre({
-      title: `${FIX} with ${A.name}`,
-      html: `<p class="hc-hint">Copy this request and paste it into <b>${A.app}</b>, opened in your project folder. It explains what to change and asks before anything risky.</p><pre>${h(issue.fix)}</pre>`,
-      actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { CARTE.copier(issue.fix); CARTE.message(`Copied. Paste it into ${A.app}.`); } }],
+      title: `${VERBE} avec ${A.name}`,
+      html: `<p class="hc-hint">Copie cette demande et colle-la dans <b>${A.app}</b>, ouvert dans le dossier de ton projet. Elle explique quoi changer et demande avant tout ce qui est risqué.</p><pre>${h(issue.fix)}</pre>`,
+      actions: [{ label: 'Copier la demande', primary: true, icon: 'copy', onClick: () => { CARTE.copier(issue.fix); CARTE.message(`Copié. Colle-la dans ${A.app}.`); } }],
     });
   }
-  function notAProblem(issue) {
+  function pasUnProbleme(issue) {
     const m = CARTE.fenetre({
-      title: 'Not a problem?',
-      html: `<p class="hc-hint">Mark “${h(issue.title)}” as a false alarm and it moves to the bottom of the ${CHECK}, out of the count. It comes back if this check finds something new there.</p>
-        <textarea class="hc-why" placeholder="Why not? (optional) e.g. that value is a bcrypt hash, not the password" spellcheck="true"></textarea>`,
-      actions: [{ label: 'Mark as not a problem', primary: true, icon: 'check', keepOpen: true, onClick: async (close) => {
-        const reason = m.el.querySelector('.hc-why').value.trim();
-        if (!(await saveDismissal(issue, reason))) return;
-        close();
-        refresh();
-        CARTE.message('Marked as not a problem.');
+      title: 'Pas un problème ?',
+      html: `<p class="hc-hint">Marque « ${h(issue.title)} » comme fausse alerte : il descend en bas de la liste et n’est plus compté. Il revient si ${CONTROLE} trouve quelque chose de nouveau à cet endroit.</p>
+        <textarea class="hc-why" placeholder="Pourquoi ? (facultatif) par exemple : cette valeur est un hachage bcrypt, pas le mot de passe" spellcheck="true"></textarea>`,
+      actions: [{ label: 'Marquer comme pas un problème', primary: true, icon: 'check', keepOpen: true, onClick: async (fermer) => {
+        const raison = m.el.querySelector('.hc-why').value.trim();
+        if (!(await enregistrerRejet(issue, raison))) return;
+        fermer();
+        actualiser();
+        CARTE.message('Marqué comme pas un problème.');
       } }],
     });
-    const why = m.el.querySelector('.hc-why');
-    why.focus();
+    const pourquoi = m.el.querySelector('.hc-why');
+    pourquoi.focus();
   }
-  const onMap = (issue) => (issue.items || []).some((id) => CARTE.existe(id));
+  const surLaCarte = (issue) => (issue.items || []).some((id) => CARTE.existe(id));
 
   // ---------- html ----------
-  const locText = (issue) => {
-    const locs = issue.locations || [];
-    if (!CARTE.technique() || !locs.length) return '';
-    const shown = locs.slice(0, 3).map((l) => `${l.file}${l.line > 1 ? ':' + l.line : ''}`);
-    return `<div class="hc-w">${shown.map(h).join('<br>')}${locs.length > 3 ? `<br>+${locs.length - 3} more` : ''}</div>`;
+  const texteLieux = (issue) => {
+    const lieux = issue.locations || [];
+    if (!CARTE.technique() || !lieux.length) return '';
+    const affiches = lieux.slice(0, 3).map((l) => `${l.file}${l.line > 1 ? ':' + l.line : ''}`);
+    return `<div class="hc-w">${affiches.map(h).join('<br>')}${lieux.length > 3 ? `<br>+${lieux.length - 3} autres` : ''}</div>`;
   };
-  const issueHtml = (issue, idx, note) => {
-    const d = dismissalOf(issue);
+  const htmlProbleme = (issue, indice, note) => {
+    const d = rejetDe(issue);
     if (d) return `<div class="hc-issue off">
         <div class="hc-t"><span class="dot" style="background:rgba(var(--ink),.2)"></span><span>${h(issue.title)}</span></div>
-        <div class="hc-n">Marked as not a problem${d.reason ? `: ${h(d.reason)}` : ''}</div>
-        ${canDismiss ? `<div class="hc-a"><button class="btn soft" data-hc-undo="${idx}">Show again</button></div>` : ''}
+        <div class="hc-n">Marqué comme pas un problème${d.reason ? `: ${h(d.reason)}` : ''}</div>
+        ${peutRejeter ? `<div class="hc-a"><button class="btn soft" data-hc-undo="${indice}">Montrer à nouveau</button></div>` : ''}
       </div>`;
     return `<div class="hc-issue">
-      <div class="hc-t"><span class="dot" style="background:${SEV[issue.severity].color}"></span><span>${h(issue.title)}</span></div>
+      <div class="hc-t"><span class="dot" style="background:${GRAVITE[issue.severity].color}"></span><span>${h(issue.title)}</span></div>
       ${note ? `<div class="hc-n">${h(note)}</div>` : `<div class="hc-d">${h(issue.detail)}</div>`}
-      ${locText(issue)}
+      ${texteLieux(issue)}
       <div class="hc-a">
-        ${onMap(issue) ? `<button class="btn soft" data-hc-show="${idx}">${CARTE.iconeI('search')}Show on map</button>` : ''}
-        ${CARTE.exporte ? '' : here(issue) ? `<button class="btn soft" data-hc-here="${idx}">${CARTE.iconeI('spark')}Resolve on the map</button>` : `<button class="btn soft" data-hc-fix="${idx}">${CARTE.iconeI('spark')}${FIX} with ${A.name}</button>`}
-        ${canDismiss ? `<button class="btn soft" data-hc-dismiss="${idx}">${CARTE.iconeI('check')}Not a problem</button>` : ''}
+        ${surLaCarte(issue) ? `<button class="btn soft" data-hc-show="${indice}">${CARTE.iconeI('search')}Voir sur la carte</button>` : ''}
+        ${CARTE.exporte ? '' : ici(issue) ? `<button class="btn soft" data-hc-here="${indice}">${CARTE.iconeI('spark')}Résoudre sur la carte</button>` : `<button class="btn soft" data-hc-fix="${indice}">${CARTE.iconeI('spark')}${VERBE} avec ${A.name}</button>`}
+        ${peutRejeter ? `<button class="btn soft" data-hc-dismiss="${indice}">${CARTE.iconeI('check')}Pas un problème</button>` : ''}
       </div>
     </div>`;
   };
-  const bindIssues = (el) => {
-    const on = (attr, fn) => el.querySelectorAll(`[data-hc-${attr}]`).forEach((b) => b.addEventListener('click', (ev) => { ev.stopPropagation(); fn(issues[+b.getAttribute(`data-hc-${attr}`)]); }));
-    on('show', showOnMap); on('fix', fixWith); on('here', resolveHere); on('dismiss', notAProblem); on('undo', undoDismissal);
+  const brancherProblemes = (el) => {
+    const lier = (attribut, fonction) => el.querySelectorAll(`[data-hc-${attribut}]`).forEach((b) => b.addEventListener('click', (ev) => { ev.stopPropagation(); fonction(problemes[+b.getAttribute(`data-hc-${attribut}`)]); }));
+    lier('show', montrerSurCarte); lier('fix', corrigerAvec); lier('here', resoudreIci); lier('dismiss', pasUnProbleme); lier('undo', annulerRejet);
   };
-  const headline = () => urgent() ? `${CARTE.pluriel(urgent(), 'thing')} need${urgent() === 1 ? 's' : ''} attention` : active().length ? 'Nothing urgent' : 'No problems found';
-  const breakdown = () => `<div class="hc-sub">${ORDER.filter(count).map((s) => `<span><i class="dot" style="background:${SEV[s].color}"></i>${count(s)} ${SEV[s].word}</span>`).join('')}</div>`;
-  const headColor = () => urgent() ? SEV[count('high') ? 'high' : 'medium'].color : 'var(--ok)';
+  const phraseTitre = () => urgents() ? `${CARTE.pluriel(urgents(), 'point')} demande${urgents() === 1 ? '' : 'nt'} de l’attention` : actifs().length ? 'Rien d’urgent' : 'Aucun problème trouvé';
+  const repartition = () => `<div class="hc-sub">${ORDRE.filter(compter).map((s) => `<span><i class="dot" style="background:${GRAVITE[s].color}"></i>${compter(s)} ${GRAVITE[s].word}</span>`).join('')}</div>`;
+  const couleurTitre = () => urgents() ? GRAVITE[compter('high') ? 'high' : 'medium'].color : 'var(--ok)';
 
-  function listHtml() {
-    const live = active(), off = issues.filter(dismissalOf);
-    const top = `<div class="sec">
-        <div class="ph"><span class="ico" style="--c:${headColor()}">${CARTE.icone('health')}</span><span class="kindlabel">${PLAN ? 'Design review' : 'Health check'}</span></div>
-        <h2 class="pt">${h(headline())}</h2>
-        <p class="pd">${PLAN ? 'We checked the plan for parts anyone on the internet could use, decisions the PRD leaves open, and pieces nothing connects to. Settling these now is cheaper than after it’s built.' : 'We looked for keys left in the code or sent to the browser, data and parts of your app anyone on the internet can reach (Supabase tables, Firebase rules, Stripe webhooks, endpoints), leftover files and files too big to edit safely. It’s a quick check, not a security audit.'}</p>
-        ${live.length ? breakdown() : `<div class="hc-calm">${off.length ? `Nothing left to look at: you marked ${CARTE.pluriel(off.length, 'item')} as not a problem.` : `Nothing stood out.`} This is a quick automatic check, not a full ${PLAN ? 'design' : 'security'} review.</div>`}
-        <div class="actions"><button class="btn soft" data-hc-back>${CARTE.iconeI('left')}Back</button></div>
+  function htmlListe() {
+    const vivants = actifs(), ecartes = problemes.filter(rejetDe);
+    const haut = `<div class="sec">
+        <div class="ph"><span class="ico" style="--c:${couleurTitre()}">${CARTE.icone('health')}</span><span class="kindlabel">${PLAN ? 'Revue du plan' : 'Contrôle de santé'}</span></div>
+        <h2 class="pt">${h(phraseTitre())}</h2>
+        <p class="pd">${PLAN ? 'On a vérifié le plan : les parties que n’importe qui sur Internet pourrait utiliser, les décisions que le PRD laisse ouvertes, et les morceaux auxquels rien n’est relié. Les régler maintenant coûte moins cher qu’après la construction.' : 'On a cherché les clés laissées dans le code ou envoyées au navigateur, les données et les parties de ton appli que n’importe qui sur Internet peut atteindre (tables Supabase, règles Firebase, webhooks Stripe, adresses du serveur), les fichiers inutilisés et les fichiers trop gros pour être modifiés sans risque. C’est un contrôle rapide, pas un audit de sécurité.'}</p>
+        ${vivants.length ? repartition() : `<div class="hc-calm">${ecartes.length ? `Il ne reste rien à regarder : tu as marqué ${CARTE.pluriel(ecartes.length, 'point')} comme pas un problème.` : `Rien ne ressort.`} C’est un contrôle automatique rapide, pas une vraie revue ${PLAN ? 'du plan' : 'de sécurité'}.</div>`}
+        <div class="actions"><button class="btn soft" data-hc-back>${CARTE.iconeI('left')}Retour</button></div>
       </div>`;
-    const groups = ORDER.map((sev) => {
-      const list = issues.map((i, idx) => [i, idx]).filter(([i]) => i.severity === sev && !dismissalOf(i));
-      return list.length ? `<div class="sec"><h3>${h(SEV[sev].group)} <span class="c">${list.length}</span></h3>${list.map(([i, idx]) => issueHtml(i, idx)).join('')}</div>` : '';
+    const groupes = ORDRE.map((gravite) => {
+      const liste = problemes.map((i, indice) => [i, indice]).filter(([i]) => i.severity === gravite && !rejetDe(i));
+      return liste.length ? `<div class="sec"><h3>${h(GRAVITE[gravite].group)} <span class="c">${liste.length}</span></h3>${liste.map(([i, indice]) => htmlProbleme(i, indice)).join('')}</div>` : '';
     }).join('');
-    const offHtml = off.length ? `<div class="sec"><h3>Marked as not a problem <span class="c">${off.length}</span></h3>${issues.map((i, idx) => [i, idx]).filter(([i]) => dismissalOf(i)).map(([i, idx]) => issueHtml(i, idx)).join('')}</div>` : '';
-    const foot = !live.length ? '' : CARTE.exporte ? `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints from when this copy was exported.</div>` : `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">These are automatic hints. ${live.some(here)
-      ? `“Resolve on the map” puts a request in the Ask bar’s Change mode: finish or edit it, press Enter, and ${A.name} updates the plan and redraws the map. Undo puts it back.`
-      : `“${FIX} with ${A.name}” gives you a request to paste into ${A.app}; ${PLAN ? 'it explains the choice and updates the plan once you decide' : 'it checks the code before changing anything'}.`} If one is wrong, “Not a problem” sets it aside.</div>`;
-    return top + groups + offHtml + foot;
+    const htmlEcartes = ecartes.length ? `<div class="sec"><h3>Marqués comme pas un problème <span class="c">${ecartes.length}</span></h3>${problemes.map((i, indice) => [i, indice]).filter(([i]) => rejetDe(i)).map(([i, indice]) => htmlProbleme(i, indice)).join('')}</div>` : '';
+    const pied = !vivants.length ? '' : CARTE.exporte ? `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">Ce sont des indications automatiques, prises au moment de l’export de cette copie.</div>` : `<div class="sec" style="color:var(--text-3);font-size:12px;line-height:1.6">Ce sont des indications automatiques. ${vivants.some(ici)
+      ? `« Résoudre sur la carte » met une demande dans le mode Modifier de la bulle de questions : termine-la ou modifie-la, appuie sur Entrée, et ${A.name} met à jour le plan et redessine la carte. Annuler remet tout comme avant.`
+      : `« ${VERBE} avec ${A.name} » te donne une demande à coller dans ${A.app} ; ${PLAN ? 'elle explique le choix et met à jour le plan une fois que tu as décidé' : 'elle vérifie le code avant de changer quoi que ce soit'}.`} Si l’une d’elles est fausse, « Pas un problème » la met de côté.</div>`;
+    return haut + groupes + htmlEcartes + pied;
   }
-  function openList() {
-    isOpen = true;
-    openedAt = where();
-    CARTE.montrerPanneau(listHtml(), (panel) => {
-      panel.querySelector('[data-hc-back]')?.addEventListener('click', closeList);
-      bindIssues(panel);
+  function ouvrirListe() {
+    estOuverte = true;
+    ouverteA = position();
+    CARTE.montrerPanneau(htmlListe(), (panneau) => {
+      panneau.querySelector('[data-hc-back]')?.addEventListener('click', fermerListe);
+      brancherProblemes(panneau);
     });
   }
 
-  // ---------- chrome ----------
-  const btn = CARTE.ajouterBoutonEntete({
-    id: 'btn-health', label: PLAN ? 'Review' : 'Health', icon: 'health',
-    onClick: () => (isOpen ? closeList() : openList()),
+  // ---------- en-tête ----------
+  const bouton = CARTE.ajouterBoutonEntete({
+    id: 'btn-health', label: PLAN ? 'Revue' : 'Santé', icon: 'health',
+    onClick: () => (estOuverte ? fermerListe() : ouvrirListe()),
   });
-  const badge = document.createElement('span');
-  badge.className = 'badge';
-  function updateButton() {
-    const n = urgent();
-    btn.title = `${PLAN ? 'Design review' : 'Health check'}: ${n ? headline() : 'nothing urgent'}`;
-    btn.querySelector('svg.i').innerHTML = CARTE.icones[n ? 'health' : 'check'];
+  const pastille = document.createElement('span');
+  pastille.className = 'badge';
+  function majBouton() {
+    const n = urgents();
+    bouton.title = `${PLAN ? 'Revue du plan' : 'Contrôle de santé'} : ${n ? phraseTitre() : 'rien d’urgent'}`;
+    bouton.querySelector('svg.i').innerHTML = CARTE.icones[n ? 'health' : 'check'];
     if (n) {
-      badge.textContent = n > 99 ? '99+' : String(n);
-      btn.style.setProperty('--hc-badge', count('high') ? SEV.high.color : SEV.medium.color);
-      btn.style.setProperty('--hc-badge-text', 'var(--on-sev-text)');
-      btn.appendChild(badge);
-    } else badge.remove();
-    btn.classList.toggle('calm', !n);
-    btn.setAttribute('aria-label', btn.title); // keeps its name, with the count, when only the icon shows
+      pastille.textContent = n > 99 ? '99+' : String(n);
+      bouton.style.setProperty('--hc-badge', compter('high') ? GRAVITE.high.color : GRAVITE.medium.color);
+      bouton.style.setProperty('--hc-badge-text', 'var(--on-sev-text)');
+      bouton.appendChild(pastille);
+    } else pastille.remove();
+    bouton.classList.toggle('calm', !n);
+    bouton.setAttribute('aria-label', bouton.title); // garde son nom, avec le compte, quand seule l'icône s'affiche
   }
-  function refresh() {
-    updateButton();
-    if (isOpen) openList(); else CARTE.actualiserPanneau();
+  function actualiser() {
+    majBouton();
+    if (estOuverte) ouvrirListe(); else CARTE.actualiserPanneau();
   }
-  updateButton();
-  // the server's list is the saved one: it may have changed since this map was built
-  if (SERVER && canDismiss) fetch('/api/health/dismissed', { headers: { 'x-floorplan-token': SERVER.token } }).then((r) => r.json()).then((r) => { if (Array.isArray(r.dismissed)) { dismissed = r.dismissed; refresh(); } }).catch(() => {});
+  majBouton();
+  // la liste du serveur est celle qui est enregistrée : elle a pu changer depuis la construction de cette carte
+  if (SERVEUR && peutRejeter) fetch('/api/health/dismissed', { headers: { 'x-floorplan-token': SERVEUR.token } }).then((r) => r.json()).then((r) => { if (Array.isArray(r.dismissed)) { rejetes = r.dismissed; actualiser(); } }).catch(() => {});
 
-  // Selecting something else on the map while the list is open shows that item instead.
-  CARTE.sur('panel', () => { if (isOpen && openedAt && where() !== openedAt) { isOpen = false; CARTE.fermerPanneau(); } });
+  // Sélectionner autre chose sur la carte pendant que la liste est ouverte affiche cet élément à la place.
+  CARTE.sur('panel', () => { if (estOuverte && ouverteA && position() !== ouverteA) { estOuverte = false; CARTE.fermerPanneau(); } });
 
   CARTE.ajouterSectionPanneau('overview', () => ({
-    html: `<div class="sec"><h3>${PLAN ? 'Design review' : 'Health'}</h3><div class="list"><a class="row" data-hc-open>
-        <span class="dot" style="background:${headColor()}"></span>
-        <span class="rt"><div class="rn">${h(headline())}</div><div class="rd">${active().length ? ORDER.filter(count).map((s) => `${count(s)} ${SEV[s].word}`).join(' · ') : PLAN ? 'Quick automatic check of the plan' : 'Quick automatic check of secrets, open endpoints and leftover files'}</div></span>
+    html: `<div class="sec"><h3>${PLAN ? 'Revue du plan' : 'Santé'}</h3><div class="list"><a class="row" data-hc-open>
+        <span class="dot" style="background:${couleurTitre()}"></span>
+        <span class="rt"><div class="rn">${h(phraseTitre())}</div><div class="rd">${actifs().length ? ORDRE.filter(compter).map((s) => `${compter(s)} ${GRAVITE[s].word}`).join(' · ') : PLAN ? 'Contrôle automatique rapide du plan' : 'Contrôle automatique rapide des secrets, des adresses du serveur ouvertes et des fichiers inutilisés'}</div></span>
         <span class="rc">${CARTE.iconeI('right')}</span></a></div></div>`,
-    bind: (el) => el.querySelector('[data-hc-open]')?.addEventListener('click', (ev) => { ev.preventDefault(); openList(); }),
+    bind: (el) => el.querySelector('[data-hc-open]')?.addEventListener('click', (ev) => { ev.preventDefault(); ouvrirListe(); }),
   }));
 
-  CARTE.ajouterSectionPanneau('item', (itemId) => {
-    if (!itemId || typeof itemId !== 'string' || !issues.length) return '';
-    const hits = [];
-    issues.forEach((issue, idx) => {
-      if (dismissalOf(issue)) return;
-      const inside = (issue.items || []).filter((id) => id === itemId || (CARTE.existe(id) && CARTE.chaine(id).includes(itemId)));
-      if (!inside.length) return;
-      const exact = issue.notes && inside.includes(itemId) ? issue.notes[itemId] : '';
-      hits.push(issueHtml(issue, idx, exact || (inside.length > 1 || inside[0] !== itemId ? `Affects ${CARTE.pluriel(inside.length, 'place')} in here` : '')));
+  CARTE.ajouterSectionPanneau('item', (idElement) => {
+    if (!idElement || typeof idElement !== 'string' || !problemes.length) return '';
+    const touches = [];
+    problemes.forEach((issue, indice) => {
+      if (rejetDe(issue)) return;
+      const dedans = (issue.items || []).filter((id) => id === idElement || (CARTE.existe(id) && CARTE.chaine(id).includes(idElement)));
+      if (!dedans.length) return;
+      const precis = issue.notes && dedans.includes(idElement) ? issue.notes[idElement] : '';
+      touches.push(htmlProbleme(issue, indice, precis || (dedans.length > 1 || dedans[0] !== idElement ? `Concerne ${CARTE.pluriel(dedans.length, 'endroit')} à l’intérieur` : '')));
     });
-    if (!hits.length) return '';
-    return { html: `<div class="sec"><h3>${PLAN ? 'Design review' : 'Health'} <span class="c">${hits.length}</span></h3>${hits.slice(0, 6).join('')}${hits.length > 6 ? `<div class="more" data-hc-open style="cursor:pointer">+${hits.length - 6} more in the ${CHECK}</div>` : ''}</div>`, bind: (el) => { bindIssues(el); el.querySelector('[data-hc-open]')?.addEventListener('click', openList); } };
+    if (!touches.length) return '';
+    return { html: `<div class="sec"><h3>${PLAN ? 'Revue du plan' : 'Santé'} <span class="c">${touches.length}</span></h3>${touches.slice(0, 6).join('')}${touches.length > 6 ? `<div class="more" data-hc-open style="cursor:pointer">+${touches.length - 6} autres dans ${CONTROLE}</div>` : ''}</div>`, bind: (el) => { brancherProblemes(el); el.querySelector('[data-hc-open]')?.addEventListener('click', ouvrirListe); } };
   });
 })();

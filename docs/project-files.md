@@ -1,62 +1,54 @@
-# What's in your project
+# Ce qu'il y a dans ton projet
 
-Floorplan writes to exactly two places in your project: the `floorplan/` folder, and (in Claude Code, only if you say yes) a short section in `CLAUDE.local.md`. Neither is committed to git, and nothing else in your project is touched.
+Floorplan n'écrit qu'à un seul endroit de ton projet : le dossier `floorplan/`. Il n'est pas enregistré dans Git, et rien d'autre dans ton projet n'est touché. En particulier, cette version n'écrit jamais dans `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.gitignore`, `.git/info/exclude`, ni ailleurs sur ta machine.
 
-## The `floorplan/` folder
+## Le dossier `floorplan/`
 
-| File | What it is | Edit it? |
+| Fichier | Ce que c'est | À modifier ? |
 |---|---|---|
-| `index.html` | The map: one self-contained page | No. Rebuilt every time |
-| `graph.json` | Everything the map shows, as data | No. Rebuilt every time |
-| `architecture.json` | The parts of your app, outside services, extra connections, flows and the tour | **Yes** |
-| `descriptions/*.json` | The name and description of every file and endpoint, one file per part | **Yes** |
-| `plan.json` | Blueprints only: the planned files, endpoints and screens, who may use each endpoint, the stack, assumptions and open questions. Names and descriptions live here instead of `descriptions/` | **Yes** |
-| `recent-work.json` | What was just worked on, and why. Replaced on every update | Rarely. The AI writes it |
-| `custom-flows.json` | Flows requested from the map | Only to delete one |
-| `health-dismissed.json` | Health issues you marked **Not a problem**, with your reasons | Only to undo one. **Show again** on the map does it too |
-| `serve.mjs` | Serves the map locally and answers questions through the Claude Code CLI or Codex | No |
-| `query.mjs` | Looks things up in the map from the command line; Claude and Codex use it too | No |
-| `artifact.html` | A copy for opening in the Claude app, only if you asked for one | No |
-| `<project>-map.html` | An exported copy to share, only if you exported one from Claude or Codex (the map's Export button downloads it instead) | No |
-| `.cache/` | The scan, the description worksheets, the last update's changes, the running server's address, and, for a blueprint, the last 20 versions of the plan that **Undo** goes back to | No. Safe to delete, though Undo then has nothing to go back to |
-| `.gitignore` | Keeps this whole folder out of git | No |
+| `index.html` | La carte : une seule page autonome | Non. Refaite à chaque fois |
+| `graph.json` | Tout ce que montre la carte, sous forme de données | Non. Refait à chaque fois |
+| `architecture.json` | Les parties de ton appli, les services extérieurs, les liens en plus, les parcours et la visite guidée | **Oui** |
+| `descriptions/*.json` | Le nom et la description de chaque fichier et de chaque adresse du serveur, un fichier par partie | **Oui** |
+| `plan.json` | Pour les plans seulement : les fichiers, adresses du serveur et écrans prévus, qui peut utiliser chaque adresse, la technologie, les hypothèses et les questions ouvertes. Les noms et descriptions sont ici au lieu de `descriptions/` | **Oui** |
+| `recent-work.json` | Ce sur quoi on vient de travailler, et pourquoi. Remplacé à chaque mise à jour | Rarement. C'est l'IA qui l'écrit |
+| `custom-flows.json` | Les parcours demandés depuis la carte | Seulement pour en supprimer un |
+| `health-dismissed.json` | Les problèmes de santé que tu as marqués **Pas un problème**, avec tes raisons | Seulement pour en annuler un. **Afficher à nouveau** sur la carte le fait aussi |
+| `serve.mjs` | Sert la carte en local et répond aux questions par la ligne de commande de Claude Code ou par Codex | Non |
+| `query.mjs` | Fait des recherches dans la carte depuis la ligne de commande ; Claude et Codex l'utilisent aussi | Non |
+| `artifact.html` | Une copie à ouvrir dans l'application Claude, seulement si tu en as demandé une | Non |
+| `<projet>-map.html` | Une copie exportée à partager, seulement si tu en as exporté une depuis Claude ou Codex (le bouton Exporter de la carte la télécharge à la place) | Non |
+| `.cache/` | L'analyse, les feuilles de travail des descriptions, les changements de la dernière mise à jour, l'adresse du serveur qui tourne, et, pour un plan, les 20 dernières versions du plan auxquelles **Annuler** revient | Non. Tu peux le supprimer, mais **Annuler** n'aura alors plus rien où revenir |
+| `.gitignore` | Garde tout ce dossier hors de Git | Non |
 
-### Editing names and structure
+### Modifier les noms et la structure
 
-Your edits to `architecture.json` and `descriptions/` are kept on every update. You can:
-- rename a part, or reword a description;
-- move files between parts by changing the `paths` patterns;
-- add a connection the scan missed;
-- pin a note to a file;
-- add or change flows and the tour.
+Tes modifications de `architecture.json` et de `descriptions/` sont gardées à chaque mise à jour. Tu peux :
+- renommer une partie, ou reformuler une description ;
+- déplacer des fichiers d'une partie à l'autre en changeant les motifs de `paths` ;
+- ajouter un lien que l'analyse a manqué ;
+- épingler une note sur un fichier ;
+- ajouter ou changer des parcours et la visite guidée.
 
-Or just ask Claude or Codex ("rename 'Main server' to 'Shop API' on the floorplan").
+Ou demande simplement à Claude ou à Codex (« renomme "Serveur principal" en "API boutique" dans le floorplan »).
 
-A blueprint is edited the same way, through `plan.json` and `architecture.json`, or from the map with the Ask bar's **Change** switch. The plan's format is in [`blueprint.md`](../skills/floorplan/references/blueprint.md).
+Un plan se modifie de la même façon, par `plan.json` et `architecture.json`, ou depuis la carte avec l'interrupteur **Modifier** de la bulle de questions. Le format du plan est dans [`blueprint.md`](../skills/floorplan/references/blueprint.md).
 
-The full format is in [`skills/floorplan/references/schema.md`](../skills/floorplan/references/schema.md), and the style guide for names and descriptions is in [`writing-descriptions.md`](../skills/floorplan/references/writing-descriptions.md).
+Le format complet est dans [`skills/floorplan/references/schema.md`](../skills/floorplan/references/schema.md), et le guide de style des noms et descriptions est dans [`writing-descriptions.md`](../skills/floorplan/references/writing-descriptions.md).
 
-## `CLAUDE.local.md`
+## Pas de fichier de notes pour Claude
 
-In Claude Code, after the first map, Claude asks whether future sessions in your project should use it. Only if you say yes, Floorplan adds a short marked section here, telling future Claude Code sessions that the map exists and how to look things up in it. `CLAUDE.local.md` is Claude Code's file for personal project notes, loaded at the start of every session like `CLAUDE.md`. Floorplan:
-- creates the file if you don't have one;
-- only ever rewrites its own section, between `<!-- floorplan:start -->` and `<!-- floorplan:end -->`, and keeps it current on each update;
-- adds the file to your clone's private ignore list, `.git/info/exclude`.
+Les versions d'origine de Floorplan pouvaient, si tu acceptais, ajouter une section à `CLAUDE.local.md` et le faire ignorer par Git (`.git/info/exclude`). **Cette version ne le fait pas** : elle n'écrit que dans `floorplan/`. Si tu veux que tes sessions Claude Code pensent à la carte, écris toi-même une ligne dans ton `CLAUDE.md` ou dans ton `CLAUDE.local.md`, par exemple : « Il y a une carte du projet dans `floorplan/` ; avant de chercher dans le code, essaie `node floorplan/query.mjs find <mot>`, `show`, `path` ou `overview`. »
 
-To remove it, delete the section. To keep it from coming back, put `<!-- floorplan:off -->` anywhere in `CLAUDE.local.md`. (Before 0.4.4, Floorplan added the section without asking; if you have it from then, it stays until you remove it.)
+Si ton projet a un `CLAUDE.local.md` ou des lignes dans `.git/info/exclude` venant d'une version d'origine de Floorplan, ils restent tels quels jusqu'à ce que tu les retires toi-même (la section est entre `<!-- floorplan:start -->` et `<!-- floorplan:end -->`).
 
-A blueprint adds no section, since there's no code to look up yet. Claude offers it once the map switches to the real code.
+## Rester hors de Git
 
-In Codex this file isn't touched. Codex has no personal, uncommitted notes file (`AGENTS.md` is shared with your team), so Floorplan doesn't add a note there.
+**`floorplan/`** contient son propre `.gitignore` qui ignore tout ce qu'il y a dans le dossier, lui-même compris. Ton `.gitignore` n'est pas modifié, et le dossier n'apparaît jamais dans `git status`.
 
-## Staying out of git
+La carte est personnelle à chaque copie du projet. Les collègues qui installent Floorplan font la leur.
 
-- **`floorplan/`** contains its own `.gitignore` that ignores everything in the folder, including itself. Your `.gitignore` isn't changed, and the folder never appears in `git status`.
-- **`CLAUDE.local.md`** is listed in `.git/info/exclude`, the per-clone ignore list that is never committed. If your project already ignores it, nothing is added.
-
-The map is personal to each clone. Teammates who install Floorplan make their own.
-
-If you committed a `floorplan/` folder before, ignoring it doesn't untrack those files. The build tells you the command that does, which keeps the files on disk:
+Si tu avais déjà enregistré un dossier `floorplan/` dans Git, l'ignorer ne le retire pas du suivi. La construction te donne la commande qui le fait, en gardant les fichiers sur le disque :
 
 ```bash
 git rm -r --cached floorplan

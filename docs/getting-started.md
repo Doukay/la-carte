@@ -1,111 +1,149 @@
-# Getting started
+# Pour commencer
 
-Prefer to watch? The [walkthrough video](https://youtu.be/NTUUzC7L_NQ) covers installing Floorplan and touring a finished map.
+> Traduction française non officielle de Floorplan (de Hayden Smith, licence MIT). Voir le [README](../README.md).
 
-Floorplan works in **Claude Code** and in **Codex**. Making and using a map is the same in both; only installing differs. This guide shows Claude Code, and [Floorplan in Codex](codex.md) has the Codex steps.
+Floorplan marche dans **Claude Code** et dans **Codex**. Faire une carte et s'en servir est pareil dans les deux ; seule l'installation change. Ce guide montre Claude Code, et [Floorplan dans Codex](codex.md) donne les étapes pour Codex.
 
-## What you need
+## Ce qu'il te faut
 
-- **Claude Code** (the Code tab in the Claude desktop app, or the Claude Code CLI in a terminal), or **Codex** (the app or the CLI, signed in with ChatGPT).
-- **[Node.js](https://nodejs.org) 18 or newer.** Floorplan's scripts run on it. Check with `node --version`.
-- **With Claude Code, recommended: the [Claude Code CLI](https://code.claude.com/docs/en/overview)**, even if you mainly use the desktop app. With it, the map's Ask bar can read your actual code when answering questions. Codex needs nothing extra: its app includes what the Ask bar uses.
+- **Claude Code** (l'onglet Code de l'application de bureau Claude, ou la ligne de commande Claude Code dans un terminal), ou **Codex** (l'application ou la ligne de commande, connecté avec ChatGPT).
+- **[Node.js](https://nodejs.org) 18 ou plus.** Les scripts de Floorplan tournent dessus. Vérifie avec `node --version`.
+- **Avec Claude Code, conseillé : la [ligne de commande de Claude Code](https://code.claude.com/docs/en/overview)**, même si tu utilises surtout l'application de bureau. Grâce à elle, la bulle de questions de la carte peut lire ton vrai code pour répondre. Codex n'a besoin de rien de plus : son application contient ce qu'utilise la bulle de questions.
 
-## Install
+## Installation
 
-**In Codex**, open **Plugins → Add a marketplace**, enter `haydenschmitty/floorplan`, and install Floorplan. Details in [Floorplan in Codex](codex.md#install).
+Cette copie n'est pas dans une boutique de plugins. Tu l'installes depuis son dossier sur ta machine, ou depuis son dépôt Git (si ton Git y a accès : le dépôt peut être privé). Le plugin et la source s'appellent tous deux `floorplan-fr`.
 
-**In Claude Code**, run these once, in any terminal:
+**Dans Claude Code**, lance ces commandes une fois, dans n'importe quel terminal :
 
 ```bash
-claude plugin marketplace add haydenschmitty/floorplan
-claude plugin install floorplan@floorplan
+claude plugin marketplace add /chemin/vers/floorplan-fr
+claude plugin install floorplan-fr@floorplan-fr
 ```
 
-The first command adds this repository as a plugin source. The second installs Floorplan for all your projects. The desktop app and the CLI share the same settings, so it shows up in both.
+La première commande ajoute le dossier de cette copie comme source de plugins (pour le dépôt Git : `claude plugin marketplace add <compte>/floorplan-fr`). La seconde installe Floorplan pour tous tes projets. L'application de bureau et la ligne de commande partagent les mêmes réglages : il apparaît donc dans les deux.
 
-**Start a new session** afterwards. Plugins load when a session starts.
+**Dans Codex**, ouvre **Plugins → Add a marketplace**, entre le chemin du dossier (ou l'adresse du dépôt) de cette copie, et installe Floorplan. Détails dans [Floorplan dans Codex](codex.md#installation).
 
-> In the Claude desktop app you can also browse plugins with the **+** button next to the prompt box (**Add plugins**, or **Plugins → Browse plugins**). It lists plugins from marketplaces you've already added.
+**Ouvre une nouvelle session** ensuite. Les plugins se chargent au démarrage d'une session.
 
-## Make your first map
+> Dans l'application de bureau Claude, tu peux aussi parcourir les plugins avec le bouton **+** à côté de la zone de saisie (**Add plugins**, ou **Plugins → Browse plugins**). Elle liste les plugins des sources que tu as déjà ajoutées.
 
-1. **Open your project.** In the Claude desktop app's Code tab, choose your project's folder in the row under the prompt box before sending your first message. In the Codex app, open the project's folder. In a terminal, run `claude` or `codex` from the project folder.
+## Fais ta première carte
 
-   If your app is split across several repos (say `web/` and `api/` side by side), open the folder that contains them all. Floorplan maps them together and connects the requests between them.
+1. **Ouvre ton projet.** Dans l'onglet Code de l'application de bureau Claude, choisis le dossier de ton projet dans la ligne sous la zone de saisie avant d'envoyer ton premier message. Dans l'application Codex, ouvre le dossier du projet. Dans un terminal, lance `claude` ou `codex` depuis le dossier du projet.
 
-2. **Ask for it:**
+   Si ton appli est répartie dans plusieurs dépôts (disons `web/` et `api/` côte à côte), ouvre le dossier qui les contient tous. Floorplan les cartographie ensemble et relie les appels de l'un à l'autre.
 
-   > Make me a floorplan of this app.
+2. **Demande-la :**
 
-   In Claude Code you can also pick **floorplan** from the **/** menu, or type `/floorplan:floorplan`. In Codex, type `$floorplan`.
+   > Fais-moi un floorplan de cette appli.
 
-3. **Let it work.** This is what happens:
-   - A scan lists every file, import, endpoint and web request. This takes seconds and costs no tokens.
-   - Claude or Codex reads your READMEs, setup files and entry points, then decides the main parts of your app and what each one is for.
-   - It writes a plain-English name and a one-line description for every file and endpoint. In Claude Code, projects with more than about 150 files are split across parallel helpers.
-   - The map is built and checked: connections, Health issues and screens.
+   Dans Claude Code tu peux aussi choisir **floorplan** dans le menu **/**, ou taper `/floorplan-fr:floorplan`. Dans Codex, tape `$floorplan`.
 
-   A small app takes a few minutes, a large one longer. You may be asked to let it run Floorplan's scripts (`node …`); allow them. Codex also asks to start the map's server outside its sandbox, so the map keeps running and its Ask bar can reach Codex.
+3. **Laisse-le travailler.** Voici ce qui se passe :
+   - Une analyse liste chaque fichier, import, adresse du serveur et appel au serveur. Elle prend quelques secondes et ne coûte aucun jeton.
+   - Claude ou Codex lit tes README, tes fichiers de réglages et tes points d'entrée, puis décide des grandes parties de ton appli et de leur rôle.
+   - Il écrit un nom en langage simple et une description d'une ligne pour chaque fichier et chaque adresse du serveur. Dans Claude Code, les projets de plus de 150 fichiers environ sont répartis entre plusieurs aides en parallèle.
+   - La carte est construite et contrôlée : liens, problèmes de santé et écrans.
 
-4. **Look around.** The map opens by itself, in the app's browser pane or your web browser. A one-minute **Start here** tour runs the first time. The reply sums up how your app fits together and points out anything serious the Health check found.
+   Une petite appli prend quelques minutes, une grosse plus longtemps. On peut te demander l'autorisation de lancer les scripts de Floorplan (`node …`) : accepte. Codex demande aussi à lancer le serveur de la carte hors de son bac à sable, pour que la carte reste active et que la bulle de questions puisse joindre Codex.
 
-See [Using the map](using-the-map.md) for everything you can do on it.
+4. **Regarde autour de toi.** La carte s'ouvre toute seule, dans le navigateur de l'application ou dans ton navigateur web. Une visite guidée **Commencer ici** d'une minute se lance la première fois. La réponse résume comment ton appli tient ensemble et signale ce que le contrôle de santé a trouvé de sérieux.
 
-## Keep it up to date
+Voir [Utiliser la carte](using-the-map.md) pour tout ce que tu peux faire dessus.
 
-After you, or your AI, have worked on the code:
+## Garde-la à jour
 
-> Update the floorplan.
+Après que toi, ou ton IA, avez travaillé sur le code :
 
-Floorplan re-scans and compares with the last map. Moved files keep their descriptions, deleted ones disappear, and only what's new or what changed in purpose is rewritten. A map already open in your browser reloads itself, and the cards that just changed light up green under **Recent work**.
+> Mets à jour le floorplan.
 
-## Plan something you haven't built yet
+Floorplan refait l'analyse et la compare à la dernière carte. Les fichiers déplacés gardent leurs descriptions, ceux qui sont supprimés disparaissent, et seul ce qui est nouveau ou dont le rôle a changé est réécrit. Une carte déjà ouverte dans ton navigateur se recharge toute seule, et les blocs qui viennent de changer s'allument en vert dans **Travail récent**.
 
-Everything above is about Floorplan's main job: mapping code that already exists. It has a second use, for when there's no code yet: drawing a **blueprint** of an app from a PRD, a spec or a description of what you want to build. Open the folder you'll build it in (an empty one is fine), share the document, and ask:
+## Planifier une appli pas encore construite
 
-> Here's my PRD. Make me a floorplan of what we'd need to build.
+Tout ce qui précède concerne le travail principal de Floorplan : cartographier du code qui existe déjà. Il a un second usage, quand il n'y a pas encore de code : dessiner un **plan** d'appli à partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire. Ouvre le dossier où tu la construiras (un dossier vide convient), donne le document, et demande :
 
-You get a **blueprint**: the same map, with every part, file, endpoint and screen the app would need, how they connect, and the outside services they rely on. Its cards have dashed outlines so you can tell it's a plan. The reply names the stack Claude or Codex chose, what it assumed, and the questions your PRD leaves open.
+> Voici mon cahier des charges. Fais-moi un floorplan de ce qu'il faudrait construire.
 
-On the map:
-- **Review** lists what the plan still has to decide, like endpoints anyone could use or open questions. **Resolve on the map** settles one: for a question, you just type your answer.
-- Switch the Ask bar to **Change** to shape the plan ("also plan out refunds"). The map redraws with what changed highlighted, and **Undo** puts it back.
-- Each part has **Build this with Claude** (or Codex), a ready request to build just that part.
+Tu obtiens un **plan** : la même carte, avec chaque partie, fichier, adresse du serveur et écran dont l'appli aurait besoin, comment ils se relient, et les services extérieurs dont ils dépendent. Ses blocs ont un contour en pointillés pour que tu voies que c'est un plan. La réponse nomme la technologie choisie par Claude ou Codex, ce qu'il a supposé, et les questions que ton cahier des charges laisse ouvertes.
 
-Once the code exists, ask Claude or Codex to "map the real code now", and the blueprint becomes a normal map. See [Blueprints](how-it-works.md#blueprints) for how it works.
+Sur la carte :
+- **Revue du plan** liste ce que le plan doit encore décider, comme les adresses du serveur que tout le monde pourrait utiliser ou les questions ouvertes. **Résoudre sur la carte** en règle une : pour une question, tu tapes simplement ta réponse.
+- Passe la bulle de questions sur **Modifier** pour remodeler le plan (« prévois aussi les remboursements »). La carte se redessine en montrant ce qui a changé, et **Annuler** remet l'ancien plan.
+- Chaque partie a **Construire ça avec Claude** (ou Codex), une demande toute prête pour construire cette seule partie.
 
-## Open the map yourself
+Quand le code existe, demande à Claude ou à Codex de « cartographier le vrai code maintenant », et le plan devient une carte normale. Voir [Les plans](how-it-works.md#les-plans) pour le fonctionnement.
 
-The map is a folder in your project. Either:
+## Ouvrir la carte toi-même
+
+La carte est un dossier dans ton projet. Soit :
 
 ```bash
 node floorplan/serve.mjs
 ```
 
-serves it at http://127.0.0.1:4378 with a working Ask bar, or double-click `floorplan/index.html`, where everything works except asking questions.
+la sert à l'adresse http://127.0.0.1:4378 avec une bulle de questions qui marche, soit tu double-cliques sur `floorplan/index.html`, où tout marche sauf poser des questions.
 
-When the map is opened for you, the server runs in the background and stops by itself two hours after you close the last tab. To stop it sooner:
+Quand la carte est ouverte pour toi, le serveur tourne en arrière-plan et s'arrête tout seul deux heures après que tu as fermé le dernier onglet. Pour l'arrêter plus tôt :
 
 ```bash
 node floorplan/serve.mjs --stop
 ```
 
-## Update the plugin
+## Mettre le plugin à jour
 
-For Codex, see [Update or remove it](codex.md#update-or-remove-it).
+Pour Codex, voir [Mettre à jour ou retirer](codex.md#mettre-à-jour-ou-retirer).
 
-In Claude Code, plugins installed from GitHub don't update automatically unless you turn that on. To get the latest version:
-
-```bash
-claude plugin update floorplan@floorplan
-```
-
-Or turn on automatic updates: in a Claude Code session, run `/plugin`, open **Marketplaces**, and choose **Enable auto-update**. Either way, updates apply in your next session. See the [changelog](../CHANGELOG.md) for what changed.
-
-## Remove it
+Cette copie **ne se met pas à jour toute seule avec l'auteur** : elle n'est reliée à aucune de ses versions. Ce que tu mets à jour ici, ce sont seulement les changements faits dans cette copie. Si tu l'as installée depuis son dépôt Git, dans Claude Code :
 
 ```bash
-claude plugin uninstall floorplan@floorplan
+claude plugin update floorplan-fr@floorplan-fr
 ```
 
-In Codex, see [Update or remove it](codex.md#update-or-remove-it). Then delete the `floorplan/` folder (and, if you used Claude Code, the Floorplan section of `CLAUDE.local.md`) from any project you used it in.
+Ou active les mises à jour automatiques : dans une session Claude Code, lance `/plugin`, ouvre **Marketplaces** et choisis **Enable auto-update**. Dans les deux cas, la mise à jour s'applique à ta session suivante. Si tu l'as installée depuis un dossier local, il n'y a rien à mettre à jour : le plugin tourne directement depuis le dossier. Le [journal des changements](../CHANGELOG.md) dit ce qui a changé dans cette copie (section « Version française »).
+
+## Reprendre une correction de l'auteur
+
+L'auteur continue de publier des versions de son côté. Rien n'en arrive ici automatiquement, parce que tout le code de cette copie a été réécrit en français (les noms de fonctions, de fichiers et les textes ne ressemblent plus à l'original). Pour profiter d'une correction qui t'intéresse :
+
+1. **Lis le journal de l'auteur.** Le fichier `CHANGELOG.md` de son dépôt (en anglais) dit ce que contient chaque version. Pour voir les changements précis entre deux versions, regarde les commits de son dépôt entre elles, sur GitHub ou dans un clone à part, qui n'est pas relié à cette copie :
+   ```bash
+   git clone https://github.com/haydenschmitty/floorplan floorplan-auteur
+   cd floorplan-auteur
+   git log --oneline floorplan--v0.6.3..floorplan--v0.6.4
+   git diff floorplan--v0.6.3 floorplan--v0.6.4 -- skills/
+   ```
+   (les versions de l'auteur sont marquées `floorplan--vX.Y.Z` ; remplace par les numéros qui t'intéressent). Cette copie est partie de la 0.6.3.
+2. **Refais la correction à la main** dans cette copie, avec les noms français. Un correctif copié tel quel ne s'applique pas : il faut le recopier avec les bons noms. Pour une correction de détection (une nouvelle adresse du serveur reconnue, par exemple), ajoute aussi un exemple dans les tests, comme l'auteur le fait.
+3. **Repasse les tests** : `node --test` depuis le dossier de cette copie.
+4. **Marque une version.** Quand tout passe, enregistre et marque l'état avec une marque Git, par exemple :
+   ```bash
+   git tag -a fr-2 -m "Correction de l'auteur reprise : <ce que c'est>"
+   ```
+   Note dans le [journal des changements](../CHANGELOG.md#version-française) ce que tu as repris et de quelle version de l'auteur.
+
+## Revenir en arrière
+
+Chaque version marquée de cette copie est une marque Git. `auteur-0.6.3` est le code de l'auteur d'origine, avant toute réécriture. Pour voir celles qui existent et revenir à l'une d'elles, depuis le dossier de cette copie :
+
+```bash
+git tag --list
+git checkout fr-1
+```
+
+(`fr-1` est un exemple : remplace-le par une marque de la liste.)
+
+Si le plugin est installé depuis ce dossier, ouvre une nouvelle session pour que ce soit pris en compte (avec Codex, relance `codex plugin add floorplan-fr@floorplan-fr`). Pour revenir à la dernière version : `git checkout main`. Si tu l'as installé depuis le dépôt Git, indique la marque comme référence quand tu ajoutes la source (c'est le champ **Git ref** dans l'application Codex ; pour Claude Code, regarde `claude plugin marketplace add --help`).
+
+Les cartes déjà faites restent dans le dossier `floorplan/` de chaque projet : revenir en arrière ne les efface pas. Demande une mise à jour du floorplan pour les refaire avec la version retrouvée.
+
+## Le retirer
+
+```bash
+claude plugin uninstall floorplan-fr@floorplan-fr
+claude plugin marketplace remove floorplan-fr
+```
+
+Dans Codex, voir [Mettre à jour ou retirer](codex.md#mettre-à-jour-ou-retirer). Supprime ensuite le dossier `floorplan/` de chaque projet où tu l'as utilisé.

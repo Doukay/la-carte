@@ -1,40 +1,42 @@
-# Choosing boundaries
+# Choisir les frontières
 
-The board is useful when each chip is something a person would name in a whiteboard conversation. It's useless when it just mirrors the folder tree. Use these heuristics to get there.
+Le tableau est utile quand chaque pastille est quelque chose qu'une personne nommerait en discutant devant un tableau blanc. Il est inutile quand il se contente de recopier l'arborescence des dossiers. Ces règles t'aident à y arriver.
 
-## The top-level board (3–9 chips)
+Rappel : les `label` et les `summary` que tu écris ici sont lus par la personne. Ils s'écrivent **en français, en langage simple, en la tutoyant si tu t'adresses à elle**, même si le code est en anglais (voir [writing-descriptions.md](writing-descriptions.md)).
 
-Ask: *what are the deployable or ownable things, and what do they talk to?*
+## Le tableau de premier niveau (3 à 9 pastilles)
 
-- **Multi-repo codebase.** Usually one chip per deployable (frontend, API, worker, a second app like an admin panel or a mobile app), plus shared libraries, plus externals. The repo is not always the unit: a backend repo might hold an API *and* a worker *and* an MCP connector, so give each its own chip.
-- **Monorepo** (`apps/*`, `packages/*`, `services/*`). Apps and services become top-level chips. Group packages as one `Shared libraries` chip with children, unless a package is big and central.
-- **Single monolith.** Use layers or domains as the top level (`Web layer`, `Domain services`, `Data`, `Jobs`), or the 4–8 biggest domains if the code is organized by feature. Choose the one the code actually follows.
-- **Externals.** Add the database(s) and each third-party API the code meaningfully depends on. Use the scan's EXTERNAL PACKAGES and EXTERNAL HOSTS lists; `packages` and `hosts` on external nodes connect them automatically. Skip utility libraries (react, lodash, pytest). They're dependencies, not architecture.
-- **Tests, scripts, migrations.** Give them their own top-level chips (`kind: test`, `script`, `data`) rather than mixing them into the service. Otherwise they bury the real dependency structure: tests import everything.
+Demande-toi : *quelles sont les choses déployables ou qui ont un responsable, et avec quoi parlent-elles ?*
 
-## Second level (3–12 per chip)
+- **Code réparti sur plusieurs dépôts.** En général une pastille par chose déployable (écrans, serveur, tâches de fond, une deuxième appli comme un espace d'administration ou une appli mobile), plus les bibliothèques partagées, plus les services extérieurs. Le dépôt n'est pas toujours la bonne unité : un dépôt de serveur peut contenir une API *et* des tâches de fond *et* un connecteur MCP : donne à chacun sa pastille.
+- **Monorepo** (`apps/*`, `packages/*`, `services/*`). Les applis et les services deviennent des pastilles de premier niveau. Regroupe les paquets en une seule pastille « Code partagé » avec des enfants, sauf si un paquet est gros et central.
+- **Un seul gros bloc de code.** Prends les couches ou les domaines comme premier niveau (« Écrans web », « Services métier », « Données », « Tâches de fond »), ou les 4 à 8 plus gros domaines si le code est organisé par fonctionnalité. Choisis ce que le code suit réellement.
+- **Services extérieurs.** Ajoute la ou les bases de données et chaque API tierce dont le code dépend vraiment. Utilise les listes EXTERNAL PACKAGES et EXTERNAL HOSTS du scan ; les `packages` et `hosts` des nœuds `external` les relient automatiquement. Laisse de côté les bibliothèques utilitaires (react, lodash, pytest) : ce sont des dépendances, pas de l'architecture.
+- **Tests, scripts, migrations.** Donne-leur leurs propres pastilles de premier niveau (`kind: test`, `script`, `data`) plutôt que de les mélanger au service. Sinon ils noient la vraie structure des dépendances : les tests importent tout.
 
-- Prefer **responsibility** over **file type**. "Orders", "Inventory" and "Auth" beat "routes", "services" and "models" when the code is organized that way. But if the code really is layered (routes/ → services/ → models/), mirror the layers. A layered board that shows routes → services → models is honest and readable.
-- A child is worth making when it has a clear one-sentence purpose and enough files (roughly 3+) or importance (a central API client) to matter.
-- Large UI component trees: group by feature area (`products`, `orders`, `checkout`), and keep a `UI kit` chip for shared primitives (`components/ui`). The kit will have many incoming traces. That's correct and useful to see.
-- Don't go deeper than three levels of nodes. The viewer already gives you folder, file and symbol levels below your nodes.
+## Deuxième niveau (3 à 12 par pastille)
 
-## Covering the files
+- Préfère la **responsabilité** au **type de fichier**. « Commandes », « Stock » et « Connexion » valent mieux que « routes », « services » et « modèles » quand le code est organisé ainsi. Mais si le code est vraiment en couches (routes/ → services/ → models/), reproduis les couches. Un tableau en couches qui montre routes → services → modèles est honnête et lisible.
+- Un enfant vaut la peine d'être créé quand il a un but clair en une phrase et assez de fichiers (environ 3 et plus) ou d'importance (un client d'API central) pour compter.
+- Les grosses arborescences d'écrans : groupe par domaine (`produits`, `commandes`, `paiement`), et garde une pastille « Briques communes » pour les éléments partagés (`components/ui`). Cette pastille aura beaucoup de tracés entrants. C'est normal et utile à voir.
+- Ne va pas au-delà de trois niveaux de nœuds. La carte te donne déjà les niveaux dossier, fichier et symbole sous tes nœuds.
 
-- Write broad globs on parents (`backend/app/**`), then narrower ones on children. The deepest match wins, so you never need `exclude` just to stop a parent stealing a child's files.
-- After building, look at `unassigned, by directory`, and give each sizeable directory a home or an `ignore` entry.
-- `ignore` is for things that aren't the system: generated clients, vendored copies, snapshot fixtures, one-off data dumps. It's not for tests or scripts, which belong on their own chips.
+## Couvrir les fichiers
 
-## Summaries
+- Écris des globs larges sur les parents (`backend/app/**`), puis des globs plus étroits sur les enfants. Le plus profond l'emporte, donc tu n'as jamais besoin d'`exclude` juste pour empêcher un parent de voler les fichiers d'un enfant.
+- Après le build, regarde les `non affectés, par dossier` et donne à chaque dossier un peu gros une pastille d'accueil ou une entrée `ignore`.
+- `ignore` sert pour ce qui n'est pas le système : clients générés, copies de bibliothèques, jeux de test figés, extractions de données ponctuelles. Ce n'est pas pour les tests ni les scripts, qui ont leurs propres pastilles.
 
-One sentence, about responsibility, in the codebase's own vocabulary. "Syncs product catalog and inventory with Shopify" beats "Contains Shopify-related services". Mention the framework only at the top level.
+## Résumés
 
-## Flows
+Une phrase, sur la responsabilité, avec le vocabulaire propre au code (traduit en français simple). « Garde le catalogue et le stock en phase avec Shopify » vaut mieux que « Contient les services liés à Shopify ». Ne cite le framework qu'au premier niveau, et seulement si la personne le connaît.
 
-Pick the 1–3 things the system exists to do (take an order, sync inventory, run a nightly job). Trace them across the board in 3–7 steps from the user or trigger to the final side effect. Check that consecutive steps are actually connected by an import, HTTP or explicit edge; if not, add the missing edge. The flow should make the system's main path obvious to someone seeing it for the first time.
+## Parcours
 
-## Sanity checks before you finish
+Choisis 1 à 3 choses pour lesquelles le système existe (prendre une commande, synchroniser le stock, lancer une tâche de nuit). Suis-les à travers le tableau en 3 à 7 étapes, de la personne ou du déclencheur jusqu'à l'effet final. Vérifie que des étapes consécutives sont bien reliées par un import, un appel au serveur ou un lien explicite ; sinon, ajoute le lien manquant. Le parcours doit rendre le chemin principal du système évident pour quelqu'un qui le voit pour la première fois. Les notes de chaque étape s'écrivent en français simple.
 
-- Does the top-level board, read left to right, tell the system's story (UI → API → services → data/externals)?
-- Is any chip connected to almost everything? That's either a shared kit (fine, label it) or a sign the boundary is wrong.
-- Are there traces you didn't expect, like the frontend importing backend code, or tests that are imported by production code? Mention them to the user; they're often the most valuable finding.
+## Dernières vérifications avant de finir
+
+- Le tableau de premier niveau, lu de gauche à droite, raconte-t-il l'histoire du système (écrans → serveur → services → données et services extérieurs) ?
+- Une pastille est-elle reliée à presque tout ? Soit c'est une brique partagée (très bien, dis-le dans son nom), soit sa frontière est mal placée.
+- Y a-t-il des tracés inattendus, comme les écrans qui importent du code du serveur, ou des tests importés par le code de production ? Signale-les à la personne : ce sont souvent les trouvailles les plus précieuses.

@@ -1,70 +1,70 @@
-// Shared helpers: paths, globs, file classification, git, and codebase discovery.
+// Outils communs : chemins, motifs (globs), classement des fichiers, git et découverte du code.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 export const versPosix = (p) => p.replace(/\\/g, '/');
-export const cheminRelatif = (from, to) => versPosix(path.relative(from, to)) || '.';
+export const cheminRelatif = (depuis, vers) => versPosix(path.relative(depuis, vers)) || '.';
 
-// ---------- globs ----------
+// ---------- motifs (globs) ----------
 
-const GLOB_CHARS = /[*?{[]/;
+const CARACTERES_MOTIF = /[*?{[]/;
 
-export function motifVersRegex(glob) {
-  const g = versPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
-  let re = '';
-  let braces = 0;
+export function motifVersRegex(motif) {
+  const g = versPosix(motif).replace(/^\.\//, '').replace(/\/$/, '');
+  let regex = '';
+  let accolades = 0;
   for (let i = 0; i < g.length; ) {
     const c = g[i];
     if (c === '*') {
       if (g[i + 1] === '*') {
-        const atStart = i === 0 || g[i - 1] === '/';
-        const atEnd = i + 2 === g.length || g[i + 2] === '/';
-        if (atStart && atEnd) {
-          if (i + 2 === g.length) { re += '.*'; i += 2; }
-          else { re += '(?:.*/)?'; i += 3; }
+        const enDebut = i === 0 || g[i - 1] === '/';
+        const enFin = i + 2 === g.length || g[i + 2] === '/';
+        if (enDebut && enFin) {
+          if (i + 2 === g.length) { regex += '.*'; i += 2; }
+          else { regex += '(?:.*/)?'; i += 3; }
           continue;
         }
-        re += '.*'; i += 2; continue;
+        regex += '.*'; i += 2; continue;
       }
-      re += '[^/]*'; i++; continue;
+      regex += '[^/]*'; i++; continue;
     }
-    if (c === '?') { re += '[^/]'; i++; continue; }
-    if (c === '{') { braces++; re += '(?:'; i++; continue; }
-    if (c === '}' && braces) { braces--; re += ')'; i++; continue; }
-    if (c === ',' && braces) { re += '|'; i++; continue; }
-    // a whole segment like [id], [...slug] or [[...slug]] is a folder name (Next.js, SvelteKit), not a character class
+    if (c === '?') { regex += '[^/]'; i++; continue; }
+    if (c === '{') { accolades++; regex += '(?:'; i++; continue; }
+    if (c === '}' && accolades) { accolades--; regex += ')'; i++; continue; }
+    if (c === ',' && accolades) { regex += '|'; i++; continue; }
+    // un segment entier comme [id], [...slug] ou [[...slug]] est un nom de dossier (Next.js, SvelteKit), pas une classe de caractères
     if (c === '[' && (i === 0 || g[i - 1] === '/')) {
-      const end = g.indexOf('/', i) < 0 ? g.length : g.indexOf('/', i);
-      const seg = g.slice(i, end);
-      if (/^\[\[?(\.\.\.)?[A-Za-z_$][\w$-]*\]\]?$/.test(seg)) { re += seg.replace(/[.[\]$\\]/g, '\\$&'); i = end; continue; }
+      const fin = g.indexOf('/', i) < 0 ? g.length : g.indexOf('/', i);
+      const segment = g.slice(i, fin);
+      if (/^\[\[?(\.\.\.)?[A-Za-z_$][\w$-]*\]\]?$/.test(segment)) { regex += segment.replace(/[.[\]$\\]/g, '\\$&'); i = fin; continue; }
     }
     if (c === '[') {
       const j = g.indexOf(']', i + 1);
-      if (j > i) { re += '[' + g.slice(i + 1, j).replace(/^!/, '^').replace(/\\/g, '\\\\') + ']'; i = j + 1; continue; }
+      if (j > i) { regex += '[' + g.slice(i + 1, j).replace(/^!/, '^').replace(/\\/g, '\\\\') + ']'; i = j + 1; continue; }
     }
-    re += c.replace(/[.+^$()|\\\]]/g, '\\$&');
+    regex += c.replace(/[.+^$()|\\\]]/g, '\\$&');
     i++;
   }
-  return new RegExp('^' + re + '$');
+  return new RegExp('^' + regex + '$');
 }
 
-/** Compile a glob. A pattern with no wildcards also matches everything under it as a directory. */
-export function compilerMotif(glob) {
-  const g = versPosix(glob).replace(/^\.\//, '').replace(/\/$/, '');
-  const literalPrefix = g.split(GLOB_CHARS)[0];
-  if (!GLOB_CHARS.test(g)) {
-    return { glob, specificity: g.length, test: (p) => p === g || p.startsWith(g + '/') };
+/** Compile un motif. Un motif sans joker correspond aussi à tout ce qui se trouve dessous, comme un dossier. */
+export function compilerMotif(motif) {
+  const g = versPosix(motif).replace(/^\.\//, '').replace(/\/$/, '');
+  const prefixeLitteral = g.split(CARACTERES_MOTIF)[0];
+  if (!CARACTERES_MOTIF.test(g)) {
+    return { glob: motif, specificity: g.length, test: (p) => p === g || p.startsWith(g + '/') };
   }
-  // A glob that names directories (src/components/{a,b}) also matches everything beneath them.
-  const re = motifVersRegex(g);
-  const under = motifVersRegex(g + '/**');
-  return { glob, specificity: literalPrefix.length, test: (p) => re.test(p) || under.test(p) };
+  // Un motif qui nomme des dossiers (src/components/{a,b}) correspond aussi à tout ce qu'ils contiennent.
+  const regex = motifVersRegex(g);
+  const dessous = motifVersRegex(g + '/**');
+  return { glob: motif, specificity: prefixeLitteral.length, test: (p) => regex.test(p) || dessous.test(p) };
 }
 
-// ---------- file classification ----------
+// ---------- classement des fichiers ----------
 
-const LANG_BY_EXT = {
+const LANGAGE_PAR_EXT = {
   '.ts': 'typescript', '.tsx': 'typescript', '.mts': 'typescript', '.cts': 'typescript',
   '.js': 'javascript', '.jsx': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript',
   '.vue': 'vue', '.svelte': 'svelte', '.astro': 'astro',
@@ -79,192 +79,192 @@ const LANG_BY_EXT = {
   '.css': 'css', '.scss': 'css', '.sass': 'css', '.less': 'css',
   '.html': 'html', '.htm': 'html', '.ejs': 'html', '.hbs': 'html', '.jinja': 'html', '.j2': 'html', '.njk': 'html',
 };
-const CONFIG_EXT = new Set(['.json', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.xml', '.gradle', '.properties', '.env']);
-const CONFIG_NAMES = /^(dockerfile.*|makefile|procfile|justfile|\.env\..*|\.?[\w-]*rc|gemfile|rakefile|cargo\.toml|go\.mod|pyproject\.toml|setup\.cfg|requirements.*\.txt)$/i;
-const JSON_CONFIG = /^(package|tsconfig.*|jsconfig|composer|manifest|app|components|turbo|nx|lerna|angular|firebase|vercel|now|renovate|tslint|.?eslintrc|.?babelrc|.?prettierrc|.*.config|.*rc|settings|launch|tasks|deno|biome|project|workspace|devcontainer|cdk|serverless|appsettings.*|openapi|swagger).json$/i;
-const DOC_EXT = new Set(['.md', '.mdx', '.rst', '.adoc', '.txt']);
-const DATA_EXT = new Set(['.csv', '.tsv', '.jsonl', '.ndjson', '.parquet', '.sqlite', '.db', '.xlsx', '.xls', '.avro']);
-const ASSET_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.avif', '.bmp', '.woff', '.woff2', '.ttf', '.otf', '.eot',
+const EXT_CONFIG = new Set(['.json', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.xml', '.gradle', '.properties', '.env']);
+const NOMS_CONFIG = /^(dockerfile.*|makefile|procfile|justfile|\.env\..*|\.?[\w-]*rc|gemfile|rakefile|cargo\.toml|go\.mod|pyproject\.toml|setup\.cfg|requirements.*\.txt)$/i;
+const JSON_DE_CONFIG = /^(package|tsconfig.*|jsconfig|composer|manifest|app|components|turbo|nx|lerna|angular|firebase|vercel|now|renovate|tslint|.?eslintrc|.?babelrc|.?prettierrc|.*.config|.*rc|settings|launch|tasks|deno|biome|project|workspace|devcontainer|cdk|serverless|appsettings.*|openapi|swagger).json$/i;
+const EXT_DOCS = new Set(['.md', '.mdx', '.rst', '.adoc', '.txt']);
+const EXT_DONNEES = new Set(['.csv', '.tsv', '.jsonl', '.ndjson', '.parquet', '.sqlite', '.db', '.xlsx', '.xls', '.avro']);
+const EXT_RESSOURCES = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.avif', '.bmp', '.woff', '.woff2', '.ttf', '.otf', '.eot',
   '.mp3', '.mp4', '.wav', '.webm', '.mov', '.pdf', '.zip', '.gz', '.tar', '.tgz', '.7z', '.jar', '.wasm', '.exe', '.dll', '.so', '.dylib', '.bin']);
-const LOCK_NAMES = /^(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb|poetry\.lock|pipfile\.lock|cargo\.lock|go\.sum|composer\.lock|gemfile\.lock|.*\.lock)$/i;
-const GENERATED = /(\.min\.(js|css)$|\.map$|\.tsbuildinfo$|\.pyc$|\.pyo$|\.class$|\.o$|(^|\/)next-env\.d\.ts$)/i;
+const NOMS_VERROUS = /^(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb|poetry\.lock|pipfile\.lock|cargo\.lock|go\.sum|composer\.lock|gemfile\.lock|.*\.lock)$/i;
+const MOTIF_GENERE = /(\.min\.(js|css)$|\.map$|\.tsbuildinfo$|\.pyc$|\.pyo$|\.class$|\.o$|(^|\/)next-env\.d\.ts$)/i;
 
-/** Directories never worth scanning, even if a repo tracks them. */
+/** Dossiers qui ne valent jamais la peine d'être analysés, même si un dépôt les suit. */
 export const DOSSIERS_TOUJOURS_IGNORES = new Set([
   'node_modules', '.git', '.pnpm-store', '.yarn', '__pycache__', '.venv', 'venv', 'site-packages',
   '.tox', '.mypy_cache', '.pytest_cache', '.ruff_cache', '.next', '.nuxt', '.svelte-kit', '.turbo',
   '.parcel-cache', '.gradle', '.idea',
 ]);
 
-/** The folder the map lives in, at the codebase root. Maps made before the rename used show-code/. */
+/** Le dossier qui contient la carte, à la racine du code. Les cartes d'avant le changement de nom utilisaient show-code/. */
 export const DOSSIER_CARTE = 'floorplan';
 export const ANCIEN_DOSSIER_CARTE = 'show-code';
-/** True for a folder holding a map, so a project's own folder that happens to be called "floorplan" isn't taken for one. */
+/** Vrai pour un dossier qui contient une carte, pour qu'un dossier du projet qui s'appelle par hasard « floorplan » ne soit pas pris pour une carte. */
 export const estDossierCarte = (d) => ['architecture.json', 'plan.json', 'graph.json', '.cache'].some((f) => fs.existsSync(path.join(d, f)));
 /**
- * Keeps the map folder out of git: its own .gitignore ignores everything in it, itself included, so
- * nothing in the project's tracked files changes. Returns a warning when git already tracks files
- * there (ignoring doesn't untrack them), else null.
+ * Garde le dossier de la carte hors de git : son propre .gitignore ignore tout ce qu'il contient, lui compris,
+ * donc rien ne change dans les fichiers suivis du projet. Renvoie un avertissement quand git suit déjà des
+ * fichiers dedans (les ignorer ne les retire pas du suivi), sinon null.
  */
-export function garderHorsGit(dir) {
-  const gi = path.join(dir, '.gitignore');
-  const want = '# Floorplan keeps its map out of git: this ignores everything in this folder, this file included.\n*\n';
-  fs.mkdirSync(dir, { recursive: true });
-  try { if (!fs.existsSync(gi) || fs.readFileSync(gi, 'utf8') !== want) fs.writeFileSync(gi, want); } catch {}
-  const tracked = (git(dir, ['ls-files', '--', '.']) || '').split('\n').filter(Boolean);
-  if (!tracked.length) return null;
-  const cheminRelatif = path.basename(dir);
-  return `${tracked.length} file(s) in ${cheminRelatif}/ were committed to git before; they stay tracked until you run: git rm -r --cached ${cheminRelatif}  (this keeps the files on disk)`;
+export function garderHorsGit(dossier) {
+  const gi = path.join(dossier, '.gitignore');
+  const attendu = '# Floorplan garde sa carte hors de git : ceci ignore tout ce qui est dans ce dossier, ce fichier compris.\n*\n';
+  fs.mkdirSync(dossier, { recursive: true });
+  try { if (!fs.existsSync(gi) || fs.readFileSync(gi, 'utf8') !== attendu) fs.writeFileSync(gi, attendu); } catch {}
+  const suivis = (git(dossier, ['ls-files', '--', '.']) || '').split('\n').filter(Boolean);
+  if (!suivis.length) return null;
+  const nomDossier = path.basename(dossier);
+  return `${suivis.length} fichier(s) de ${nomDossier}/ étaient déjà enregistrés dans git ; ils restent suivis tant que tu ne lances pas : git rm -r --cached ${nomDossier}  (les fichiers restent sur ton disque)`;
 }
 
-/** The map folder for a codebase root. */
-export function dossierCarte(root) {
-  const dir = path.join(root, DOSSIER_CARTE);
-  if (fs.existsSync(dir) && !estDossierCarte(dir) && fs.readdirSync(dir).length) {
-    console.error(`✗ ${DOSSIER_CARTE}/ already exists here and isn't a map (it's part of the project). Pass --out <folder> to put the map somewhere else.`);
+/** Le dossier de la carte pour une racine de code. */
+export function dossierCarte(racine) {
+  const dossier = path.join(racine, DOSSIER_CARTE);
+  if (fs.existsSync(dossier) && !estDossierCarte(dossier) && fs.readdirSync(dossier).length) {
+    console.error(`✗ ${DOSSIER_CARTE}/ existe déjà ici et ce n'est pas une carte (il fait partie du projet). Ajoute --out <dossier> pour mettre la carte ailleurs.`);
     process.exit(1);
   }
-  return dir;
+  return dossier;
 }
-/** Extra directories skipped when walking outside of git (where .gitignore can't help). */
+/** Dossiers en plus qu'on saute quand on parcourt hors de git (là où .gitignore ne peut pas aider). */
 export const DOSSIERS_IGNORES_PARCOURS = new Set([...DOSSIERS_TOUJOURS_IGNORES, 'dist', 'build', 'out', 'target', 'coverage', '.cache', 'vendor', 'bin', 'obj', 'env', '.vscode', '.claude']);
 
-export function classer(relPath, bytes) {
-  const base = path.posix.basename(relPath).toLowerCase();
+export function classer(cheminRel, octets) {
+  const base = path.posix.basename(cheminRel).toLowerCase();
   const ext = path.posix.extname(base);
-  if (GENERATED.test(relPath)) return { category: 'generated', lang: null };
-  if (LOCK_NAMES.test(base)) return { category: 'lock', lang: null };
+  if (MOTIF_GENERE.test(cheminRel)) return { category: 'generated', lang: null };
+  if (NOMS_VERROUS.test(base)) return { category: 'lock', lang: null };
   if (ext === '.log' || base.endsWith('.log')) return { category: 'log', lang: null };
-  if (ASSET_EXT.has(ext)) return { category: 'asset', lang: null };
-  if (DATA_EXT.has(ext)) return { category: 'data', lang: null };
-  if (LANG_BY_EXT[ext]) {
+  if (EXT_RESSOURCES.has(ext)) return { category: 'asset', lang: null };
+  if (EXT_DONNEES.has(ext)) return { category: 'data', lang: null };
+  if (LANGAGE_PAR_EXT[ext]) {
     if (ext === '.svg') return { category: 'asset', lang: null };
-    return { category: 'code', lang: LANG_BY_EXT[ext] };
+    return { category: 'code', lang: LANGAGE_PAR_EXT[ext] };
   }
-  if (ext === '.json' && (bytes > 100_000 || !JSON_CONFIG.test(base))) return { category: 'data', lang: null };
-  if (CONFIG_EXT.has(ext) || CONFIG_NAMES.test(base)) return { category: 'config', lang: ext ? ext.slice(1) : base };
-  if (DOC_EXT.has(ext)) return { category: 'docs', lang: null };
+  if (ext === '.json' && (octets > 100_000 || !JSON_DE_CONFIG.test(base))) return { category: 'data', lang: null };
+  if (EXT_CONFIG.has(ext) || NOMS_CONFIG.test(base)) return { category: 'config', lang: ext ? ext.slice(1) : base };
+  if (EXT_DOCS.has(ext)) return { category: 'docs', lang: null };
   return { category: 'other', lang: null };
 }
 
 // ---------- git ----------
 
-export function git(cwd, args) {
+export function git(dossierCourant, parametres) {
   try {
-    return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }).trimEnd();
+    return execFileSync('git', ['-C', dossierCourant, ...parametres], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }).trimEnd();
   } catch {
     return null;
   }
 }
 
-export function infosGit(dir) {
-  const head = git(dir, ['rev-parse', 'HEAD']);
-  const branch = git(dir, ['rev-parse', '--abbrev-ref', 'HEAD']);
-  const remote = git(dir, ['config', '--get', 'remote.origin.url']);
-  return { head, branch, remote: remote ? remote.replace(/\/\/[^@/]+@/, '//') : null };
+export function infosGit(dossier) {
+  const tete = git(dossier, ['rev-parse', 'HEAD']);
+  const branche = git(dossier, ['rev-parse', '--abbrev-ref', 'HEAD']);
+  const distant = git(dossier, ['config', '--get', 'remote.origin.url']);
+  return { head: tete, branch: branche, remote: distant ? distant.replace(/\/\/[^@/]+@/, '//') : null };
 }
 
-/** Files git considers part of the repo: tracked + untracked-but-not-ignored. */
-export function fichiersGit(dir) {
-  const out = git(dir, ['ls-files', '-co', '--exclude-standard', '-z']);
-  if (out == null) return null;
-  return [...new Set(out.split('\0').filter(Boolean))].map(versPosix);
+/** Les fichiers que git considère comme faisant partie du dépôt : suivis + non suivis mais non ignorés. */
+export function fichiersGit(dossier) {
+  const sortie = git(dossier, ['ls-files', '-co', '--exclude-standard', '-z']);
+  if (sortie == null) return null;
+  return [...new Set(sortie.split('\0').filter(Boolean))].map(versPosix);
 }
 
-/** If dir/.git is a file pointing into another repo's worktrees/, return that repo's working dir. */
-function worktreeMain(dir) {
-  const dotgit = path.join(dir, '.git');
-  let st;
-  try { st = fs.statSync(dotgit); } catch { return null; }
-  if (!st.isFile()) return null;
-  const m = /gitdir:\s*(.+)/.exec(fs.readFileSync(dotgit, 'utf8'));
+/** Si dossier/.git est un fichier qui pointe vers le worktrees/ d'un autre dépôt, renvoie le dossier de travail de ce dépôt. */
+function principalDuWorktree(dossier) {
+  const pointGit = path.join(dossier, '.git');
+  let statut;
+  try { statut = fs.statSync(pointGit); } catch { return null; }
+  if (!statut.isFile()) return null;
+  const m = /gitdir:\s*(.+)/.exec(fs.readFileSync(pointGit, 'utf8'));
   if (!m) return null;
-  const gitdir = path.resolve(dir, m[1].trim());
-  const idx = versPosix(gitdir).lastIndexOf('/.git/worktrees/');
-  if (idx === -1) return null; // submodule or other indirection: treat as a normal repo
-  return path.resolve(versPosix(gitdir).slice(0, idx));
+  const dossierGit = path.resolve(dossier, m[1].trim());
+  const indice = versPosix(dossierGit).lastIndexOf('/.git/worktrees/');
+  if (indice === -1) return null; // sous-module ou autre renvoi : on le traite comme un dépôt normal
+  return path.resolve(versPosix(dossierGit).slice(0, indice));
 }
 
-// ---------- discovery ----------
+// ---------- découverte ----------
 
 /**
- * Walk the codebase root and find every git repo in it. Repos are not descended into
- * (git ls-files covers them). Loose files outside any repo are collected too.
- * Linked worktrees of a repo that is itself in the codebase are skipped as duplicates.
+ * Parcourt la racine du code et trouve tous les dépôts git qu'elle contient. On n'entre pas dans les dépôts
+ * (git ls-files s'en charge). Les fichiers isolés, hors de tout dépôt, sont relevés aussi.
+ * Les worktrees liés à un dépôt qui est lui-même dans le code sont sautés comme doublons.
  */
-export function decouvrir(root, { includeWorktrees = false, maxLooseFiles = 5000 } = {}) {
-  const repos = [];
-  const loose = [];
-  const skipped = [];
+export function decouvrir(racine, { includeWorktrees: inclureWorktrees = false, maxLooseFiles: maxFichiersIsoles = 5000 } = {}) {
+  const depots = [];
+  const isoles = [];
+  const ignores = [];
 
-  const walk = (dir, depth) => {
-    if (fs.existsSync(path.join(dir, '.git'))) {
-      repos.push({ abs: dir, path: cheminRelatif(root, dir), worktreeOf: worktreeMain(dir) });
+  const parcourir = (dossier, profondeur) => {
+    if (fs.existsSync(path.join(dossier, '.git'))) {
+      depots.push({ abs: dossier, path: cheminRelatif(racine, dossier), worktreeOf: principalDuWorktree(dossier) });
       return;
     }
-    if (depth > 8) return;
-    let entries;
-    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
-    if (entries.filter((e) => e.isFile()).length > 500) { skipped.push({ path: cheminRelatif(root, dir), reason: 'over 500 files outside git (data dump?)' }); return; }
-    for (const e of entries) {
-      const abs = path.join(dir, e.name);
+    if (profondeur > 8) return;
+    let entrees;
+    try { entrees = fs.readdirSync(dossier, { withFileTypes: true }); } catch { return; }
+    if (entrees.filter((e) => e.isFile()).length > 500) { ignores.push({ path: cheminRelatif(racine, dossier), reason: 'plus de 500 fichiers hors de git (export de données ?)' }); return; }
+    for (const e of entrees) {
+      const absolu = path.join(dossier, e.name);
       if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) {
         if (DOSSIERS_IGNORES_PARCOURS.has(e.name) || (e.name.startsWith('.') && e.name !== '.github')) {
-          if (!['.git', 'node_modules', '__pycache__'].includes(e.name)) skipped.push({ path: cheminRelatif(root, abs), reason: 'ignored directory' });
+          if (!['.git', 'node_modules', '__pycache__'].includes(e.name)) ignores.push({ path: cheminRelatif(racine, absolu), reason: 'dossier ignoré' });
           continue;
         }
-        walk(abs, depth + 1);
+        parcourir(absolu, profondeur + 1);
       } else if (e.isFile()) {
-        if (loose.length < maxLooseFiles) loose.push(cheminRelatif(root, abs));
+        if (isoles.length < maxFichiersIsoles) isoles.push(cheminRelatif(racine, absolu));
       }
     }
   };
-  walk(root, 0);
+  parcourir(racine, 0);
 
-  // Drop worktree duplicates.
-  const norm = (p) => versPosix(path.resolve(p)).toLowerCase();
-  const primary = new Set(repos.filter((r) => !r.worktreeOf).map((r) => norm(r.abs)));
-  const seenMains = new Set();
-  const kept = [];
-  for (const r of repos) {
-    if (r.worktreeOf && !includeWorktrees && r.abs !== root) {
-      const main = norm(r.worktreeOf);
-      if (primary.has(main)) { skipped.push({ path: r.path, reason: `worktree of ${cheminRelatif(root, r.worktreeOf)}` }); continue; }
-      if (seenMains.has(main)) { skipped.push({ path: r.path, reason: `another worktree of ${r.worktreeOf}` }); continue; }
-      seenMains.add(main);
+  // On retire les worktrees en double.
+  const normaliser = (p) => versPosix(path.resolve(p)).toLowerCase();
+  const principaux = new Set(depots.filter((r) => !r.worktreeOf).map((r) => normaliser(r.abs)));
+  const principauxVus = new Set();
+  const gardes = [];
+  for (const r of depots) {
+    if (r.worktreeOf && !inclureWorktrees && r.abs !== racine) {
+      const principal = normaliser(r.worktreeOf);
+      if (principaux.has(principal)) { ignores.push({ path: r.path, reason: `worktree de ${cheminRelatif(racine, r.worktreeOf)}` }); continue; }
+      if (principauxVus.has(principal)) { ignores.push({ path: r.path, reason: `autre worktree de ${r.worktreeOf}` }); continue; }
+      principauxVus.add(principal);
     }
-    kept.push(r);
+    gardes.push(r);
   }
-  return { repos: kept, loose, skipped };
+  return { repos: gardes, loose: isoles, skipped: ignores };
 }
 
-// ---------- misc ----------
+// ---------- divers ----------
 
-export function lireJsonSouple(file) {
+export function lireJsonSouple(fichier) {
   try {
-    const txt = fs.readFileSync(file, 'utf8')
+    const texte = fs.readFileSync(fichier, 'utf8')
       .replace(/^﻿/, '')
-      .replace(/("(?:[^"\\]|\\.)*")|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m, str) => str ?? '')
+      .replace(/("(?:[^"\\]|\\.)*")|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m, chaine) => chaine ?? '')
       .replace(/,(\s*[}\]])/g, '$1');
-    return JSON.parse(txt);
+    return JSON.parse(texte);
   } catch {
     return null;
   }
 }
 
-export function lireArguments(argv, defaults = {}) {
-  const out = { _: [], ...defaults };
+export function lireArguments(argv, defauts = {}) {
+  const sortie = { _: [], ...defauts };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const [k, v] = a.slice(2).split('=');
-      if (v !== undefined) out[k] = v;
-      else if (argv[i + 1] && !argv[i + 1].startsWith('--')) out[k] = argv[++i];
-      else out[k] = true;
-    } else out._.push(a);
+      if (v !== undefined) sortie[k] = v;
+      else if (argv[i + 1] && !argv[i + 1].startsWith('--')) sortie[k] = argv[++i];
+      else sortie[k] = true;
+    } else sortie._.push(a);
   }
-  return out;
+  return sortie;
 }
 
 export const formaterNombre = (n) => n >= 10000 ? (n / 1000).toFixed(0) + 'k' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);

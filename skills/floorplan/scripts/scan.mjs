@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// floorplan scanner: discover every repo under a codebase root, list files, extract imports,
-// symbols and HTTP routes/calls, resolve them, and write floorplan/.cache/scan.json.
-// Prints a compact summary meant to be read by Claude (the JSON itself can be large).
+// Analyseur de Floorplan : trouve tous les dépôts sous une racine de code, liste les fichiers, extrait les imports,
+// les symboles et les routes et appels HTTP, les résout, et écrit floorplan/.cache/scan.json.
+// Imprime un résumé compact fait pour être lu par Claude (le JSON lui-même peut être gros).
 //
-// usage: node scan.mjs [root] [--out <file>] [--include-worktrees] [--max-file-kb 2048]
+// usage : node scan.mjs [racine] [--out <fichier>] [--include-worktrees] [--max-file-kb 2048]
 
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -15,159 +15,159 @@ import { trouverEcrans } from './lib/screens.mjs';
 import { creerResolveur } from './lib/resolve.mjs';
 import { resoudreRoutes, associerAppels } from './lib/routes.mjs';
 
-const args = lireArguments(process.argv.slice(2));
-const root = path.resolve(args._[0] || '.');
-const outDir = args.out ? path.dirname(path.dirname(path.resolve(args.out))) : dossierCarte(root);
-const outFile = path.resolve(args.out || path.join(outDir, '.cache', 'scan.json'));
-const maxBytes = (Number(args['max-file-kb']) || 2048) * 1024;
+const parametres = lireArguments(process.argv.slice(2));
+const racine = path.resolve(parametres._[0] || '.');
+const dossierSortie = parametres.out ? path.dirname(path.dirname(path.resolve(parametres.out))) : dossierCarte(racine);
+const fichierSortie = path.resolve(parametres.out || path.join(dossierSortie, '.cache', 'scan.json'));
+const maxOctets = (Number(parametres['max-file-kb']) || 2048) * 1024;
 const t0 = Date.now();
-const hash = (s) => createHash('sha1').update(s).digest('hex').slice(0, 12);
+const empreinte = (s) => createHash('sha1').update(s).digest('hex').slice(0, 12);
 
-// ---------- 1. discover repos and files ----------
-const found = decouvrir(root, { includeWorktrees: !!args['include-worktrees'] });
-const repos = [];
-const fileList = []; // { path, repo }
-const seen = new Set();
-// map folders (ours, or an old show-code/ one) are output, not code
-const mapDirs = new Map();
-const inMap = (p) => {
-  const segs = p.split('/');
-  for (let i = 0; i < segs.length - 1; i++) {
-    if (segs[i] !== DOSSIER_CARTE && segs[i] !== ANCIEN_DOSSIER_CARTE) continue;
-    const d = segs.slice(0, i + 1).join('/');
-    if (!mapDirs.has(d)) mapDirs.set(d, estDossierCarte(path.join(root, d)));
-    if (mapDirs.get(d)) return true;
+// ---------- 1. trouver les dépôts et les fichiers ----------
+const trouve = decouvrir(racine, { includeWorktrees: !!parametres['include-worktrees'] });
+const depots = [];
+const listeFichiers = []; // { path, repo }
+const vus = new Set();
+// les dossiers de carte (le nôtre, ou un ancien show-code/) sont un résultat, pas du code
+const dossiersCarte = new Map();
+const dansCarte = (p) => {
+  const segments = p.split('/');
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (segments[i] !== DOSSIER_CARTE && segments[i] !== ANCIEN_DOSSIER_CARTE) continue;
+    const d = segments.slice(0, i + 1).join('/');
+    if (!dossiersCarte.has(d)) dossiersCarte.set(d, estDossierCarte(path.join(racine, d)));
+    if (dossiersCarte.get(d)) return true;
   }
   return false;
 };
-const ignoredByDir = (p) => p.split('/').some((seg) => DOSSIERS_TOUJOURS_IGNORES.has(seg)) || inMap(p);
+const ignoreParDossier = (p) => p.split('/').some((segment) => DOSSIERS_TOUJOURS_IGNORES.has(segment)) || dansCarte(p);
 
-for (const r of found.repos) {
-  const listed = fichiersGit(r.abs);
-  const info = infosGit(r.abs);
-  const prefix = r.path === '.' ? '' : r.path + '/';
-  let count = 0;
-  for (const f of listed || []) {
-    const p = prefix + f;
-    if (seen.has(p) || ignoredByDir(p)) continue;
-    seen.add(p);
-    fileList.push({ path: p, repo: r.path });
-    count++;
+for (const r of trouve.repos) {
+  const listes = fichiersGit(r.abs);
+  const infosDepot = infosGit(r.abs);
+  const prefixe = r.path === '.' ? '' : r.path + '/';
+  let nombre = 0;
+  for (const f of listes || []) {
+    const p = prefixe + f;
+    if (vus.has(p) || ignoreParDossier(p)) continue;
+    vus.add(p);
+    listeFichiers.push({ path: p, repo: r.path });
+    nombre++;
   }
-  repos.push({ path: r.path, name: path.basename(r.abs), ...info, files: count, ...(r.worktreeOf ? { worktreeOf: versPosix(r.worktreeOf) } : {}) });
+  depots.push({ path: r.path, name: path.basename(r.abs), ...infosDepot, files: nombre, ...(r.worktreeOf ? { worktreeOf: versPosix(r.worktreeOf) } : {}) });
 }
-for (const p of found.loose) if (!seen.has(p) && !inMap(p)) { seen.add(p); fileList.push({ path: p, repo: null }); }
+for (const p of trouve.loose) if (!vus.has(p) && !dansCarte(p)) { vus.add(p); listeFichiers.push({ path: p, repo: null }); }
 
-// ---------- 2. classify, read, extract ----------
-const files = [];
-for (const { path: p, repo } of fileList) {
-  const abs = path.join(root, p);
-  let st;
-  try { st = fs.statSync(abs); } catch { continue; }
-  if (!st.isFile()) continue;
-  const { category, lang } = classer(p, st.size);
-  const f = { path: p, repo, category, lang, bytes: st.size, loc: 0 };
-  if ((category === 'code' || category === 'config' || category === 'docs') && st.size <= maxBytes) {
-    let src;
-    try { src = fs.readFileSync(abs, 'utf8'); } catch { src = ''; }
-    if (src.includes('\u0000')) { f.category = 'asset'; files.push(f); continue; }
-    f.loc = src.split('\n').filter((l) => l.trim()).length;
-    if (category === 'code' && src.length) {
-      try { Object.assign(f, extraire(src, lang, p)); } catch (e) { f.extractError = String(e.message || e); }
-      // h: exact content. sig: the parts a description depends on (exports, routes, docstring),
-      // so edits inside function bodies don't mark a file's description as stale.
-      f.h = hash(src);
-      f.sig = hash(JSON.stringify([(f.symbols || []).map((s) => s.name).sort(), (f.routes || []).map((r) => `${r.method} ${r.path}`).sort(), f.doc || '']));
+// ---------- 2. classer, lire, extraire ----------
+const fichiers = [];
+for (const { path: p, repo: depot } of listeFichiers) {
+  const absolu = path.join(racine, p);
+  let statut;
+  try { statut = fs.statSync(absolu); } catch { continue; }
+  if (!statut.isFile()) continue;
+  const { category: categorie, lang: langage } = classer(p, statut.size);
+  const f = { path: p, repo: depot, category: categorie, lang: langage, bytes: statut.size, loc: 0 };
+  if ((categorie === 'code' || categorie === 'config' || categorie === 'docs') && statut.size <= maxOctets) {
+    let source;
+    try { source = fs.readFileSync(absolu, 'utf8'); } catch { source = ''; }
+    if (source.includes('\u0000')) { f.category = 'asset'; fichiers.push(f); continue; }
+    f.loc = source.split('\n').filter((l) => l.trim()).length;
+    if (categorie === 'code' && source.length) {
+      try { Object.assign(f, extraire(source, langage, p)); } catch (e) { f.extractError = String(e.message || e); }
+      // h : le contenu exact. sig : les parties dont dépend une description (exports, routes, docstring),
+      // pour que modifier l'intérieur d'une fonction ne rende pas la description d'un fichier périmée.
+      f.h = empreinte(source);
+      f.sig = empreinte(JSON.stringify([(f.symbols || []).map((s) => s.name).sort(), (f.routes || []).map((r) => `${r.method} ${r.path}`).sort(), f.doc || '']));
     }
-    // extension hooks: per-file health findings (lib/health.mjs) and app screens (lib/screens.mjs)
-    if (src.length) {
-      try { const iss = trouverProblemes(src, f); if (iss?.length) f.problemes = iss; } catch (e) { f.healthError = String(e.message || e); }
-      try { const scr = trouverEcrans(src, f); if (scr?.length) f.ecrans = scr; } catch (e) { f.screensError = String(e.message || e); }
+    // points d'extension : les problèmes de santé de chaque fichier (lib/health.mjs) et les écrans de l'appli (lib/screens.mjs)
+    if (source.length) {
+      try { const trouves = trouverProblemes(source, f); if (trouves?.length) f.problemes = trouves; } catch (e) { f.healthError = String(e.message || e); }
+      try { const ecransTrouves = trouverEcrans(source, f); if (ecransTrouves?.length) f.ecrans = ecransTrouves; } catch (e) { f.screensError = String(e.message || e); }
     }
-  } else if (category === 'code' || category === 'config' || category === 'docs') {
-    // too big to read and parse, but still on the map: count its lines without loading it all
+  } else if (categorie === 'code' || categorie === 'config' || categorie === 'docs') {
+    // trop gros pour être lu et analysé, mais toujours sur la carte : on compte ses lignes sans tout charger
     f.tooLarge = true;
-    f.loc = countLines(abs);
+    f.loc = compterLignes(absolu);
   }
-  files.push(f);
+  fichiers.push(f);
 }
 
-/** Lines in a file, read in chunks so a huge file is never held in memory at once. */
-function countLines(abs) {
-  let fd, n = 0, last = 10;
+/** Nombre de lignes d'un fichier, lu par morceaux pour qu'un fichier énorme ne tienne jamais tout entier en mémoire. */
+function compterLignes(absolu) {
+  let fd, n = 0, dernier = 10;
   try {
-    fd = fs.openSync(abs, 'r');
-    const buf = Buffer.alloc(1 << 20);
-    for (let got; (got = fs.readSync(fd, buf, 0, buf.length, null)) > 0;) {
-      for (let i = 0; i < got; i++) if (buf[i] === 10) n++;
-      last = buf[got - 1];
+    fd = fs.openSync(absolu, 'r');
+    const tampon = Buffer.alloc(1 << 20);
+    for (let lus; (lus = fs.readSync(fd, tampon, 0, tampon.length, null)) > 0;) {
+      for (let i = 0; i < lus; i++) if (tampon[i] === 10) n++;
+      dernier = tampon[lus - 1];
     }
   } catch { return 0; } finally { if (fd !== undefined) fs.closeSync(fd); }
-  return n + (last === 10 ? 0 : 1);
+  return n + (dernier === 10 ? 0 : 1);
 }
 
-// ---------- 3. resolve imports ----------
-const resolve = creerResolveur(root, files);
-const edges = [];
-const externals = new Map(); // `${eco}:${name}` -> { eco, name, count, files:Set }
-const extEdges = [];
-let unresolved = 0;
-for (const f of files) {
+// ---------- 3. résoudre les imports ----------
+const resoudre = creerResolveur(racine, fichiers);
+const liens = [];
+const externes = new Map(); // `${eco}:${name}` -> { eco, name, count, files:Set }
+const liensExternes = [];
+let nonResolus = 0;
+for (const f of fichiers) {
   if (!f.imports) continue;
-  for (const imp of f.imports) {
-    const res = resolve(f, imp);
-    if (res.file || res.files) {
-      imp.files = res.files || [res.file];
-      const targets = res.files ? res.files.map((t, i) => [t, res.names?.[i]]) : [[res.file, null]];
-      for (const [to, subName] of targets) {
-        if (to === f.path) continue;
-        edges.push({ from: f.path, to, names: subName ? [] : (imp.names || []), line: imp.line, ...(imp.dynamic ? { dynamic: true } : {}) });
+  for (const importe of f.imports) {
+    const resultat = resoudre(f, importe);
+    if (resultat.file || resultat.files) {
+      importe.files = resultat.files || [resultat.file];
+      const cibles = resultat.files ? resultat.files.map((t, i) => [t, resultat.names?.[i]]) : [[resultat.file, null]];
+      for (const [vers, sousNom] of cibles) {
+        if (vers === f.path) continue;
+        liens.push({ from: f.path, to: vers, names: sousNom ? [] : (importe.names || []), line: importe.line, ...(importe.dynamic ? { dynamic: true } : {}) });
       }
-    } else if (res.external) {
-      const key = `${res.eco}:${res.external}`;
-      if (!externals.has(key)) externals.set(key, { eco: res.eco, name: res.external, count: 0, files: new Set() });
-      const e = externals.get(key);
+    } else if (resultat.external) {
+      const cle = `${resultat.eco}:${resultat.external}`;
+      if (!externes.has(cle)) externes.set(cle, { eco: resultat.eco, name: resultat.external, count: 0, files: new Set() });
+      const e = externes.get(cle);
       e.count++;
       e.files.add(f.path);
-      extEdges.push({ from: f.path, pkg: key });
-    } else if (res.unresolved) unresolved++;
+      liensExternes.push({ from: f.path, pkg: cle });
+    } else if (resultat.unresolved) nonResolus++;
   }
 }
-// merge duplicate edges (same from/to)
-const edgeMap = new Map();
-for (const e of edges) {
+// fusionne les liens en double (même départ et même arrivée)
+const liensFusionnes = new Map();
+for (const e of liens) {
   const k = e.from + '\u0000' + e.to;
-  const prev = edgeMap.get(k);
-  if (prev) { prev.names = [...new Set([...prev.names, ...e.names])]; prev.count++; }
-  else edgeMap.set(k, { ...e, count: 1 });
+  const precedent = liensFusionnes.get(k);
+  if (precedent) { precedent.names = [...new Set([...precedent.names, ...e.names])]; precedent.count++; }
+  else liensFusionnes.set(k, { ...e, count: 1 });
 }
 
-// Firebase callable helpers used from other files: `import { callFunction } from '../lib/firebase'`,
-// then callFunction('approveItem', data) calls the approveItem function
-const wrappers = new Map(files.filter((f) => f.callableWrappers).map((f) => [f.path, new Set(f.callableWrappers)]));
-if (wrappers.size) for (const f of files) {
-  const via = (f.imports || []).flatMap((imp) => Object.entries(imp.locals || {}).filter(([, orig]) => imp.files?.some((t) => wrappers.get(t)?.has(orig))).map(([local]) => local));
+// Aides Firebase pour appeler une fonction, utilisées depuis d'autres fichiers : `import { callFunction } from '../lib/firebase'`,
+// puis callFunction('approveItem', data) appelle la fonction approveItem
+const enveloppes = new Map(fichiers.filter((f) => f.callableWrappers).map((f) => [f.path, new Set(f.callableWrappers)]));
+if (enveloppes.size) for (const f of fichiers) {
+  const via = (f.imports || []).flatMap((importe) => Object.entries(importe.locals || {}).filter(([, origine]) => importe.files?.some((t) => enveloppes.get(t)?.has(origine))).map(([nomLocal]) => nomLocal));
   if (!via.length) continue;
-  let src;
-  try { src = fs.readFileSync(path.join(root, f.path), 'utf8'); } catch { continue; }
-  for (const local of via) f.calls = [...(f.calls || []), ...appelsAppelablesVia(src, local)];
+  let source;
+  try { source = fs.readFileSync(path.join(racine, f.path), 'utf8'); } catch { continue; }
+  for (const nomLocal of via) f.calls = [...(f.calls || []), ...appelsAppelablesVia(source, nomLocal)];
 }
 
-// ---------- 4. routes and HTTP calls ----------
-const routes = resoudreRoutes(files);
-const http = associerAppels(files, routes);
-const hosts = [];
-for (const f of files) for (const h of f.hosts || []) hosts.push({ from: f.path, host: h.host, line: h.line });
+// ---------- 4. routes et appels HTTP ----------
+const routes = resoudreRoutes(fichiers);
+const liensHttp = associerAppels(fichiers, routes);
+const hotes = [];
+for (const f of fichiers) for (const h of f.hosts || []) hotes.push({ from: f.path, host: h.host, line: h.line });
 
-// ---------- 5. write scan.json ----------
-const scan = {
+// ---------- 5. écrire scan.json ----------
+const analyse = {
   version: 1,
   generatedAt: new Date().toISOString(),
-  root: versPosix(root),
-  rootName: path.basename(root),
-  repos,
-  skipped: found.skipped,
-  files: files.map((f) => ({
+  root: versPosix(racine),
+  rootName: path.basename(racine),
+  repos: depots,
+  skipped: trouve.skipped,
+  files: fichiers.map((f) => ({
     path: f.path, repo: f.repo, category: f.category, lang: f.lang, loc: f.loc, bytes: f.bytes,
     ...(f.doc ? { doc: f.doc } : {}),
     ...(f.h ? { h: f.h, sig: f.sig } : {}),
@@ -177,140 +177,140 @@ const scan = {
     ...(f.ecrans ? { ecrans: f.ecrans } : {}),
     ...(f.triggers ? { triggers: f.triggers } : {}),
   })),
-  edges: [...edgeMap.values()].map(({ from, to, names, count, dynamic }) => ({ from, to, ...(names.length ? { names } : {}), ...(count > 1 ? { count } : {}), ...(dynamic ? { dynamic } : {}) })),
-  externals: [...externals.values()].map((e) => ({ id: `${e.eco}:${e.name}`, eco: e.eco, name: e.name, imports: e.count, files: e.files.size })),
-  extEdges: dedupeExt(extEdges),
+  edges: [...liensFusionnes.values()].map(({ from: depuis, to: vers, names: noms, count: nombre, dynamic: dynamique }) => ({ from: depuis, to: vers, ...(noms.length ? { names: noms } : {}), ...(nombre > 1 ? { count: nombre } : {}), ...(dynamique ? { dynamic: dynamique } : {}) })),
+  externals: [...externes.values()].map((e) => ({ id: `${e.eco}:${e.name}`, eco: e.eco, name: e.name, imports: e.count, files: e.files.size })),
+  extEdges: dedupliquerExternes(liensExternes),
   routes,
-  http,
-  hosts,
+  http: liensHttp,
+  hosts: hotes,
 };
-fs.mkdirSync(path.dirname(outFile), { recursive: true });
-fs.writeFileSync(outFile, JSON.stringify(scan));
-if (!args.out) garderHorsGit(outDir);
+fs.mkdirSync(path.dirname(fichierSortie), { recursive: true });
+fs.writeFileSync(fichierSortie, JSON.stringify(analyse));
+if (!parametres.out) garderHorsGit(dossierSortie);
 
-function dedupeExt(list) {
+function dedupliquerExternes(liste) {
   const m = new Map();
-  for (const e of list) { const k = e.from + '|' + e.pkg; m.set(k, (m.get(k) || 0) + 1); }
-  return [...m.entries()].map(([k, count]) => { const [from, pkg] = k.split('|'); return { from, pkg, count }; });
+  for (const e of liste) { const k = e.from + '|' + e.pkg; m.set(k, (m.get(k) || 0) + 1); }
+  return [...m.entries()].map(([k, nombre]) => { const [depuis, paquet] = k.split('|'); return { from: depuis, pkg: paquet, count: nombre }; });
 }
 
-// ---------- 6. summary for Claude ----------
-const code = scan.files.filter((f) => f.category === 'code');
-const out = [];
-const line = (s = '') => out.push(s);
-line(`Floorplan scan of ${scan.rootName}  (${((Date.now() - t0) / 1000).toFixed(1)}s) -> ${versPosix(path.relative(root, outFile))}`);
-line();
-line(`REPOS (${repos.length})`);
-for (const r of repos) line(`  ${r.path.padEnd(40)} ${String(r.files).padStart(6)} files  ${r.branch || '-'}@${(r.head || '').slice(0, 8)}${r.worktreeOf ? '  (worktree)' : ''}`);
-const looseCount = scan.files.filter((f) => f.repo === null).length;
-if (looseCount) line(`  (outside any repo)${''.padEnd(22)} ${String(looseCount).padStart(6)} files`);
-const wts = found.skipped.filter((s) => s.reason.includes('worktree'));
-if (wts.length) line(`  skipped ${wts.length} duplicate worktree(s), e.g. ${wts.slice(0, 3).map((s) => s.path).join(', ')}`);
-const dumps = found.skipped.filter((s) => s.reason.includes('data dump'));
-if (dumps.length) line(`  skipped ${dumps.length} large non-git dir(s), e.g. ${dumps.slice(0, 2).map((s) => s.path).join(', ')}`);
-line();
+// ---------- 6. résumé pour Claude ----------
+const code = analyse.files.filter((f) => f.category === 'code');
+const sortie = [];
+const ligne = (s = '') => sortie.push(s);
+ligne(`Analyse Floorplan de ${analyse.rootName}  (${((Date.now() - t0) / 1000).toFixed(1)}s) -> ${versPosix(path.relative(racine, fichierSortie))}`);
+ligne();
+ligne(`DÉPÔTS (${depots.length})`);
+for (const r of depots) ligne(`  ${r.path.padEnd(40)} ${String(r.files).padStart(6)} fichiers  ${r.branch || '-'}@${(r.head || '').slice(0, 8)}${r.worktreeOf ? '  (worktree)' : ''}`);
+const nbIsoles = analyse.files.filter((f) => f.repo === null).length;
+if (nbIsoles) ligne(`  (hors de tout dépôt)${''.padEnd(20)} ${String(nbIsoles).padStart(6)} fichiers`);
+const worktrees = trouve.skipped.filter((s) => s.reason.includes('worktree'));
+if (worktrees.length) ligne(`  ${worktrees.length} worktree(s) en double sauté(s), par ex. ${worktrees.slice(0, 3).map((s) => s.path).join(', ')}`);
+const grosDossiers = trouve.skipped.filter((s) => s.reason.includes('export de données'));
+if (grosDossiers.length) ligne(`  ${grosDossiers.length} gros dossier(s) hors git sauté(s), par ex. ${grosDossiers.slice(0, 2).map((s) => s.path).join(', ')}`);
+ligne();
 
-const byCat = {};
-for (const f of scan.files) byCat[f.category] = (byCat[f.category] || 0) + 1;
-line(`FILES  ${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`);
-const byLang = {};
-for (const f of code) { byLang[f.lang] ??= { files: 0, loc: 0 }; byLang[f.lang].files++; byLang[f.lang].loc += f.loc; }
-line(`CODE   ${Object.entries(byLang).sort((a, b) => b[1].loc - a[1].loc).slice(0, 10).map(([k, v]) => `${k} ${v.files} files/${formaterNombre(v.loc)} loc`).join(' · ')}`);
-line();
+const parCategorie = {};
+for (const f of analyse.files) parCategorie[f.category] = (parCategorie[f.category] || 0) + 1;
+ligne(`FICHIERS  ${Object.entries(parCategorie).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`);
+const parLangage = {};
+for (const f of code) { parLangage[f.lang] ??= { files: 0, loc: 0 }; parLangage[f.lang].files++; parLangage[f.lang].loc += f.loc; }
+ligne(`CODE   ${Object.entries(parLangage).sort((a, b) => b[1].loc - a[1].loc).slice(0, 10).map(([k, v]) => `${k} ${v.files} fichiers/${formaterNombre(v.loc)} lignes`).join(' · ')}`);
+ligne();
 
-// directory tree of code, collapsing small dirs
-line('CODE TREE (files / loc; dirs under 2% of code collapsed)');
-const tree = { children: new Map(), files: 0, loc: 0 };
+// arbre des dossiers du code, en regroupant les petits dossiers
+ligne('ARBRE DU CODE (fichiers / lignes ; dossiers de moins de 2 % du code regroupés)');
+const arbre = { children: new Map(), files: 0, loc: 0 };
 for (const f of code) {
-  let node = tree;
-  node.files++; node.loc += f.loc;
-  const parts = f.path.split('/').slice(0, -1);
-  for (const part of parts) {
-    if (!node.children.has(part)) node.children.set(part, { children: new Map(), files: 0, loc: 0 });
-    node = node.children.get(part);
-    node.files++; node.loc += f.loc;
+  let noeud = arbre;
+  noeud.files++; noeud.loc += f.loc;
+  const morceaux = f.path.split('/').slice(0, -1);
+  for (const morceau of morceaux) {
+    if (!noeud.children.has(morceau)) noeud.children.set(morceau, { children: new Map(), files: 0, loc: 0 });
+    noeud = noeud.children.get(morceau);
+    noeud.files++; noeud.loc += f.loc;
   }
 }
-const minLoc = Math.max(50, tree.loc * 0.02);
-const printTree = (node, prefix, depth) => {
-  const kids = [...node.children.entries()].sort((a, b) => b[1].loc - a[1].loc);
-  const shown = kids.filter(([, n]) => n.loc >= minLoc);
-  for (const [name, n] of shown) {
-    line(`${prefix}${name}/`.padEnd(64) + `${String(n.files).padStart(5)}  ${formaterNombre(n.loc).padStart(6)}`);
-    if (depth < 5) printTree(n, prefix + '  ', depth + 1);
+const minLignes = Math.max(50, arbre.loc * 0.02);
+const afficherArbre = (noeud, prefixe, profondeur) => {
+  const enfants = [...noeud.children.entries()].sort((a, b) => b[1].loc - a[1].loc);
+  const affiches = enfants.filter(([, n]) => n.loc >= minLignes);
+  for (const [nom, n] of affiches) {
+    ligne(`${prefixe}${nom}/`.padEnd(64) + `${String(n.files).padStart(5)}  ${formaterNombre(n.loc).padStart(6)}`);
+    if (profondeur < 5) afficherArbre(n, prefixe + '  ', profondeur + 1);
   }
-  const rest = kids.length - shown.length;
-  if (rest > 0) { const rf = kids.slice(shown.length).reduce((s, [, n]) => s + n.files, 0); line(`${prefix}… ${rest} smaller dir(s), ${rf} files`); }
+  const reste = enfants.length - affiches.length;
+  if (reste > 0) { const fichiersReste = enfants.slice(affiches.length).reduce((s, [, n]) => s + n.files, 0); ligne(`${prefixe}… ${reste} dossier(s) plus petit(s), ${fichiersReste} fichiers`); }
 };
-printTree(tree, '  ', 0);
-line();
+afficherArbre(arbre, '  ', 0);
+ligne();
 
-// entrypoint candidates
-const ENTRY = /(^|\/)(main|index|app|server|cli|manage|wsgi|asgi|__main__|program|lib)\.(py|ts|tsx|js|mjs|go|rs|java|kt|cs|rb)$|(^|\/)app\/(page|layout)\.(t|j)sx?$|(^|\/)cmd\/[^/]+\/main\.go$|(^|\/)Dockerfile[^/]*$|(^|\/)(docker-compose|compose)\.ya?ml$|(^|\/)(cloudbuild|serverless|vercel|netlify|fly|render|app)\.(ya?ml|json|toml)$/i;
-const entries = scan.files.filter((f) => ENTRY.test(f.path) && f.path.split('/').length <= 5).map((f) => f.path);
-line(`ENTRYPOINT / DEPLOY CANDIDATES (${entries.length})`);
-for (const e of entries.slice(0, 30)) line(`  ${e}`);
-if (entries.length > 30) line(`  … ${entries.length - 30} more`);
-line();
+// points d'entrée possibles
+const POINTS_ENTREE = /(^|\/)(main|index|app|server|cli|manage|wsgi|asgi|__main__|program|lib)\.(py|ts|tsx|js|mjs|go|rs|java|kt|cs|rb)$|(^|\/)app\/(page|layout)\.(t|j)sx?$|(^|\/)cmd\/[^/]+\/main\.go$|(^|\/)Dockerfile[^/]*$|(^|\/)(docker-compose|compose)\.ya?ml$|(^|\/)(cloudbuild|serverless|vercel|netlify|fly|render|app)\.(ya?ml|json|toml)$/i;
+const entrees = analyse.files.filter((f) => POINTS_ENTREE.test(f.path) && f.path.split('/').length <= 5).map((f) => f.path);
+ligne(`POINTS D'ENTRÉE / DÉPLOIEMENT POSSIBLES (${entrees.length})`);
+for (const e of entrees.slice(0, 30)) ligne(`  ${e}`);
+if (entrees.length > 30) ligne(`  … ${entrees.length - 30} de plus`);
+ligne();
 
-// directory-level dependency clusters
-const dirOf = (p, depth) => p.split('/').slice(0, -1).slice(0, depth).join('/') || '.';
-const depthFor = (p) => {
+// groupes de dépendances au niveau des dossiers
+const dossierDe = (p, profondeur) => p.split('/').slice(0, -1).slice(0, profondeur).join('/') || '.';
+const profondeurPour = (p) => {
   const r = p.split('/');
-  return Math.min(r.length - 1, 3 + (repos.length > 1 ? 1 : 0));
+  return Math.min(r.length - 1, 3 + (depots.length > 1 ? 1 : 0));
 };
-const dirEdges = new Map();
-for (const e of scan.edges) {
-  const a = dirOf(e.from, depthFor(e.from)), b = dirOf(e.to, depthFor(e.to));
+const liensDossiers = new Map();
+for (const e of analyse.edges) {
+  const a = dossierDe(e.from, profondeurPour(e.from)), b = dossierDe(e.to, profondeurPour(e.to));
   if (a === b) continue;
   const k = `${a} -> ${b}`;
-  dirEdges.set(k, (dirEdges.get(k) || 0) + (e.count || 1));
+  liensDossiers.set(k, (liensDossiers.get(k) || 0) + (e.count || 1));
 }
-line(`IMPORT EDGES  ${scan.edges.length} file->file resolved, ${unresolved} unresolved. Heaviest directory->directory:`);
-for (const [k, v] of [...dirEdges.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25)) line(`  ${String(v).padStart(5)}  ${k}`);
-line();
+ligne(`LIENS D'IMPORT  ${analyse.edges.length} fichier->fichier résolus, ${nonResolus} non résolus. Les plus lourds, dossier->dossier :`);
+for (const [k, v] of [...liensDossiers.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25)) ligne(`  ${String(v).padStart(5)}  ${k}`);
+ligne();
 
-line(`HTTP  ${routes.length} route definitions, ${http.length} call->route matches (cross-file links not visible to imports)`);
-const httpDir = new Map();
-for (const h of http) {
-  const k = `${dirOf(h.from, depthFor(h.from))} -> ${dirOf(h.to, depthFor(h.to))}`;
-  httpDir.set(k, (httpDir.get(k) || 0) + 1);
+ligne(`HTTP  ${routes.length} adresses du serveur définies, ${liensHttp.length} liens appel->adresse (liens entre fichiers que les imports ne montrent pas)`);
+const httpParDossier = new Map();
+for (const h of liensHttp) {
+  const k = `${dossierDe(h.from, profondeurPour(h.from))} -> ${dossierDe(h.to, profondeurPour(h.to))}`;
+  httpParDossier.set(k, (httpParDossier.get(k) || 0) + 1);
 }
-for (const [k, v] of [...httpDir.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)) line(`  ${String(v).padStart(5)}  ${k}`);
-line();
+for (const [k, v] of [...httpParDossier.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)) ligne(`  ${String(v).padStart(5)}  ${k}`);
+ligne();
 
-// Firebase Cloud Functions: endpoints are already in the HTTP line; background ones need a place on the map
-const fbRoutes = files.flatMap((f) => (f.routes || []).filter((r) => r.framework === 'firebase'));
-const triggers = files.flatMap((f) => (f.triggers || []).map((t) => ({ ...t, file: f.path })));
-if (fbRoutes.length || triggers.length) {
-  const callable = fbRoutes.filter((r) => r.method === 'CALL').length;
-  line(`FIREBASE FUNCTIONS  ${callable} callable, ${fbRoutes.length - callable} onRequest, ${triggers.length} background`);
-  if (triggers.length) {
-    line('  background (schedules and triggers; place them in a worker node):');
-    for (const t of triggers.slice(0, 20)) line(`    ${t.name}  ${t.on}${t.what ? ` "${t.what}"` : ''}  ${t.file}:${t.line}`);
-    if (triggers.length > 20) line(`    … ${triggers.length - 20} more`);
+// Firebase Cloud Functions : les adresses du serveur sont déjà dans la ligne HTTP ; celles de fond ont besoin d'une place sur la carte
+const routesFirebase = fichiers.flatMap((f) => (f.routes || []).filter((r) => r.framework === 'firebase'));
+const declencheurs = fichiers.flatMap((f) => (f.triggers || []).map((t) => ({ ...t, file: f.path })));
+if (routesFirebase.length || declencheurs.length) {
+  const appelables = routesFirebase.filter((r) => r.method === 'CALL').length;
+  ligne(`FONCTIONS FIREBASE  ${appelables} appelables (onCall), ${routesFirebase.length - appelables} onRequest, ${declencheurs.length} en tâche de fond`);
+  if (declencheurs.length) {
+    ligne('  tâches de fond (planifications et déclencheurs ; place-les dans un nœud worker) :');
+    for (const t of declencheurs.slice(0, 20)) ligne(`    ${t.name}  ${t.on}${t.what ? ` "${t.what}"` : ''}  ${t.file}:${t.line}`);
+    if (declencheurs.length > 20) ligne(`    … ${declencheurs.length - 20} de plus`);
   }
-  line();
+  ligne();
 }
 
-const topExt = scan.externals.sort((a, b) => b.files - a.files).slice(0, 25);
-line(`EXTERNAL PACKAGES (top ${topExt.length} by importing files)`);
-line('  ' + topExt.map((e) => `${e.id}(${e.files})`).join('  '));
-const hostCounts = new Map();
-for (const h of hosts) hostCounts.set(h.host, (hostCounts.get(h.host) || 0) + 1);
-if (hostCounts.size) {
-  line(`EXTERNAL HOSTS called from code`);
-  line('  ' + [...hostCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([h, c]) => `${h}(${c})`).join('  '));
+const topExternes = analyse.externals.sort((a, b) => b.files - a.files).slice(0, 25);
+ligne(`PAQUETS EXTERNES (les ${topExternes.length} premiers, par nombre de fichiers qui les importent)`);
+ligne('  ' + topExternes.map((e) => `${e.id}(${e.files})`).join('  '));
+const nombreParHote = new Map();
+for (const h of hotes) nombreParHote.set(h.host, (nombreParHote.get(h.host) || 0) + 1);
+if (nombreParHote.size) {
+  ligne(`SERVICES EXTÉRIEURS (hôtes appelés depuis le code)`);
+  ligne('  ' + [...nombreParHote.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([h, c]) => `${h}(${c})`).join('  '));
 }
-line();
-const big = code.filter((f) => f.loc > 1500).sort((a, b) => b.loc - a.loc).slice(0, 10);
-if (big.length) { line('LARGEST FILES'); for (const f of big) line(`  ${formaterNombre(f.loc).padStart(6)}  ${f.path}`); line(); }
-const unread = files.filter((f) => f.tooLarge).sort((a, b) => b.bytes - a.bytes);
-if (unread.length) {
-  line(`NOT READ  ${unread.length} file(s) over ${formaterNombre(maxBytes / 1024)} KB: on the map, but their imports, endpoints, requests and secrets weren't checked. Re-run scan.mjs with --max-file-kb <bigger> to read them.`);
-  for (const f of unread.slice(0, 15)) line(`  ${formaterNombre(Math.round(f.bytes / 1024)).padStart(6)} KB  ${f.path}`);
-  if (unread.length > 15) line(`  … ${unread.length - 15} more`);
-  line();
+ligne();
+const gros = code.filter((f) => f.loc > 1500).sort((a, b) => b.loc - a.loc).slice(0, 10);
+if (gros.length) { ligne('PLUS GROS FICHIERS'); for (const f of gros) ligne(`  ${formaterNombre(f.loc).padStart(6)}  ${f.path}`); ligne(); }
+const nonLus = fichiers.filter((f) => f.tooLarge).sort((a, b) => b.bytes - a.bytes);
+if (nonLus.length) {
+  ligne(`NON LUS  ${nonLus.length} fichier(s) de plus de ${formaterNombre(maxOctets / 1024)} Ko : sur la carte, mais leurs imports, adresses du serveur, appels au serveur et secrets n'ont pas été vérifiés. Relance scan.mjs avec --max-file-kb <plus grand> pour les lire.`);
+  for (const f of nonLus.slice(0, 15)) ligne(`  ${formaterNombre(Math.round(f.bytes / 1024)).padStart(6)} Ko  ${f.path}`);
+  if (nonLus.length > 15) ligne(`  … ${nonLus.length - 15} de plus`);
+  ligne();
 }
-line('Next: read references/schema.md, explore entrypoints, then write floorplan/architecture.json and run build.mjs.');
-console.log(out.join('\n'));
+ligne('Ensuite : lis references/schema.md, explore les points d\'entrée, puis écris floorplan/architecture.json et lance build.mjs.');
+console.log(sortie.join('\n'));

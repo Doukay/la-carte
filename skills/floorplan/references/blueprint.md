@@ -1,24 +1,26 @@
-# Blueprints: a floorplan of a system that isn't built yet
+# Plans : la carte d'un système qui n'est pas encore construit
 
-A blueprint is the same map, drawn from a plan instead of code. Someone has a PRD, a spec or just a long description of what they want to build, and the map shows every piece they'd need, how the pieces connect, what each screen relies on, and what still has to be decided.
+Un plan est la même carte, dessinée à partir d'un projet au lieu du code. Quelqu'un a un cahier des charges, une spécification ou simplement une longue description de ce qu'il veut construire, et la carte montre chaque pièce nécessaire, comment elles se relient, ce sur quoi s'appuie chaque écran, et ce qu'il reste à décider.
 
-You write two files in `floorplan/`:
-- `plan.json`: the files, endpoints and connections the system would have (this file).
-- `architecture.json`: the parts, outside services, flows and tour, exactly as for a code map ([schema.md](schema.md)).
+**Langue.** Tout ce que la personne verra (noms, descriptions, hypothèses, questions, résumés, parcours, visite, rapport) s'écrit **en français, en langage simple, en tutoyant**, même si le cahier des charges est en anglais. Les chemins, les méthodes et les URL restent tels quels, et les clés JSON ne se traduisent pas (sauf `projet`, `parcours` et `visite` dans architecture.json).
 
-`plan.mjs` turns `plan.json` into the scan `build.mjs` expects, so everything after that works as for real code. Cards are drawn with dashed outlines and a **Blueprint** label, Health becomes a **design review** of the plan, and every part has a **Build this with Claude** (or Codex) button with a ready request to build it.
+Tu écris deux fichiers dans `floorplan/` :
+- `plan.json` : les fichiers, les adresses du serveur et les liens que le système aurait (ce fichier).
+- `architecture.json` : les parties, les services extérieurs, les parcours et la visite, exactement comme pour une carte de code ([schema.md](schema.md)).
 
-Contents: [Planning well](#planning-well) · [plan.json](#planjson) · [Checks](#what-the-design-review-checks)
+`plan.mjs` transforme `plan.json` en le scan que `build.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans graph.json, le plan est rangé sous la clé `ebauche` (graph.json est généré : n'y touche pas).
 
-## Planning well
+Sommaire : [Bien planifier](#bien-planifier) · [plan.json](#planjson) · [Contrôles](#ce-que-la-revue-du-plan-contrôle)
 
-- **Plan to the level of files and endpoints**, not just boxes. Screens, the design review and the build prompts all depend on it. A small product is typically 15–60 files and 10–40 endpoints. Don't plan every helper: one file per page, per group of endpoints, per outside service and per kind of saved data is about right. Where the stack puts one handler per URL (Next.js `route.ts`, SvelteKit `+server.ts`), plan it that way; more files is fine.
-- **Pick a sensible, common stack** unless the PRD names one, and list it in `stack`. Prefer what a solo builder working with AI would choose: a Next.js or React website, a Node or Python server, Postgres, Stripe, a hosted email service. Use real, conventional paths for that stack (`web/app/checkout/page.tsx`, `api/src/routes/orders.ts`).
-- **Every screen the PRD describes is a file with a `screen` URL.** Give each screen `calls` for the endpoints it uses and `uses` for the parts it's built from.
-- **Every endpoint gets `access`**, and `who` when only some signed-in people may use it ("managers of that location", "the account owner"). Decide it from the PRD. If the PRD is silent and it matters, leave it out (the review will flag it) or add a question. An endpoint that must be open to anyone and changes data (sign-in codes, sign-up, guest checkout) gets `publicBecause`: why, and what stops abuse.
-- **Don't invent requirements.** Where the PRD doesn't say and you had to choose, write the choice in `assumptions`. Where the answer changes what gets built and you can't reasonably choose, add it to `questions` with the parts it affects. Carry every open question the PRD lists into `questions` unless the PRD settles it elsewhere; if you planned around the likely answer, say so in `assumptions` too. Ask the user 2–3 questions up front only if the PRD leaves something fundamental open (who uses it, web or mobile, does anyone sign in, does money change hands).
-- **Outside services and data stores are `external` nodes** in architecture.json (Stripe, the database, an email service). Files reach them through `services` and `data` in plan.json. Put `data` on the files that talk to the database directly (a database helper, or each data-access file), not on every file that uses them: Screens follow `uses` down to them.
-- **Background work** (scheduled emails, nightly jobs, queue workers) gets its own files and a `worker` node.
+## Bien planifier
+
+- **Planifie jusqu'au niveau des fichiers et des adresses du serveur**, pas seulement des boîtes. Les écrans, la revue du plan et les demandes de construction en dépendent. Un petit produit, c'est en général 15 à 60 fichiers et 10 à 40 adresses du serveur. Ne planifie pas chaque fonction utilitaire : un fichier par page, par groupe d'adresses du serveur, par service extérieur et par sorte de données enregistrées, c'est à peu près bien. Là où la pile met un gestionnaire par URL (Next.js `route.ts`, SvelteKit `+server.ts`), planifie-le ainsi ; plus de fichiers, c'est très bien.
+- **Choisis une pile raisonnable et courante** sauf si le cahier des charges en nomme une, et note-la dans `stack`. Préfère ce que choisirait une personne qui construit seule avec une IA : un site Next.js ou React, un serveur Node ou Python, Postgres, Stripe, un service d'e-mails hébergé. Utilise de vrais chemins conventionnels pour cette pile (`web/app/checkout/page.tsx`, `api/src/routes/orders.ts`).
+- **Chaque écran décrit par le cahier des charges est un fichier avec une URL `screen`.** Donne à chaque écran des `calls` pour les adresses du serveur qu'il utilise et des `uses` pour les parties dont il est fait.
+- **Chaque adresse du serveur a un `access`**, et un `who` quand seules certaines personnes connectées peuvent l'utiliser (« les responsables de ce site », « le propriétaire du compte »). Décide-le d'après le cahier des charges. S'il n'en dit rien et que ça compte, laisse-le de côté (la revue le signalera) ou ajoute une question. Une adresse qui doit être ouverte à tous et qui modifie des données (codes de connexion, inscription, commande sans compte) reçoit un `publicBecause` : pourquoi, et ce qui empêche les abus.
+- **N'invente pas d'exigences.** Quand le cahier des charges ne dit rien et que tu as dû choisir, écris ton choix dans `assumptions`. Quand la réponse change ce qui sera construit et que tu ne peux pas raisonnablement choisir, ajoute-la à `questions` avec les parties concernées. Reporte dans `questions` chaque question ouverte que le cahier des charges liste, sauf s'il la tranche ailleurs ; si tu as planifié autour de la réponse probable, dis-le aussi dans `assumptions`. Ne pose à la personne 2 ou 3 questions au départ que si le cahier des charges laisse ouvert quelque chose de fondamental (qui s'en sert, web ou mobile, est-ce que quelqu'un se connecte, est-ce que de l'argent change de mains).
+- **Les services extérieurs et les lieux de stockage des données sont des nœuds `external`** dans architecture.json (Stripe, la base de données, un service d'e-mails). Les fichiers les atteignent par `services` et `data` dans plan.json. Mets `data` sur les fichiers qui parlent directement à la base (un utilitaire de base de données, ou chaque fichier d'accès aux données), pas sur tous ceux qui s'en servent : les Écrans suivent `uses` jusqu'à eux.
+- **Les tâches de fond** (e-mails planifiés, tâches de nuit, travailleurs de file d'attente) reçoivent leurs propres fichiers et un nœud `worker`.
 
 ## plan.json
 
@@ -26,61 +28,63 @@ Contents: [Planning well](#planning-well) · [plan.json](#planjson) · [Checks](
 {
   "$schema": "floorplan/plan@1",
   "source": "docs/prd.md",
-  "stack": ["Next.js website", "Node.js + Express server", "Postgres", "Stripe"],
-  "assumptions": ["Staff and customers share one sign-in, with staff marked as such."],
-  "questions": [{ "question": "Can customers cancel for free?", "about": ["POST /api/orders/:id/cancel"] }],
-  "files": [ { "path": "web/app/checkout/page.tsx", "name": "Checkout page", "description": "…", "screen": "/checkout", "uses": ["web/lib/api.ts"], "calls": ["POST /api/orders"] } ],
-  "endpoints": [ { "method": "POST", "path": "/api/orders", "file": "api/src/routes/orders.ts", "name": "Place an order", "description": "…", "access": "signed-in" } ]
+  "stack": ["Site Next.js", "Serveur Node.js + Express", "Postgres", "Stripe"],
+  "assumptions": ["Le personnel et les clients se connectent au même endroit, le personnel étant repéré à part."],
+  "questions": [{ "question": "Les clients peuvent-ils annuler gratuitement ?", "about": ["POST /api/orders/:id/cancel"] }],
+  "files": [ { "path": "web/app/checkout/page.tsx", "name": "Page de paiement", "description": "…", "screen": "/checkout", "uses": ["web/lib/api.ts"], "calls": ["POST /api/orders"] } ],
+  "endpoints": [ { "method": "POST", "path": "/api/orders", "file": "api/src/routes/orders.ts", "name": "Passer une commande", "description": "…", "access": "signed-in" } ]
 }
 ```
 
-| field | meaning |
+| champ | sens |
 |---|---|
-| `source` | what it was planned from: the PRD's path in the project, or a few words such as "a description in chat" |
-| `stack` | the technology choices, in plain words |
-| `assumptions` | choices you made where the PRD didn't say. Shown on the map's overview |
-| `questions` | `{ question, about }`: decisions the PRD leaves open. `about` lists node ids, file paths or `"METHOD /path"`. Each one shows in the design review until it's answered and removed |
-| `files` | every planned file (see below) |
-| `endpoints` | every planned endpoint (see below) |
+| `source` | à partir de quoi c'est planifié : le chemin du cahier des charges dans le projet, ou quelques mots comme « une description dans la conversation » |
+| `stack` | les choix techniques, en mots simples |
+| `assumptions` | les choix que tu as faits là où le cahier des charges ne disait rien. Affichés dans la vue d'ensemble de la carte |
+| `questions` | `{ question, about }` : les décisions que le cahier des charges laisse ouvertes. `about` liste des ids de nœuds, des chemins de fichiers ou des `"METHODE /chemin"`. Chacune s'affiche dans la revue du plan jusqu'à ce qu'on y réponde et qu'on la retire |
+| `files` | chaque fichier prévu (voir plus bas) |
+| `endpoints` | chaque adresse du serveur prévue (voir plus bas) |
 
 **files[]**
 
-| field | meaning |
+| champ | sens |
 |---|---|
-| `path` | where it would live, relative to the project folder. Required, unique |
-| `name`, `description` | a human name and one plain sentence, written like a description of real code ([writing-descriptions.md](writing-descriptions.md)) |
-| `screen` | for a page people open: its URL (`/checkout`, `/orders/:id`). Makes it a screen in **Screens** |
-| `uses` | other planned files it is built from or calls directly (becomes "uses" connections) |
-| `calls` | endpoints it calls, as `"METHOD /path"`, exactly as in `endpoints` |
-| `services` | ids of `external` nodes it talks to (Stripe, an email service) |
-| `data` | ids of nodes for the data stores it reads or writes (usually the database) |
+| `path` | où il serait rangé, relatif au dossier du projet. Obligatoire, unique |
+| `name`, `description` | un nom lisible et une phrase simple, écrits comme la description de vrai code ([writing-descriptions.md](writing-descriptions.md)) |
+| `screen` | pour une page que les gens ouvrent : son URL (`/checkout`, `/orders/:id`). En fait un écran dans **Écrans** |
+| `uses` | les autres fichiers prévus dont il est fait ou qu'il appelle directement (devient des liens « utilise ») |
+| `calls` | les adresses du serveur qu'il appelle, sous la forme `"METHODE /chemin"`, exactement comme dans `endpoints` |
+| `services` | ids des nœuds `external` avec lesquels il parle (Stripe, un service d'e-mails) |
+| `data` | ids des nœuds des lieux de données qu'il lit ou écrit (en général la base de données) |
 
 **endpoints[]**
 
-| field | meaning |
+| champ | sens |
 |---|---|
-| `method` | GET, POST, PUT, PATCH, DELETE, or CALL for a callable function (for example Firebase `onCall`) |
-| `path` | the URL, starting with `/`. Use `:name` for parts that change (`/api/orders/:id`) |
-| `file` | the planned file that handles it. Required |
-| `name`, `description` | as for files |
-| `access` | who may use it: `public` (anyone), `signed-in`, `team` (only the people who run the service, for its own admin pages, not the app's users), `webhook` (another company's service, which must prove it's them) or `internal` (only your own services) |
-| `who` | with `signed-in`: which signed-in people, in a few words ("managers of that location", "the account owner"). Leave it out when any signed-in user may |
-| `publicBecause` | with `public`: why it has to be open, and what limits abuse ("sign-in has to work before anyone is signed in; 5 codes per number per hour"). The design review stops flagging an open endpoint that has one |
+| `method` | GET, POST, PUT, PATCH, DELETE, ou CALL pour une fonction appelable (par exemple Firebase `onCall`) |
+| `path` | l'URL, qui commence par `/`. Utilise `:nom` pour les parties qui changent (`/api/orders/:id`) |
+| `file` | le fichier prévu qui la traite. Obligatoire |
+| `name`, `description` | comme pour les fichiers |
+| `access` | qui peut l'utiliser : `public` (tout le monde), `signed-in` (connecté), `team` (seulement les gens qui font tourner le service, pour ses propres pages d'administration, pas les utilisateurs de l'appli), `webhook` (le service d'une autre entreprise, qui doit prouver que c'est bien lui) ou `internal` (seulement tes propres services) |
+| `who` | avec `signed-in` : quelles personnes connectées, en quelques mots (« les responsables de ce site », « le propriétaire du compte »). Laisse-le de côté quand n'importe quel utilisateur connecté peut |
+| `publicBecause` | avec `public` : pourquoi elle doit être ouverte, et ce qui limite les abus (« la connexion doit marcher avant que quiconque soit connecté ; 5 codes par numéro et par heure »). La revue du plan cesse de signaler une adresse ouverte qui en a un |
 
-Node `paths` globs in architecture.json assign planned files to parts, the same as for code. Aim for no unassigned files. Folder names in brackets (`app/orders/[id]/**`) match literally.
+Les globs `paths` des nœuds d'architecture.json affectent les fichiers prévus aux parties, comme pour du code. Vise zéro fichier non affecté. Les noms de dossiers entre crochets (`app/orders/[id]/**`) correspondent littéralement.
 
-plan.mjs's "calls to planned endpoints" counts each call; the build's "http" links count each caller-to-file connection plus links to outside services, so the two numbers differ.
+Les « appels à des adresses prévues » de plan.mjs comptent chaque appel ; les liens « http » du build comptent chaque lien d'un appelant vers un fichier, plus les liens vers les services extérieurs : les deux nombres diffèrent donc.
 
-## Changes from the map
+## Changements depuis la carte
 
-When the map is open through its server (open.mjs), the Ask bar has an **Ask / Change** switch. A change request ("also plan out refunds", "drop the admin page") goes to the same agent, read-only. It replies with the complete updated plan.json and architecture.json, and the server checks them with plan.mjs and build.mjs. If the checks fail, or new files fall under no part, it sends the problems back once. Then it saves the files, redraws the map (open tabs reload), and highlights the new and changed cards as recent work, with **Undo**. The replaced files are kept in `floorplan/.cache/history/`. Each design review item has **Resolve on the map**, which puts a ready request in Change mode: an open question's request ends with "My answer:" for the person to finish, and the agent then removes the question and builds the answer into the plan. Changes you make by hand or through this skill work the same way: edit the files and run refresh.mjs.
+Quand la carte est ouverte par son serveur (open.mjs), la bulle de questions a un sélecteur **Demander / Modifier**. Une demande de changement (« prévois aussi les remboursements », « enlève la page d'administration ») va au même agent, en lecture seule. Il répond avec le plan.json et l'architecture.json complets et mis à jour, et le serveur les vérifie avec plan.mjs et build.mjs. Si les contrôles échouent, ou si de nouveaux fichiers ne tombent sous aucune partie, il renvoie les problèmes une fois. Ensuite il enregistre les fichiers, redessine la carte (les onglets ouverts se rechargent) et met en avant les blocs nouveaux et modifiés comme travail récent, avec **Annuler**. Les fichiers remplacés sont gardés dans `floorplan/.cache/history/`. Chaque élément de la revue du plan a **Résoudre sur la carte**, qui place une demande toute prête en mode Modifier : la demande d'une question ouverte se termine par « Ma réponse : » que la personne complète, et l'agent retire alors la question et intègre la réponse au plan. Les changements que tu fais à la main ou par ce skill marchent de la même façon : modifie les fichiers et lance refresh.mjs.
 
-## What the design review checks
+## Ce que la revue du plan contrôle
 
-- endpoints that change data and are open to anyone, unless `publicBecause` explains why;
-- endpoints with no `access` decided;
-- every open question, pointing at the parts it affects;
-- endpoints no planned screen or service calls;
-- planned files connected to nothing.
+- les adresses du serveur qui modifient des données et sont ouvertes à tous, sauf si `publicBecause` l'explique ;
+- les adresses du serveur dont l'`access` n'est pas décidé ;
+- chaque question ouverte, avec les parties qu'elle touche ;
+- les adresses du serveur qu'aucun écran ni service prévu n'appelle ;
+- les fichiers prévus qui ne sont reliés à rien.
 
-Each has **Resolve on the map** when the map is served (see above), and otherwise **Resolve with Claude/Codex**, a request to paste into the agent.
+Chacun a **Résoudre sur la carte** quand la carte est servie (voir plus haut), et sinon **Résoudre avec Claude/Codex**, une demande à coller dans l'agent.
+
+Rappel : la revue du plan, comme la Santé d'une carte de code, est un contrôle rapide avec de fausses alertes, pas un audit. Ne la présente pas autrement.

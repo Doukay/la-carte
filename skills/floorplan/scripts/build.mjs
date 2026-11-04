@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// floorplan builder: validate floorplan/architecture.json against the scan, assign every file to a
-// node, attach import/HTTP/external edges, and write floorplan/graph.json + floorplan/index.html.
+// constructeur Floorplan : vérifie floorplan/architecture.json par rapport à l’analyse, affecte chaque fichier à une
+// partie, rattache les liens d’import, d’appel au serveur et vers l’extérieur, puis écrit floorplan/graph.json + floorplan/index.html.
 //
-// usage: node build.mjs [root] [--arch <file>] [--scan <file>] [--out <dir>] [--check]
+// usage : node build.mjs [racine] [--arch <fichier>] [--scan <fichier>] [--out <dossier>] [--check]
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,386 +14,386 @@ import { construireSantePlan } from './lib/blueprint.mjs';
 import { construireEcrans } from './lib/screens.mjs';
 import { detecterAgent } from './lib/agent.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SKILL_DIR = path.resolve(HERE, '..');
-const args = lireArguments(process.argv.slice(2));
-const agent = detecterAgent(args);
-const root = path.resolve(args._[0] || '.');
-const outDir = path.resolve(args.out || dossierCarte(root));
-const archFile = path.resolve(args.arch || path.join(outDir, 'architecture.json'));
-const scanFile = path.resolve(args.scan || path.join(outDir, '.cache', 'scan.json'));
+const ICI = path.dirname(fileURLToPath(import.meta.url));
+const DOSSIER_SKILL = path.resolve(ICI, '..');
+const params = lireArguments(process.argv.slice(2));
+const agent = detecterAgent(params);
+const racine = path.resolve(params._[0] || '.');
+const dossierSortie = path.resolve(params.out || dossierCarte(racine));
+const fichierArchi = path.resolve(params.arch || path.join(dossierSortie, 'architecture.json'));
+const fichierAnalyse = path.resolve(params.scan || path.join(dossierSortie, '.cache', 'scan.json'));
 
 export const TYPES_NOEUDS = ['ui', 'service', 'worker', 'library', 'feature', 'data', 'config', 'test', 'script', 'infra', 'external'];
 export const TYPES_LIENS = ['import', 'call', 'http', 'rpc', 'event', 'queue', 'data', 'config'];
 
-const errors = [];
-const warnings = [];
-const err = (msg) => errors.push(msg);
-const warn = (msg) => warnings.push(msg);
+const erreurs = [];
+const avertissements = [];
+const signalerErreur = (message) => erreurs.push(message);
+const signalerAvertissement = (message) => avertissements.push(message);
 
-const fail = (msg) => { console.error(`✗ ${msg}`); process.exit(1); };
-if (!fs.existsSync(scanFile)) fail(`No scan at ${scanFile}. Run: node ${path.join(SKILL_DIR, 'scripts', 'scan.mjs')} "${root}"`);
-if (!fs.existsSync(archFile)) fail(`No architecture file at ${archFile}. Write it first (see references/schema.md).`);
-const scan = JSON.parse(fs.readFileSync(scanFile, 'utf8'));
-let arch;
-try { arch = JSON.parse(fs.readFileSync(archFile, 'utf8')); } catch (e) { fail(`architecture.json is not valid JSON: ${e.message}`); }
+const echouer = (message) => { console.error(`✗ ${message}`); process.exit(1); };
+if (!fs.existsSync(fichierAnalyse)) echouer(`Aucune analyse à ${fichierAnalyse}. Lance : node ${path.join(DOSSIER_SKILL, 'scripts', 'scan.mjs')} "${racine}"`);
+if (!fs.existsSync(fichierArchi)) echouer(`Aucun fichier d’architecture à ${fichierArchi}. Écris-le d’abord (voir references/schema.md).`);
+const analyse = JSON.parse(fs.readFileSync(fichierAnalyse, 'utf8'));
+let archi;
+try { archi = JSON.parse(fs.readFileSync(fichierArchi, 'utf8')); } catch (e) { echouer(`architecture.json n’est pas un JSON valide : ${e.message}`); }
 
-// ---------- validate shape ----------
-const isStr = (v) => typeof v === 'string' && v.length > 0;
-const isStrArr = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string');
-function closest(word, options) {
-  let best = null, bestD = Infinity;
+// ---------- vérifier la forme ----------
+const estTexte = (v) => typeof v === 'string' && v.length > 0;
+const estListeTextes = (v) => Array.isArray(v) && v.every((x) => typeof x === 'string');
+function leMoinsEloigne(mot, options) {
+  let meilleur = null, meilleureDistance = Infinity;
   for (const o of options) {
-    const d = lev(word, o);
-    if (d < bestD) { bestD = d; best = o; }
+    const d = distanceEdition(mot, o);
+    if (d < meilleureDistance) { meilleureDistance = d; meilleur = o; }
   }
-  return bestD <= Math.max(2, word.length / 3) ? best : null;
+  return meilleureDistance <= Math.max(2, mot.length / 3) ? meilleur : null;
 }
-function lev(a, b) {
-  const dp = Array.from({ length: b.length + 1 }, (_, i) => i);
+function distanceEdition(a, b) {
+  const ligne = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
-    let prev = dp[0]; dp[0] = i;
-    for (let j = 1; j <= b.length; j++) { const tmp = dp[j]; dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = tmp; }
+    let precedent = ligne[0]; ligne[0] = i;
+    for (let j = 1; j <= b.length; j++) { const memo = ligne[j]; ligne[j] = Math.min(ligne[j] + 1, ligne[j - 1] + 1, precedent + (a[i - 1] === b[j - 1] ? 0 : 1)); precedent = memo; }
   }
-  return dp[b.length];
+  return ligne[b.length];
 }
-const didYouMean = (w, opts) => { const c = closest(w, opts); return c ? ` — did you mean "${c}"?` : ''; };
+const voulaisTuDire = (w, choix) => { const c = leMoinsEloigne(w, choix); return c ? ` — tu voulais dire "${c}" ?` : ''; };
 
-if (!arch || typeof arch !== 'object') fail('architecture.json must be an object');
-if (!arch.projet || !isStr(arch.projet.name)) err('project.name is required');
-if (!Array.isArray(arch.nodes) || !arch.nodes.length) err('nodes must be a non-empty array');
-const nodes = Array.isArray(arch.nodes) ? arch.nodes : [];
-const archEdges = Array.isArray(arch.edges) ? arch.edges : [];
-const flows = Array.isArray(arch.parcours) ? arch.parcours : [];
-const annotations = Array.isArray(arch.annotations) ? arch.annotations : [];
-const include = isStrArr(arch.include) ? arch.include : ['code'];
-const ignoreGlobs = (isStrArr(arch.ignore) ? arch.ignore : []).map(compilerMotif);
-// who the descriptions are written for: "everyone" (plain language, default) or "developers"
-const AUDIENCES = ['everyone', 'developers'];
-if (arch.audience !== undefined && !AUDIENCES.includes(arch.audience)) err(`audience "${arch.audience}" must be one of ${AUDIENCES.join(', ')}${didYouMean(String(arch.audience), AUDIENCES)}`);
-const audience = AUDIENCES.includes(arch.audience) ? arch.audience : 'everyone';
+if (!archi || typeof archi !== 'object') echouer('architecture.json doit être un objet');
+if (!archi.projet || !estTexte(archi.projet.name)) signalerErreur('projet.name est obligatoire');
+if (!Array.isArray(archi.nodes) || !archi.nodes.length) signalerErreur('nodes doit être une liste non vide');
+const noeuds = Array.isArray(archi.nodes) ? archi.nodes : [];
+const liensArchi = Array.isArray(archi.edges) ? archi.edges : [];
+const parcoursArchi = Array.isArray(archi.parcours) ? archi.parcours : [];
+const annotations = Array.isArray(archi.annotations) ? archi.annotations : [];
+const categoriesInclus = estListeTextes(archi.include) ? archi.include : ['code'];
+const motifsIgnores = (estListeTextes(archi.ignore) ? archi.ignore : []).map(compilerMotif);
+// pour qui sont écrites les descriptions : "everyone" (langage simple, par défaut) ou "developers"
+const PUBLICS = ['everyone', 'developers'];
+if (archi.audience !== undefined && !PUBLICS.includes(archi.audience)) signalerErreur(`audience "${archi.audience}" doit être parmi ${PUBLICS.join(', ')}${voulaisTuDire(String(archi.audience), PUBLICS)}`);
+const publicCible = PUBLICS.includes(archi.audience) ? archi.audience : 'everyone';
 
-const byId = new Map();
-nodes.forEach((n, i) => {
-  const where = `nodes[${i}]${n?.id ? ` ("${n.id}")` : ''}`;
-  if (!n || typeof n !== 'object') return err(`${where} must be an object`);
-  if (!isStr(n.id)) return err(`${where}.id is required`);
-  if (!/^[A-Za-z0-9_.\-]+$/.test(n.id)) err(`${where}.id may only use letters, digits, "_", "-" and "."`);
-  if (n.id === 'unassigned') err(`${where}.id "unassigned" is reserved`);
-  if (byId.has(n.id)) err(`${where}.id duplicates an earlier node`);
-  byId.set(n.id, n);
-  if (!isStr(n.label)) err(`${where}.label is required`);
-  if (!TYPES_NOEUDS.includes(n.kind)) err(`${where}.kind "${n.kind}" must be one of ${TYPES_NOEUDS.join(', ')}${didYouMean(String(n.kind), TYPES_NOEUDS)}`);
-  for (const k of ['paths', 'exclude', 'packages', 'hosts', 'tags']) if (n[k] !== undefined && !isStrArr(n[k])) err(`${where}.${k} must be an array of strings`);
-  if (n.kind === 'external' && n.paths?.length) warn(`${where} is external but has paths; external nodes normally own no files`);
+const parId = new Map();
+noeuds.forEach((n, i) => {
+  const endroit = `nodes[${i}]${n?.id ? ` ("${n.id}")` : ''}`;
+  if (!n || typeof n !== 'object') return signalerErreur(`${endroit} doit être un objet`);
+  if (!estTexte(n.id)) return signalerErreur(`${endroit}.id est obligatoire`);
+  if (!/^[A-Za-z0-9_.\-]+$/.test(n.id)) signalerErreur(`${endroit}.id n’accepte que des lettres, des chiffres, "_", "-" et "."`);
+  if (n.id === 'unassigned') signalerErreur(`${endroit}.id "unassigned" est réservé`);
+  if (parId.has(n.id)) signalerErreur(`${endroit}.id existe déjà dans une partie précédente`);
+  parId.set(n.id, n);
+  if (!estTexte(n.label)) signalerErreur(`${endroit}.label est obligatoire`);
+  if (!TYPES_NOEUDS.includes(n.kind)) signalerErreur(`${endroit}.kind "${n.kind}" doit être parmi ${TYPES_NOEUDS.join(', ')}${voulaisTuDire(String(n.kind), TYPES_NOEUDS)}`);
+  for (const k of ['paths', 'exclude', 'packages', 'hosts', 'tags']) if (n[k] !== undefined && !estListeTextes(n[k])) signalerErreur(`${endroit}.${k} doit être une liste de textes`);
+  if (n.kind === 'external' && n.paths?.length) signalerAvertissement(`${endroit} est extérieure mais a des paths ; une partie extérieure ne possède normalement aucun fichier`);
 });
-const ids = [...byId.keys()];
-for (const n of nodes) {
+const ids = [...parId.keys()];
+for (const n of noeuds) {
   if (n?.parent === undefined) continue;
-  if (!byId.has(n.parent)) err(`node "${n.id}".parent "${n.parent}" does not exist${didYouMean(n.parent, ids)}`);
+  if (!parId.has(n.parent)) signalerErreur(`partie "${n.id}" : son parent "${n.parent}" n’existe pas${voulaisTuDire(n.parent, ids)}`);
 }
-// cycles + depth
-const depthOf = new Map();
-const depth = (id, seen = new Set()) => {
-  if (depthOf.has(id)) return depthOf.get(id);
-  if (seen.has(id)) { err(`node "${id}" is part of a parent cycle`); return 0; }
-  seen.add(id);
-  const n = byId.get(id);
-  const d = n?.parent && byId.has(n.parent) ? depth(n.parent, seen) + 1 : 0;
-  depthOf.set(id, d);
+// cycles et profondeur
+const profondeurDe = new Map();
+const profondeur = (id, vus = new Set()) => {
+  if (profondeurDe.has(id)) return profondeurDe.get(id);
+  if (vus.has(id)) { signalerErreur(`la partie "${id}" fait partie d’un cycle de parents`); return 0; }
+  vus.add(id);
+  const n = parId.get(id);
+  const d = n?.parent && parId.has(n.parent) ? profondeur(n.parent, vus) + 1 : 0;
+  profondeurDe.set(id, d);
   return d;
 };
-ids.forEach((id) => depth(id));
+ids.forEach((id) => profondeur(id));
 
-// ---------- files ----------
-const filesAll = scan.files;
-const fileByPath = new Map(filesAll.map((f) => [f.path, f]));
-const included = filesAll.filter((f) => include.includes(f.category) && !ignoreGlobs.some((g) => g.test(f.path)));
-const includedSet = new Set(included.map((f) => f.path));
+// ---------- fichiers ----------
+const tousFichiers = analyse.files;
+const fichierParChemin = new Map(tousFichiers.map((f) => [f.path, f]));
+const fichiersInclus = tousFichiers.filter((f) => categoriesInclus.includes(f.category) && !motifsIgnores.some((g) => g.test(f.path)));
+const ensembleInclus = new Set(fichiersInclus.map((f) => f.path));
 
-// ---------- assign files to nodes ----------
-// A node's `exclude` also applies to its descendants, so "web excludes tests" holds all the way down.
-const inheritedExcludes = (n, seen = new Set()) => {
-  if (!n || seen.has(n.id)) return [];
-  seen.add(n.id);
-  return [...(isStrArr(n.exclude) ? n.exclude : []), ...(n.parent ? inheritedExcludes(byId.get(n.parent), seen) : [])];
+// ---------- affecter les fichiers aux parties ----------
+// Le `exclude` d’une partie vaut aussi pour ses descendantes : « web exclut les tests » tient donc jusqu’en bas.
+const exclusionsHeritees = (n, vus = new Set()) => {
+  if (!n || vus.has(n.id)) return [];
+  vus.add(n.id);
+  return [...(estListeTextes(n.exclude) ? n.exclude : []), ...(n.parent ? exclusionsHeritees(parId.get(n.parent), vus) : [])];
 };
-const matchers = nodes.filter((n) => n?.id && isStrArr(n.paths ?? [])).map((n, order) => ({
-  id: n.id, order, depth: depthOf.get(n.id) || 0,
-  paths: (n.paths || []).map(compilerMotif), exclude: inheritedExcludes(n).map(compilerMotif), hits: new Array((n.paths || []).length).fill(0),
+const associations = noeuds.filter((n) => n?.id && estListeTextes(n.paths ?? [])).map((n, ordre) => ({
+  id: n.id, order: ordre, depth: profondeurDe.get(n.id) || 0,
+  paths: (n.paths || []).map(compilerMotif), exclude: exclusionsHeritees(n).map(compilerMotif), hits: new Array((n.paths || []).length).fill(0),
 }));
-const owner = new Map();
-let ambiguous = 0;
-const ambiguousEx = [];
-for (const f of included) {
-  let best = null, bestKey = null, tie = null;
-  for (const m of matchers) {
+const proprietaire = new Map();
+let ambigus = 0;
+const exemplesAmbigus = [];
+for (const f of fichiersInclus) {
+  let meilleur = null, meilleureCle = null, egalite = null;
+  for (const m of associations) {
     if (m.exclude.some((g) => g.test(f.path))) continue;
-    let spec = -1;
-    m.paths.forEach((g, i) => { if (g.test(f.path)) { m.hits[i]++; spec = Math.max(spec, g.specificity); } });
-    if (spec < 0) continue;
-    const key = [m.depth, spec];
-    if (!best || key[0] > bestKey[0] || (key[0] === bestKey[0] && key[1] > bestKey[1])) { best = m; bestKey = key; tie = null; }
-    else if (key[0] === bestKey[0] && key[1] === bestKey[1]) tie = m.id;
+    let precision = -1;
+    m.paths.forEach((g, i) => { if (g.test(f.path)) { m.hits[i]++; precision = Math.max(precision, g.specificity); } });
+    if (precision < 0) continue;
+    const cle = [m.depth, precision];
+    if (!meilleur || cle[0] > meilleureCle[0] || (cle[0] === meilleureCle[0] && cle[1] > meilleureCle[1])) { meilleur = m; meilleureCle = cle; egalite = null; }
+    else if (cle[0] === meilleureCle[0] && cle[1] === meilleureCle[1]) egalite = m.id;
   }
-  if (tie) { ambiguous++; if (ambiguousEx.length < 3) ambiguousEx.push(`${f.path} (${best.id} vs ${tie})`); }
-  owner.set(f.path, best ? best.id : 'unassigned');
+  if (egalite) { ambigus++; if (exemplesAmbigus.length < 3) exemplesAmbigus.push(`${f.path} (${meilleur.id} vs ${egalite})`); }
+  proprietaire.set(f.path, meilleur ? meilleur.id : 'unassigned');
 }
-for (const m of matchers) m.hits.forEach((h, i) => { if (!h) warn(`node "${m.id}" path "${m.paths[i].glob}" matches no included file`); });
-if (ambiguous) warn(`${ambiguous} file(s) matched two sibling nodes equally; the first declared won. Make globs more specific or add an exclude. e.g. ${ambiguousEx.join('; ')}`);
+for (const m of associations) m.hits.forEach((h, i) => { if (!h) signalerAvertissement(`partie "${m.id}" : le motif "${m.paths[i].glob}" ne correspond à aucun fichier inclus`); });
+if (ambigus) signalerAvertissement(`${ambigus} fichier(s) correspondent à égalité à deux parties sœurs ; la première déclarée l’emporte. Précise les motifs ou ajoute un exclude. Par exemple : ${exemplesAmbigus.join('; ')}`);
 
-// ---------- endpoints ----------
-const resolveEndpoint = (ref, where) => {
-  if (!isStr(ref)) { err(`${where} must be a node id or file path`); return null; }
-  if (byId.has(ref)) return `n:${ref}`;
-  const p = ref.replace(/^file:/, '');
-  if (includedSet.has(p)) return `f:${p}`;
-  if (fileByPath.has(p)) { err(`${where} "${ref}" is a file that is not included (category ${fileByPath.get(p).category}); point at its node instead`); return null; }
-  err(`${where} "${ref}" is neither a node id nor a scanned file${didYouMean(ref, ids)}`);
+// ---------- extrémités des liens ----------
+const resoudreExtremite = (reference, endroit) => {
+  if (!estTexte(reference)) { signalerErreur(`${endroit} doit être un identifiant de partie ou un chemin de fichier`); return null; }
+  if (parId.has(reference)) return `n:${reference}`;
+  const p = reference.replace(/^file:/, '');
+  if (ensembleInclus.has(p)) return `f:${p}`;
+  if (fichierParChemin.has(p)) { signalerErreur(`${endroit} "${reference}" est un fichier non inclus (catégorie ${fichierParChemin.get(p).category}) ; désigne plutôt sa partie`); return null; }
+  signalerErreur(`${endroit} "${reference}" n’est ni un identifiant de partie ni un fichier analysé${voulaisTuDire(reference, ids)}`);
   return null;
 };
 
-// ---------- links ----------
-const links = new Map(); // key -> link
-const addLink = (a, b, k, extra = {}) => {
+// ---------- liens ----------
+const liens = new Map(); // clé -> lien
+const ajouterLien = (a, b, k, supplement = {}) => {
   if (!a || !b || a === b) return;
-  const key = `${a}|${b}|${k}`;
-  let l = links.get(key);
-  if (!l) { l = { a, b, k, w: 0 }; links.set(key, l); }
-  l.w += extra.w || 1;
-  if (extra.names?.length) l.names = [...new Set([...(l.names || []), ...extra.names])].slice(0, 40);
-  if (extra.label) { l.labels = l.labels || []; if (!l.labels.includes(extra.label) && l.labels.length < 40) l.labels.push(extra.label); }
-  if (extra.inferred) l.inferred = true;
-  if (extra.desc) l.desc = extra.desc;
-  if (extra.route !== undefined) { l.calls = l.calls || []; if (l.calls.length < 80) l.calls.push([extra.route, extra.callLine || 0]); }
+  const cle = `${a}|${b}|${k}`;
+  let l = liens.get(cle);
+  if (!l) { l = { a, b, k, w: 0 }; liens.set(cle, l); }
+  l.w += supplement.w || 1;
+  if (supplement.names?.length) l.names = [...new Set([...(l.names || []), ...supplement.names])].slice(0, 40);
+  if (supplement.label) { l.labels = l.labels || []; if (!l.labels.includes(supplement.label) && l.labels.length < 40) l.labels.push(supplement.label); }
+  if (supplement.inferred) l.inferred = true;
+  if (supplement.desc) l.desc = supplement.desc;
+  if (supplement.route !== undefined) { l.calls = l.calls || []; if (l.calls.length < 80) l.calls.push([supplement.route, supplement.callLine || 0]); }
 };
 
 // ---------- routes ----------
-const routeIdx = new Map();
-const routesIn = scan.routes.filter((r) => includedSet.has(r.file));
-routesIn.forEach((r, i) => routeIdx.set(`${r.file}|${r.method}|${r.path}`, i));
+const indexRoutes = new Map();
+const routesRetenues = analyse.routes.filter((r) => ensembleInclus.has(r.file));
+routesRetenues.forEach((r, i) => indexRoutes.set(`${r.file}|${r.method}|${r.path}`, i));
 
-for (const e of scan.edges) if (includedSet.has(e.from) && includedSet.has(e.to)) addLink(`f:${e.from}`, `f:${e.to}`, 'import', { w: e.count || 1, names: e.names });
-for (const h of scan.http) if (includedSet.has(h.from) && includedSet.has(h.to)) addLink(`f:${h.from}`, `f:${h.to}`, 'http', { label: `${h.method} ${h.path}`, inferred: true, route: routeIdx.get(`${h.to}|${h.method}|${h.path}`), callLine: h.line });
+for (const e of analyse.edges) if (ensembleInclus.has(e.from) && ensembleInclus.has(e.to)) ajouterLien(`f:${e.from}`, `f:${e.to}`, 'import', { w: e.count || 1, names: e.names });
+for (const h of analyse.http) if (ensembleInclus.has(h.from) && ensembleInclus.has(h.to)) ajouterLien(`f:${h.from}`, `f:${h.to}`, 'http', { label: `${h.method} ${h.path}`, inferred: true, route: indexRoutes.get(`${h.to}|${h.method}|${h.path}`), callLine: h.line });
 
-// externals: packages / hosts claimed by nodes
-const extIds = scan.externals.map((e) => e.id);
-const pkgMatchers = nodes.filter((n) => n?.packages?.length).map((n) => ({ id: n.id, globs: n.packages.map((p) => compilerMotif(p.includes(':') ? p : `*:${p}`)), hits: 0 }));
-const hostMatchers = nodes.filter((n) => n?.hosts?.length).map((n) => ({ id: n.id, globs: n.hosts.map((h) => compilerMotif(h.toLowerCase())), hits: 0 }));
-for (const e of scan.extEdges) {
-  if (!includedSet.has(e.from)) continue;
-  const m = pkgMatchers.find((pm) => pm.globs.some((g) => g.test(e.pkg)));
-  if (m) { m.hits++; addLink(`f:${e.from}`, `n:${m.id}`, 'import', { w: e.count, names: [e.pkg.split(':')[1]] }); }
+// services extérieurs : paquets et hôtes revendiqués par les parties
+const idsExterieurs = analyse.externals.map((e) => e.id);
+const assocPaquets = noeuds.filter((n) => n?.packages?.length).map((n) => ({ id: n.id, globs: n.packages.map((p) => compilerMotif(p.includes(':') ? p : `*:${p}`)), hits: 0 }));
+const assocHotes = noeuds.filter((n) => n?.hosts?.length).map((n) => ({ id: n.id, globs: n.hosts.map((h) => compilerMotif(h.toLowerCase())), hits: 0 }));
+for (const e of analyse.extEdges) {
+  if (!ensembleInclus.has(e.from)) continue;
+  const m = assocPaquets.find((assocPaquet) => assocPaquet.globs.some((g) => g.test(e.pkg)));
+  if (m) { m.hits++; ajouterLien(`f:${e.from}`, `n:${m.id}`, 'import', { w: e.count, names: [e.pkg.split(':')[1]] }); }
 }
-for (const h of scan.hosts) {
-  if (!includedSet.has(h.from)) continue;
-  const m = hostMatchers.find((hm) => hm.globs.some((g) => g.test(h.host)));
-  if (m) { m.hits++; addLink(`f:${h.from}`, `n:${m.id}`, 'http', { label: h.host, inferred: true }); }
+for (const h of analyse.hosts) {
+  if (!ensembleInclus.has(h.from)) continue;
+  const m = assocHotes.find((assocHote) => assocHote.globs.some((g) => g.test(h.host)));
+  if (m) { m.hits++; ajouterLien(`f:${h.from}`, `n:${m.id}`, 'http', { label: h.host, inferred: true }); }
 }
-for (const pm of pkgMatchers) if (!pm.hits) warn(`node "${pm.id}" packages match nothing imported. Known: ${extIds.slice(0, 8).join(', ')}…`);
-for (const hm of hostMatchers) if (!hm.hits) warn(`node "${hm.id}" hosts match no host called from code`);
+for (const assocPaquet of assocPaquets) if (!assocPaquet.hits) signalerAvertissement(`partie "${assocPaquet.id}" : ses packages ne correspondent à rien d’importé. Connus : ${idsExterieurs.slice(0, 8).join(', ')}…`);
+for (const assocHote of assocHotes) if (!assocHote.hits) signalerAvertissement(`partie "${assocHote.id}" : ses hosts ne correspondent à aucun hôte appelé par le code`);
 
-// a blueprint's planned links from files to outside services and data stores (plan.json "services"/"data")
-for (const e of scan.nodeLinks || []) {
-  if (!includedSet.has(e.from)) continue;
-  if (!byId.has(e.to)) { err(`plan.json: "${e.from}" names "${e.to}" in its ${e.kind === 'data' ? 'data' : 'services'}, which is not a node id in architecture.json${didYouMean(e.to, ids)}`); continue; }
-  addLink(`f:${e.from}`, `n:${e.to}`, TYPES_LIENS.includes(e.kind) ? e.kind : 'call', { label: e.label });
+// liens prévus par un plan, des fichiers vers les services extérieurs et les stockages de données (« services » et « data » de plan.json)
+for (const e of analyse.nodeLinks || []) {
+  if (!ensembleInclus.has(e.from)) continue;
+  if (!parId.has(e.to)) { signalerErreur(`plan.json : "${e.from}" nomme "${e.to}" dans ses ${e.kind === 'data' ? 'data' : 'services'}, qui n’est pas un identifiant de partie dans architecture.json${voulaisTuDire(e.to, ids)}`); continue; }
+  ajouterLien(`f:${e.from}`, `n:${e.to}`, TYPES_LIENS.includes(e.kind) ? e.kind : 'call', { label: e.label });
 }
 
-archEdges.forEach((e, i) => {
-  const where = `edges[${i}]`;
-  if (!TYPES_LIENS.includes(e?.kind)) err(`${where}.kind "${e?.kind}" must be one of ${TYPES_LIENS.join(', ')}${didYouMean(String(e?.kind), TYPES_LIENS)}`);
-  const a = resolveEndpoint(e?.from, `${where}.from`);
-  const b = resolveEndpoint(e?.to, `${where}.to`);
-  if (a && b && TYPES_LIENS.includes(e.kind)) addLink(a, b, e.kind, { label: e.label, desc: e.description, w: 1 });
+liensArchi.forEach((e, i) => {
+  const endroit = `edges[${i}]`;
+  if (!TYPES_LIENS.includes(e?.kind)) signalerErreur(`${endroit}.kind "${e?.kind}" doit être parmi ${TYPES_LIENS.join(', ')}${voulaisTuDire(String(e?.kind), TYPES_LIENS)}`);
+  const a = resoudreExtremite(e?.from, `${endroit}.from`);
+  const b = resoudreExtremite(e?.to, `${endroit}.to`);
+  if (a && b && TYPES_LIENS.includes(e.kind)) ajouterLien(a, b, e.kind, { label: e.label, desc: e.description, w: 1 });
 });
 
-// ---------- flows + annotations ----------
-const outFlows = [];
-flows.forEach((fl, i) => {
-  const where = `flows[${i}]`;
-  if (!isStr(fl?.id) || !isStr(fl?.title)) err(`${where} needs id and title`);
-  if (!Array.isArray(fl?.steps) || fl.steps.length < 2) { err(`${where}.steps needs at least 2 steps`); return; }
-  const steps = fl.steps.map((s, j) => ({ ref: resolveEndpoint(s?.node, `${where}.steps[${j}].node`), note: s?.note || '' }));
-  outFlows.push({ id: fl.id, title: fl.title, description: fl.description || '', steps });
+// ---------- parcours et annotations ----------
+const parcoursSortie = [];
+parcoursArchi.forEach((parc, i) => {
+  const endroit = `parcours[${i}]`;
+  if (!estTexte(parc?.id) || !estTexte(parc?.title)) signalerErreur(`${endroit} a besoin d’un id et d’un title`);
+  if (!Array.isArray(parc?.steps) || parc.steps.length < 2) { signalerErreur(`${endroit}.steps doit avoir au moins 2 étapes`); return; }
+  const etapes = parc.steps.map((s, j) => ({ ref: resoudreExtremite(s?.node, `${endroit}.steps[${j}].node`), note: s?.note || '' }));
+  parcoursSortie.push({ id: parc.id, title: parc.title, description: parc.description || '', steps: etapes });
 });
-// Flows people requested from the map (saved by serve.mjs). Steps use stable refs —
-// "route:METHOD /path" and "sym:<file>#<name>" — so they survive rebuilds; stale steps are dropped.
-const customFile = path.join(outDir, 'custom-flows.json');
-if (fs.existsSync(customFile)) {
-  let custom = [];
-  try { custom = JSON.parse(fs.readFileSync(customFile, 'utf8')).parcours || []; } catch (e) { warn(`custom-flows.json is not valid JSON: ${e.message}`); }
-  const routeAt = new Map(routesIn.map((r, i) => [cleRoute(r), i]));
-  const resolveStep = (ref) => {
-    if (typeof ref !== 'string') return null;
-    if (ref.startsWith('route:')) { const i = routeAt.get(ref.slice(6)); return i == null ? null : `r:${i}`; }
-    if (ref.startsWith('sym:')) {
-      const [p, name] = [ref.slice(4, ref.lastIndexOf('#')), ref.slice(ref.lastIndexOf('#') + 1)];
-      const i = (fileByPath.get(p)?.symbols || []).findIndex((s) => s.name === name);
-      return includedSet.has(p) && i >= 0 ? `s:${p}#${i}` : null;
+// Parcours demandés depuis la carte (enregistrés par serve.mjs). Les étapes utilisent des références stables —
+// "route:METHOD /path" et "sym:<fichier>#<nom>" — pour survivre aux reconstructions ; les étapes périmées sont retirées.
+const fichierPerso = path.join(dossierSortie, 'custom-flows.json');
+if (fs.existsSync(fichierPerso)) {
+  let perso = [];
+  try { perso = JSON.parse(fs.readFileSync(fichierPerso, 'utf8')).parcours || []; } catch (e) { signalerAvertissement(`custom-flows.json n’est pas un JSON valide : ${e.message}`); }
+  const routeParCle = new Map(routesRetenues.map((r, i) => [cleRoute(r), i]));
+  const resoudreEtape = (reference) => {
+    if (typeof reference !== 'string') return null;
+    if (reference.startsWith('route:')) { const i = routeParCle.get(reference.slice(6)); return i == null ? null : `r:${i}`; }
+    if (reference.startsWith('sym:')) {
+      const [p, nom] = [reference.slice(4, reference.lastIndexOf('#')), reference.slice(reference.lastIndexOf('#') + 1)];
+      const i = (fichierParChemin.get(p)?.symbols || []).findIndex((s) => s.name === nom);
+      return ensembleInclus.has(p) && i >= 0 ? `s:${p}#${i}` : null;
     }
-    if (ref.startsWith('n:')) return byId.has(ref.slice(2)) ? ref : null;
-    if (ref.startsWith('f:')) return includedSet.has(ref.slice(2)) ? ref : null;
+    if (reference.startsWith('n:')) return parId.has(reference.slice(2)) ? reference : null;
+    if (reference.startsWith('f:')) return ensembleInclus.has(reference.slice(2)) ? reference : null;
     return null;
   };
-  let dropped = 0;
-  for (const fl of custom) {
-    const steps = (fl.steps || []).map((s) => ({ ref: resolveStep(s.ref), note: s.note || '' })).filter((s) => s.ref);
-    dropped += (fl.steps || []).length - steps.length;
-    if (steps.length >= 2 && isStr(fl.id) && !outFlows.some((x) => x.id === fl.id)) outFlows.push({ id: fl.id, title: fl.title || 'Flow', description: fl.description || '', steps, custom: true });
+  let retirees = 0;
+  for (const parc of perso) {
+    const etapes = (parc.steps || []).map((s) => ({ ref: resoudreEtape(s.ref), note: s.note || '' })).filter((s) => s.ref);
+    retirees += (parc.steps || []).length - etapes.length;
+    if (etapes.length >= 2 && estTexte(parc.id) && !parcoursSortie.some((x) => x.id === parc.id)) parcoursSortie.push({ id: parc.id, title: parc.title || 'Parcours', description: parc.description || '', steps: etapes, custom: true });
   }
-  if (dropped) warn(`${dropped} step(s) in custom-flows.json point at code that no longer exists and were left out.`);
+  if (retirees) signalerAvertissement(`${retirees} étape(s) de custom-flows.json pointent vers du code qui n’existe plus et ont été retirées.`);
 }
-// "Start here" tour: 3-8 narrated stops (node id or file path), written by Claude in architecture.json
-const outTour = [];
-if (arch.visite !== undefined) {
-  if (!Array.isArray(arch.visite)) err('tour must be an array of { node, title, note }');
-  else arch.visite.forEach((s, i) => {
-    const ref = resolveEndpoint(s?.node, `tour[${i}].node`);
-    if (ref) outTour.push({ ref, title: isStr(s.title) ? s.title : '', note: isStr(s.note) ? s.note : '' });
+// Visite guidée « Commencer ici » : 3 à 8 étapes commentées (identifiant de partie ou chemin de fichier), écrites par Claude dans architecture.json
+const visiteSortie = [];
+if (archi.visite !== undefined) {
+  if (!Array.isArray(archi.visite)) signalerErreur('visite doit être une liste de { node, title, note }');
+  else archi.visite.forEach((s, i) => {
+    const reference = resoudreExtremite(s?.node, `visite[${i}].node`);
+    if (reference) visiteSortie.push({ ref: reference, title: estTexte(s.title) ? s.title : '', note: estTexte(s.note) ? s.note : '' });
   });
 }
-// "Recent work": what Claude just changed, per task, framed against what the user asked for
-// (floorplan/recent-work.json, rewritten on every make/update). Stale refs are warnings, never errors.
-let outRecent = null;
-const recentFile = path.join(outDir, 'recent-work.json');
-if (fs.existsSync(recentFile)) {
-  let rw = null;
-  try { rw = JSON.parse(fs.readFileSync(recentFile, 'utf8')); } catch (e) { warn(`recent-work.json is not valid JSON: ${e.message}`); }
-  const routeIdx = new Map(routesIn.map((r, i) => [cleRoute(r), i]));
-  const resolveRecent = (ref) => {
-    if (!isStr(ref)) return null;
-    const s = ref.trim().replace(/^\.\//, '').replace(/^(route:|file:)/, '');
-    if (/^n:/.test(s)) return byId.has(s.slice(2)) ? s : null;
-    if (/^f:/.test(s)) return includedSet.has(s.slice(2)) ? s : null;
-    if (byId.has(s)) return 'n:' + s;
-    if (includedSet.has(s)) return 'f:' + s;
+// « Travail récent » : ce que Claude vient de changer, tâche par tâche, en regard de ce que la personne avait demandé
+// (floorplan/recent-work.json, réécrit à chaque création ou mise à jour). Une référence périmée donne un avertissement, jamais une erreur.
+let recentSortie = null;
+const fichierRecent = path.join(dossierSortie, 'recent-work.json');
+if (fs.existsSync(fichierRecent)) {
+  let travailRecent = null;
+  try { travailRecent = JSON.parse(fs.readFileSync(fichierRecent, 'utf8')); } catch (e) { signalerAvertissement(`recent-work.json n’est pas un JSON valide : ${e.message}`); }
+  const indexRoutes = new Map(routesRetenues.map((r, i) => [cleRoute(r), i]));
+  const resoudreRecent = (reference) => {
+    if (!estTexte(reference)) return null;
+    const s = reference.trim().replace(/^\.\//, '').replace(/^(route:|file:)/, '');
+    if (/^n:/.test(s)) return parId.has(s.slice(2)) ? s : null;
+    if (/^f:/.test(s)) return ensembleInclus.has(s.slice(2)) ? s : null;
+    if (parId.has(s)) return 'n:' + s;
+    if (ensembleInclus.has(s)) return 'f:' + s;
     const m = /^([A-Za-z]+)\s+(\/\S*)$/.exec(s);
-    if (m && routeIdx.has(`${m[1].toUpperCase()} ${m[2]}`)) return `r:${routeIdx.get(`${m[1].toUpperCase()} ${m[2]}`)}`;
+    if (m && indexRoutes.has(`${m[1].toUpperCase()} ${m[2]}`)) return `r:${indexRoutes.get(`${m[1].toUpperCase()} ${m[2]}`)}`;
     return null;
   };
-  if (rw && !Array.isArray(rw.tasks)) warn('recent-work.json needs a "tasks" array (an empty one clears the highlights)');
-  else if (rw) {
-    const tasks = [], items = [], missing = [];
-    rw.tasks.forEach((t, ti) => {
-      if (!isStr(t?.title)) return warn(`recent-work.json tasks[${ti}] needs a title`);
-      tasks.push({ title: t.title, request: isStr(t.request) ? t.request : '', summary: isStr(t.summary) ? t.summary : '', ...(isStr(t.status) ? { status: t.status } : {}) });
-      for (const it of Array.isArray(t.items) ? t.items : []) {
-        const id = resolveRecent(it?.ref);
-        if (!id) { missing.push(it?.ref); continue; }
-        items.push({ id, task: tasks.length - 1, change: it.change === 'new' ? 'new' : 'changed', note: isStr(it.note) ? it.note : '' });
+  if (travailRecent && !Array.isArray(travailRecent.tasks)) signalerAvertissement('recent-work.json doit contenir une liste "tasks" (une liste vide efface les blocs mis en avant)');
+  else if (travailRecent) {
+    const taches = [], elements = [], manquants = [];
+    travailRecent.tasks.forEach((t, indexTache) => {
+      if (!estTexte(t?.title)) return signalerAvertissement(`recent-work.json tasks[${indexTache}] a besoin d’un title`);
+      taches.push({ title: t.title, request: estTexte(t.request) ? t.request : '', summary: estTexte(t.summary) ? t.summary : '', ...(estTexte(t.status) ? { status: t.status } : {}) });
+      for (const element of Array.isArray(t.items) ? t.items : []) {
+        const id = resoudreRecent(element?.ref);
+        if (!id) { manquants.push(element?.ref); continue; }
+        elements.push({ id, task: taches.length - 1, change: element.change === 'new' ? 'new' : 'changed', note: estTexte(element.note) ? element.note : '' });
       }
     });
-    if (missing.length) warn(`recent-work.json: ${missing.length} ref(s) aren't on the map and were left out (use a file path, a node id or "METHOD /path"): ${missing.slice(0, 5).map(String).join(', ')}${missing.length > 5 ? '…' : ''}`);
-    outRecent = { updatedAt: isStr(rw.updatedAt) ? rw.updatedAt : fs.statSync(recentFile).mtime.toISOString(), tasks, items };
+    if (manquants.length) signalerAvertissement(`recent-work.json : ${manquants.length} référence(s) ne sont pas sur la carte et ont été retirées (utilise un chemin de fichier, un identifiant de partie ou "METHODE /chemin") : ${manquants.slice(0, 5).map(String).join(', ')}${manquants.length > 5 ? '…' : ''}`);
+    recentSortie = { updatedAt: estTexte(travailRecent.updatedAt) ? travailRecent.updatedAt : fs.statSync(fichierRecent).mtime.toISOString(), tasks: taches, items: elements };
   }
 }
 const notes = new Map();
 annotations.forEach((a, i) => {
-  if (!isStr(a?.path) || !isStr(a?.note)) return err(`annotations[${i}] needs path and note`);
-  if (!includedSet.has(a.path)) return err(`annotations[${i}].path "${a.path}" is not an included file`);
-  notes.set(a.path, { note: a.note, tags: isStrArr(a.tags) ? a.tags : undefined });
+  if (!estTexte(a?.path) || !estTexte(a?.note)) return signalerErreur(`annotations[${i}] a besoin d’un path et d’une note`);
+  if (!ensembleInclus.has(a.path)) return signalerErreur(`annotations[${i}].path "${a.path}" n’est pas un fichier inclus`);
+  notes.set(a.path, { note: a.note, tags: estListeTextes(a.tags) ? a.tags : undefined });
 });
-for (const ep of arch.projet?.entrypoints || []) if (!includedSet.has(ep)) warn(`project.entrypoints "${ep}" is not an included file`);
+for (const pointEntree of archi.projet?.entrypoints || []) if (!ensembleInclus.has(pointEntree)) signalerAvertissement(`projet.entrypoints "${pointEntree}" n’est pas un fichier inclus`);
 
-// ---------- names + descriptions (floorplan/descriptions/*.json) ----------
-const descDir = path.join(outDir, 'descriptions');
-const fileDesc = new Map(), routeDesc = new Map();
-const routeKeys = new Set(routesIn.map(cleRoute));
-let staleFiles = 0, staleRoutes = 0;
-const staleEx = [];
-if (fs.existsSync(descDir)) {
-  for (const name of fs.readdirSync(descDir).filter((n) => n.endsWith('.json')).sort()) {
+// ---------- noms et descriptions (floorplan/descriptions/*.json) ----------
+const dossierDescriptions = path.join(dossierSortie, 'descriptions');
+const descFichiers = new Map(), descRoutes = new Map();
+const clesRoutes = new Set(routesRetenues.map(cleRoute));
+let fichiersPerimes = 0, routesPerimees = 0;
+const exemplesPerimes = [];
+if (fs.existsSync(dossierDescriptions)) {
+  for (const nom of fs.readdirSync(dossierDescriptions).filter((n) => n.endsWith('.json')).sort()) {
     let d;
-    try { d = JSON.parse(fs.readFileSync(path.join(descDir, name), 'utf8')); } catch (e) { err(`descriptions/${name} is not valid JSON: ${e.message}`); continue; }
+    try { d = JSON.parse(fs.readFileSync(path.join(dossierDescriptions, nom), 'utf8')); } catch (e) { signalerErreur(`descriptions/${nom} n’est pas un JSON valide : ${e.message}`); continue; }
     for (const [p, v] of Object.entries(d.files || {})) {
-      if (!v || typeof v !== 'object') { err(`descriptions/${name}: files["${p}"] must be { name, description }`); continue; }
-      if (!includedSet.has(p)) { staleFiles++; if (staleEx.length < 3) staleEx.push(p); continue; }
-      fileDesc.set(p, { name: isStr(v.name) ? v.name.trim() : null, d: isStr(v.description) ? v.description.trim() : null, review: isStr(v.review) ? v.review : null });
+      if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: files["${p}"] doit être { name, description }`); continue; }
+      if (!ensembleInclus.has(p)) { fichiersPerimes++; if (exemplesPerimes.length < 3) exemplesPerimes.push(p); continue; }
+      descFichiers.set(p, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, review: estTexte(v.review) ? v.review : null });
     }
     for (const [k, v] of Object.entries(d.routes || {})) {
-      if (!v || typeof v !== 'object') { err(`descriptions/${name}: routes["${k}"] must be { name, description }`); continue; }
-      if (!routeKeys.has(k)) { staleRoutes++; continue; }
-      routeDesc.set(k, { name: isStr(v.name) ? v.name.trim() : null, d: isStr(v.description) ? v.description.trim() : null, review: isStr(v.review) ? v.review : null });
+      if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: routes["${k}"] doit être { name, description }`); continue; }
+      if (!clesRoutes.has(k)) { routesPerimees++; continue; }
+      descRoutes.set(k, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, review: estTexte(v.review) ? v.review : null });
     }
   }
 }
-if (staleFiles) warn(`${staleFiles} described file(s) no longer exist or aren't included (e.g. ${staleEx.join(', ')}). Remove them from descriptions/.`);
-if (staleRoutes) warn(`${staleRoutes} described route(s) no longer match a route in the scan; remove or re-key them.`);
+if (fichiersPerimes) signalerAvertissement(`${fichiersPerimes} fichier(s) décrit(s) n’existent plus ou ne sont pas inclus (par exemple ${exemplesPerimes.join(', ')}). Retire-les de descriptions/.`);
+if (routesPerimees) signalerAvertissement(`${routesPerimees} route(s) décrite(s) ne correspondent plus à une route de l’analyse ; retire-les ou change leur clé.`);
 
-// ---------- stats ----------
-const unassigned = included.filter((f) => owner.get(f.path) === 'unassigned');
-const stats = new Map([...ids, 'unassigned'].map((id) => [id, { files: 0, loc: 0, langs: {}, repos: new Set() }]));
-for (const f of included) {
-  let id = owner.get(f.path);
+// ---------- statistiques ----------
+const nonAffectes = fichiersInclus.filter((f) => proprietaire.get(f.path) === 'unassigned');
+const statistiques = new Map([...ids, 'unassigned'].map((id) => [id, { files: 0, loc: 0, langs: {}, repos: new Set() }]));
+for (const f of fichiersInclus) {
+  let id = proprietaire.get(f.path);
   while (id) {
-    const s = stats.get(id);
+    const s = statistiques.get(id);
     s.files++; s.loc += f.loc; s.langs[f.lang || f.category] = (s.langs[f.lang || f.category] || 0) + f.loc;
     if (f.repo !== null) s.repos.add(f.repo);
-    id = id === 'unassigned' ? null : byId.get(id)?.parent;
+    id = id === 'unassigned' ? null : parId.get(id)?.parent;
   }
 }
 
-// ---------- report ----------
-const pct = included.length ? (unassigned.length / included.length) * 100 : 0;
-const report = [];
-if (errors.length) {
-  report.push(`✗ ${errors.length} error(s) in ${path.relative(root, archFile)}${scan.ebauche ? ' or plan.json' : ''}:`);
-  for (const e of errors) report.push(`  - ${e}`);
+// ---------- rapport ----------
+const pourcent = fichiersInclus.length ? (nonAffectes.length / fichiersInclus.length) * 100 : 0;
+const rapport = [];
+if (erreurs.length) {
+  rapport.push(`✗ ${erreurs.length} erreur(s) dans ${path.relative(racine, fichierArchi)}${analyse.ebauche ? ' ou plan.json' : ''} :`);
+  for (const e of erreurs) rapport.push(`  - ${e}`);
 }
-if (warnings.length) {
-  report.push(`! ${warnings.length} warning(s):`);
-  for (const w of warnings.slice(0, 40)) report.push(`  - ${w}`);
+if (avertissements.length) {
+  rapport.push(`! ${avertissements.length} avertissement(s) :`);
+  for (const w of avertissements.slice(0, 40)) rapport.push(`  - ${w}`);
 }
-report.push('');
-report.push(`ASSIGNMENT  ${included.length} files (${include.join('+')}), ${unassigned.length} unassigned (${pct.toFixed(1)}%)`);
-for (const n of nodes.filter((n) => n?.id && !n.parent)) {
-  const s = stats.get(n.id);
-  report.push(`  ${n.id.padEnd(28)} ${String(s.files).padStart(5)} files ${scan.ebauche ? '' : `${formaterNombre(s.loc).padStart(6)} loc  `}[${n.kind}]`);
+rapport.push('');
+rapport.push(`AFFECTATION  ${fichiersInclus.length} fichiers (${categoriesInclus.join('+')}), ${nonAffectes.length} non affectés (${pourcent.toFixed(1)}%)`);
+for (const n of noeuds.filter((n) => n?.id && !n.parent)) {
+  const s = statistiques.get(n.id);
+  rapport.push(`  ${n.id.padEnd(28)} ${String(s.files).padStart(5)} fichiers ${analyse.ebauche ? '' : `${formaterNombre(s.loc).padStart(6)} lignes  `}[${n.kind}]`);
 }
-if (unassigned.length) {
-  const byDir = new Map();
-  for (const f of unassigned) { const d = f.path.split('/').slice(0, -1).join('/') || '.'; byDir.set(d, (byDir.get(d) || 0) + 1); }
-  report.push(`  unassigned, by directory:`);
-  for (const [d, c] of [...byDir.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15)) report.push(`    ${String(c).padStart(4)}  ${d}/`);
+if (nonAffectes.length) {
+  const parDossier = new Map();
+  for (const f of nonAffectes) { const d = f.path.split('/').slice(0, -1).join('/') || '.'; parDossier.set(d, (parDossier.get(d) || 0) + 1); }
+  rapport.push(`  non affectés, par dossier :`);
+  for (const [d, c] of [...parDossier.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15)) rapport.push(`    ${String(c).padStart(4)}  ${d}/`);
 }
-const byKind = {};
-for (const l of links.values()) byKind[l.k] = (byKind[l.k] || 0) + 1;
-report.push(`LINKS  ${[...links.values()].length} (${Object.entries(byKind).map(([k, v]) => `${k} ${v}`).join(', ')})`);
-const describedFiles = included.filter((f) => fileDesc.get(f.path)?.d || f.desc).length;
-const describedRoutes = routesIn.filter((r) => routeDesc.get(cleRoute(r))?.d || r.desc).length;
-const noSummary = nodes.filter((n) => n?.id && !isStr(n.summary)).map((n) => n.id);
-const reviewCount = [...fileDesc.values(), ...routeDesc.values()].filter((d) => d.review).length;
-report.push(`DESCRIPTIONS  files ${describedFiles}/${included.length} · routes ${describedRoutes}/${routesIn.length} · modules ${nodes.length - noSummary.length}/${nodes.length}${reviewCount ? ` · ${reviewCount} need review (code changed)` : ''}`);
-if (noSummary.length) report.push(`  modules without a summary: ${noSummary.slice(0, 12).join(', ')}${noSummary.length > 12 ? '…' : ''}`);
-if (describedFiles < included.length || describedRoutes < routesIn.length || reviewCount) report.push(`  Run describe.mjs to get worksheets for the ${included.length - describedFiles} file(s) and ${routesIn.length - describedRoutes} route(s) still missing descriptions.`);
+const parType = {};
+for (const l of liens.values()) parType[l.k] = (parType[l.k] || 0) + 1;
+rapport.push(`LIENS  ${[...liens.values()].length} (${Object.entries(parType).map(([k, v]) => `${k} ${v}`).join(', ')})`);
+const fichiersDecrits = fichiersInclus.filter((f) => descFichiers.get(f.path)?.d || f.desc).length;
+const routesDecrites = routesRetenues.filter((r) => descRoutes.get(cleRoute(r))?.d || r.desc).length;
+const sansResume = noeuds.filter((n) => n?.id && !estTexte(n.summary)).map((n) => n.id);
+const nbARevoir = [...descFichiers.values(), ...descRoutes.values()].filter((d) => d.review).length;
+rapport.push(`DESCRIPTIONS  fichiers ${fichiersDecrits}/${fichiersInclus.length} · routes ${routesDecrites}/${routesRetenues.length} · modules ${noeuds.length - sansResume.length}/${noeuds.length}${nbARevoir ? ` · ${nbARevoir} à revoir (le code a changé)` : ''}`);
+if (sansResume.length) rapport.push(`  modules sans résumé : ${sansResume.slice(0, 12).join(', ')}${sansResume.length > 12 ? '…' : ''}`);
+if (fichiersDecrits < fichiersInclus.length || routesDecrites < routesRetenues.length || nbARevoir) rapport.push(`  Lancer describe.mjs pour obtenir les fiches de travail des ${fichiersInclus.length - fichiersDecrits} fichier(s) et ${routesRetenues.length - routesDecrites} route(s) qui n’ont pas encore de description.`);
 
-if (errors.length) { console.log(report.join('\n')); console.log('\nFix the errors above and run build again.'); process.exit(1); }
-if (args.check) { console.log(report.join('\n')); process.exit(0); }
+if (erreurs.length) { console.log(rapport.join('\n')); console.log('\nCorrige les erreurs ci-dessus et relance build.'); process.exit(1); }
+if (params.check) { console.log(rapport.join('\n')); process.exit(0); }
 
-// ---------- write graph.json + index.html ----------
-const graph = {
+// ---------- écrire graph.json et index.html ----------
+const graphe = {
   schema: 'floorplan/graph@1',
   meta: {
-    generatedAt: new Date().toISOString(), scanAt: scan.generatedAt, rootName: scan.rootName, root: scan.root,
-    audience, agent,
-    ...(scan.ebauche ? { ebauche: { source: scan.ebauche.source, stack: scan.ebauche.stack, assumptions: scan.ebauche.assumptions } } : {}),
-    repos: scan.repos.map(({ path: p, name, branch, head, remote }) => ({ path: p, name, branch, head, remote })),
-    counts: { files: included.length, loc: included.reduce((s, f) => s + f.loc, 0), unassigned: unassigned.length },
+    generatedAt: new Date().toISOString(), scanAt: analyse.generatedAt, rootName: analyse.rootName, root: analyse.root,
+    audience: publicCible, agent,
+    ...(analyse.ebauche ? { ebauche: { source: analyse.ebauche.source, stack: analyse.ebauche.stack, assumptions: analyse.ebauche.assumptions } } : {}),
+    repos: analyse.repos.map(({ path: p, name: nom, branch: branche, head: tete, remote: distant }) => ({ path: p, name: nom, branch: branche, head: tete, remote: distant })),
+    counts: { files: fichiersInclus.length, loc: fichiersInclus.reduce((s, f) => s + f.loc, 0), unassigned: nonAffectes.length },
   },
-  projet: arch.projet,
+  projet: archi.projet,
   nodes: [
-    ...nodes.map((n) => ({
+    ...noeuds.map((n) => ({
       id: n.id, parent: n.parent || null, label: n.label, kind: n.kind, summary: n.summary || '', details: n.details || '',
       tags: n.tags || [], paths: n.paths || [], packages: n.packages || [], hosts: n.hosts || [],
-      stats: { ...stats.get(n.id), repos: [...stats.get(n.id).repos] },
+      stats: { ...statistiques.get(n.id), repos: [...statistiques.get(n.id).repos] },
     })),
-    ...(unassigned.length ? [{ id: 'unassigned', parent: null, label: 'Unassigned', kind: 'misc', summary: 'Files no node claims. Add globs in architecture.json to place them.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { ...stats.get('unassigned'), repos: [...stats.get('unassigned').repos] } }] : []),
+    ...(nonAffectes.length ? [{ id: 'unassigned', parent: null, label: 'Non affectés', kind: 'misc', summary: 'Fichiers qu’aucune partie ne revendique. Ajoute des motifs dans architecture.json pour les placer.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { ...statistiques.get('unassigned'), repos: [...statistiques.get('unassigned').repos] } }] : []),
   ],
-  files: included.map((f) => {
-    const d = fileDesc.get(f.path);
+  files: fichiersInclus.map((f) => {
+    const d = descFichiers.get(f.path);
     return {
-      p: f.path, n: owner.get(f.path), r: f.repo, l: f.lang || f.category, loc: f.loc,
+      p: f.path, n: proprietaire.get(f.path), r: f.repo, l: f.lang || f.category, loc: f.loc,
       name: d?.name || f.name || nomFichierParDefaut(f.path), d: d?.d || f.desc || f.doc || '', ...(d?.d || f.desc ? {} : { auto: true }),
       ...(f.doc ? { doc: f.doc } : {}),
       ...(f.tooLarge ? { tooLarge: true } : {}),
@@ -403,85 +403,85 @@ const graph = {
       ...(notes.has(f.path) ? notes.get(f.path) : {}),
     };
   }),
-  routes: routesIn.map((r) => {
-    const d = routeDesc.get(cleRoute(r));
+  routes: routesRetenues.map((r) => {
+    const d = descRoutes.get(cleRoute(r));
     return { f: r.file, m: r.method, p: r.path, l: r.line, h: r.handler || null, name: d?.name || r.name || nomRouteParDefaut(r), d: d?.d || r.desc || r.doc || '', ...(d?.d || r.desc ? {} : { auto: true }), ...(d?.review ? { review: d.review } : {}), ...(r.doc ? { doc: r.doc } : {}), ...(r.access ? { access: r.access } : {}), ...(r.who ? { who: r.who } : {}), ...(r.publicBecause ? { publicBecause: r.publicBecause } : {}) };
   }),
-  links: [...links.values()],
-  parcours: outFlows,
-  visite: outTour,
-  ...(outRecent?.items.length ? { recent: outRecent } : {}),
+  links: [...liens.values()],
+  parcours: parcoursSortie,
+  visite: visiteSortie,
+  ...(recentSortie?.items.length ? { recent: recentSortie } : {}),
 };
-// extension hooks, computed from the finished graph plus the raw scan
-// a blueprint has no code to check, so its Health is a design review of the plan (computed after screens)
-if (!scan.ebauche) try { graph.sante = construireSante({ graph, scan, arch, root }); } catch (e) { warn(`health check failed: ${e.message}`); graph.sante = { problemes: [] }; }
-try { graph.ecrans = construireEcrans({ graph, scan, arch, root }); } catch (e) { warn(`screen detection failed: ${e.message}`); graph.ecrans = []; }
-if (scan.ebauche) try { graph.sante = construireSantePlan({ graph, scan }); } catch (e) { warn(`design review failed: ${e.message}`); graph.sante = { problemes: [] }; }
-// issues people marked "not a problem" on the map (saved by serve.mjs) stay listed, set apart, and leave the counts
-const dismissedFile = path.join(outDir, 'health-dismissed.json');
-if (graph.sante?.problemes && fs.existsSync(dismissedFile)) {
-  try { graph.sante = avecRejets(graph.sante, JSON.parse(fs.readFileSync(dismissedFile, 'utf8')).dismissed); } catch (e) { warn(`health-dismissed.json is not valid JSON: ${e.message}`); }
+// points d’extension, calculés à partir du graphe terminé et de l’analyse brute
+// un plan n’a pas de code à contrôler : sa Santé est une revue du plan (calculée après les écrans)
+if (!analyse.ebauche) try { graphe.sante = construireSante({ graph: graphe, scan: analyse, arch: archi, root: racine }); } catch (e) { signalerAvertissement(`le contrôle de santé a échoué : ${e.message}`); graphe.sante = { problemes: [] }; }
+try { graphe.ecrans = construireEcrans({ graph: graphe, scan: analyse, arch: archi, root: racine }); } catch (e) { signalerAvertissement(`la détection des écrans a échoué : ${e.message}`); graphe.ecrans = []; }
+if (analyse.ebauche) try { graphe.sante = construireSantePlan({ graph: graphe, scan: analyse }); } catch (e) { signalerAvertissement(`la revue du plan a échoué : ${e.message}`); graphe.sante = { problemes: [] }; }
+// les problèmes marqués « Pas un problème » sur la carte (enregistrés par serve.mjs) restent listés, à part, et sortent des totaux
+const fichierRejets = path.join(dossierSortie, 'health-dismissed.json');
+if (graphe.sante?.problemes && fs.existsSync(fichierRejets)) {
+  try { graphe.sante = avecRejets(graphe.sante, JSON.parse(fs.readFileSync(fichierRejets, 'utf8')).dismissed); } catch (e) { signalerAvertissement(`health-dismissed.json n’est pas un JSON valide : ${e.message}`); }
 }
-fs.mkdirSync(outDir, { recursive: true });
-const trackedWarning = garderHorsGit(outDir);
-fs.writeFileSync(path.join(outDir, 'graph.json'), JSON.stringify(graph, null, 0));
+fs.mkdirSync(dossierSortie, { recursive: true });
+const avertissementSuivi = garderHorsGit(dossierSortie);
+fs.writeFileSync(path.join(dossierSortie, 'graph.json'), JSON.stringify(graphe, null, 0));
 
-const template = fs.readFileSync(path.join(SKILL_DIR, 'assets', 'viewer.html'), 'utf8');
-// The layout engine (elkjs 0.9.3) and fonts (Inter, JetBrains Mono) are bundled in assets/vendor/ and
-// inlined, so the map makes no outside requests and works offline.
-const vendor = path.join(SKILL_DIR, 'assets', 'vendor');
-const elkTag = `<script>${fs.readFileSync(path.join(vendor, 'elk.bundled.js'), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`;
-const FONT_RANGES = {
+const gabarit = fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'viewer.html'), 'utf8');
+// Le moteur de mise en page (elkjs 0.9.3) et les polices (Inter, JetBrains Mono) sont fournis dans assets/vendor/ et
+// intégrés à la page : la carte ne fait aucun appel extérieur et marche hors ligne.
+const dossierTiers = path.join(DOSSIER_SKILL, 'assets', 'vendor');
+const baliseElk = `<script>${fs.readFileSync(path.join(dossierTiers, 'elk.bundled.js'), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`;
+const PLAGES_POLICES = {
   latin: 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
   'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF',
 };
-const fontCss = [['Inter', 'inter'], ['JetBrains Mono', 'jetbrains-mono']].flatMap(([family, file]) => Object.entries(FONT_RANGES).map(([subset, range]) =>
-  `@font-face{font-family:"${family}";font-style:normal;font-display:swap;font-weight:100 900;unicode-range:${range};src:url(data:font/woff2;base64,${fs.readFileSync(path.join(vendor, 'fonts', `${file}-${subset}-wght-normal.woff2`)).toString('base64')}) format("woff2")}`)).join('\n');
-const graphQuery = fs.readFileSync(path.join(SKILL_DIR, 'assets', 'graph-query.js'), 'utf8');
-const page = (g) => template
-  .replace('/*__GRAPH_QUERY__*/', () => graphQuery.replace(/<\/script/gi, '<\\/script'))
-  .replace('<!--__ELK_SCRIPT__-->', () => elkTag)
-  .replace('/*__FONTS__*/', () => fontCss)
+const cssPolices = [['Inter', 'inter'], ['JetBrains Mono', 'jetbrains-mono']].flatMap(([famille, fichier]) => Object.entries(PLAGES_POLICES).map(([sousEnsemble, plage]) =>
+  `@font-face{font-family:"${famille}";font-style:normal;font-display:swap;font-weight:100 900;unicode-range:${plage};src:url(data:font/woff2;base64,${fs.readFileSync(path.join(dossierTiers, 'fonts', `${fichier}-${sousEnsemble}-wght-normal.woff2`)).toString('base64')}) format("woff2")}`)).join('\n');
+const codeRequetes = fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'graph-query.js'), 'utf8');
+const page = (g) => gabarit
+  .replace('/*__GRAPH_QUERY__*/', () => codeRequetes.replace(/<\/script/gi, '<\\/script'))
+  .replace('<!--__ELK_SCRIPT__-->', () => baliseElk)
+  .replace('/*__FONTS__*/', () => cssPolices)
   .replace('/*__FLOORPLAN_DATA__*/null', () => JSON.stringify(g).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'))
-  .replace(/__FLOORPLAN_TITLE__/g, () => escapeHtml(`${arch.projet.name} map`))
-  .replace(/__FLOORPLAN_LOGO__/g, () => dataUri('logo.png'))
-  .replace(/__FLOORPLAN_FAVICON__/g, () => dataUri('favicon.png'))
-  .replace('<!--__UI_EXTENSIONS__-->', () => uiScripts);
-const uiDir = path.join(SKILL_DIR, 'assets', 'ui');
-const uiScripts = fs.existsSync(uiDir) ? fs.readdirSync(uiDir).filter((n) => n.endsWith('.js')).sort().map((n) => `<script>/* ui/${n} */\n${fs.readFileSync(path.join(uiDir, n), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`).join('\n') : '';
-const html = page(graph);
-fs.writeFileSync(path.join(outDir, 'index.html'), html);
-// --artifact: a copy to publish to the Claude app, without this machine's absolute path (editor links)
-// (and without the reasons on dismissed health issues, which are notes to self)
-const sharedHealth = graph.sante?.dismissed ? { ...graph.sante, dismissed: graph.sante.dismissed.map(({ reason, ...d }) => d) } : graph.sante;
-if (args.artifact) fs.writeFileSync(path.join(outDir, 'artifact.html'), page({ ...graph, ...(sharedHealth ? { sante: sharedHealth } : {}), meta: { ...graph.meta, root: null, agent: 'claude' } }));
-// Self-contained helpers next to the map: ask questions through the Claude Code CLI or Codex (serve.mjs)
-// and the graph lookups it hands to them (query.mjs). They need only Node, not this skill.
-fs.writeFileSync(path.join(outDir, 'query.mjs'), `${graphQuery}
+  .replace(/__FLOORPLAN_TITLE__/g, () => echapperHtml(`Carte de ${archi.projet.name}`))
+  .replace(/__FLOORPLAN_LOGO__/g, () => uriDonnees('logo.png'))
+  .replace(/__FLOORPLAN_FAVICON__/g, () => uriDonnees('favicon.png'))
+  .replace('<!--__UI_EXTENSIONS__-->', () => scriptsUi);
+const dossierUi = path.join(DOSSIER_SKILL, 'assets', 'ui');
+const scriptsUi = fs.existsSync(dossierUi) ? fs.readdirSync(dossierUi).filter((n) => n.endsWith('.js')).sort().map((n) => `<script>/* ui/${n} */\n${fs.readFileSync(path.join(dossierUi, n), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`).join('\n') : '';
+const html = page(graphe);
+fs.writeFileSync(path.join(dossierSortie, 'index.html'), html);
+// --artifact : une copie à publier dans l’application Claude, sans le chemin absolu de cet ordinateur (liens vers l’éditeur)
+// (et sans les raisons des problèmes de santé rejetés, qui sont des notes personnelles)
+const santePartagee = graphe.sante?.dismissed ? { ...graphe.sante, dismissed: graphe.sante.dismissed.map(({ reason: raison, ...d }) => d) } : graphe.sante;
+if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null, agent: 'claude' } }));
+// Outils autonomes à côté de la carte : poser des questions via la CLI Claude Code ou Codex (serve.mjs)
+// et les recherches dans le graphe qu’il leur confie (query.mjs). Ils n’ont besoin que de Node, pas de ce skill.
+fs.writeFileSync(path.join(dossierSortie, 'query.mjs'), `${codeRequetes}
 // ---- cli ----
-${fs.readFileSync(path.join(SKILL_DIR, 'assets', 'query-cli.mjs'), 'utf8')}`);
-fs.copyFileSync(path.join(SKILL_DIR, 'assets', 'serve.mjs'), path.join(outDir, 'serve.mjs'));
-// a blueprint can be changed from the map: serve.mjs redraws it with this skill's plan.mjs and build.mjs
-if (scan.ebauche) { fs.mkdirSync(path.join(outDir, '.cache'), { recursive: true }); fs.writeFileSync(path.join(outDir, '.cache', 'skill.json'), JSON.stringify({ dir: SKILL_DIR })); }
-// the logo and tab icon are inlined so the map stays one self-contained file
-function dataUri(name) { return 'data:image/png;base64,' + fs.readFileSync(path.join(SKILL_DIR, 'assets', name)).toString('base64'); }
-function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+${fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'query-cli.mjs'), 'utf8')}`);
+fs.copyFileSync(path.join(DOSSIER_SKILL, 'assets', 'serve.mjs'), path.join(dossierSortie, 'serve.mjs'));
+// un plan peut être modifié depuis la carte : serve.mjs le redessine avec plan.mjs et build.mjs de ce skill
+if (analyse.ebauche) { fs.mkdirSync(path.join(dossierSortie, '.cache'), { recursive: true }); fs.writeFileSync(path.join(dossierSortie, '.cache', 'skill.json'), JSON.stringify({ dir: DOSSIER_SKILL })); }
+// le logo et l’icône d’onglet sont intégrés pour que la carte reste un seul fichier autonome
+function uriDonnees(nom) { return 'data:image/png;base64,' + fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', nom)).toString('base64'); }
+function echapperHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
-const hs = graph.sante?.summary;
-if (hs && (hs.high || hs.medium || hs.low)) {
-  report.push(`${scan.ebauche ? 'DESIGN REVIEW' : 'HEALTH'}  ${hs.high} important · ${hs.medium} worth fixing · ${hs.low} minor`);
-  for (const i of graph.sante.problemes.filter((x) => x.severity !== 'low' && !rejetPour(x, graph.sante.dismissed)).slice(0, 8)) report.push(`  [${i.severity}] ${i.title}`);
+const resumeSante = graphe.sante?.summary;
+if (resumeSante && (resumeSante.high || resumeSante.medium || resumeSante.low)) {
+  rapport.push(`${analyse.ebauche ? 'REVUE DU PLAN' : 'SANTÉ'}  ${resumeSante.high} important(s) · ${resumeSante.medium} à corriger · ${resumeSante.low} mineur(s)`);
+  for (const i of graphe.sante.problemes.filter((x) => x.severity !== 'low' && !rejetPour(x, graphe.sante.dismissed)).slice(0, 8)) rapport.push(`  [${i.severity}] ${i.title}`);
 }
-if (graph.ecrans?.length) report.push(`SCREENS  ${graph.ecrans.length} detected`);
-report.push(graph.recent
-  ? `RECENT WORK  ${graph.recent.items.length} card(s) highlighted across ${graph.recent.tasks.length} task(s)`
-  : `RECENT WORK  none highlighted${fs.existsSync(recentFile) ? '' : ' (no recent-work.json)'}`);
-// point future Claude Code sessions in this project at the map. Codex has no personal, uncommitted
-// equivalent (AGENTS.md is shared with the team), so a map built by Codex leaves the project's notes alone.
-if (agent === 'codex') report.push('AGENT  Codex: questions on the map run through Codex');
-if (scan.ebauche) report.push('BLUEPRINT  planned, not built yet: drawn from floorplan/plan.json');
-report.push(trackedWarning ? `GIT  ! ${trackedWarning}` : 'GIT  floorplan/ is kept out of git (it ignores itself)');
-report.push('');
-report.push(`✓ wrote ${path.relative(root, path.join(outDir, 'index.html'))} (${formaterNombre(Math.round(html.length / 1024))} KB) and graph.json`);
-if (pct > 10) report.push(`  Unassigned is ${pct.toFixed(0)}%: add nodes or globs for the directories above (or "ignore" them) and rebuild.`);
-console.log(report.join('\n'));
+if (graphe.ecrans?.length) rapport.push(`ÉCRANS  ${graphe.ecrans.length} détecté(s)`);
+rapport.push(graphe.recent
+  ? `TRAVAIL RÉCENT  ${graphe.recent.items.length} bloc(s) mis en avant sur ${graphe.recent.tasks.length} tâche(s)`
+  : `TRAVAIL RÉCENT  rien de mis en avant${fs.existsSync(fichierRecent) ? '' : ' (pas de recent-work.json)'}`);
+// orienter les futures sessions Claude Code de ce projet vers la carte. Codex n’a pas d’équivalent personnel
+// hors Git (AGENTS.md est partagé avec l’équipe) : une carte construite par Codex laisse donc les notes du projet tranquilles.
+if (agent === 'codex') rapport.push('AGENT  Codex : les questions posées sur la carte passent par Codex');
+if (analyse.ebauche) rapport.push('PLAN  prévu, pas encore construit : dessiné d’après floorplan/plan.json');
+rapport.push(avertissementSuivi ? `GIT  ! ${avertissementSuivi}` : 'GIT  floorplan/ reste hors de git (le dossier s’ignore lui-même)');
+rapport.push('');
+rapport.push(`✓ écrit ${path.relative(racine, path.join(dossierSortie, 'index.html'))} (${formaterNombre(Math.round(html.length / 1024))} Ko) et graph.json`);
+if (pourcent > 10) rapport.push(`  Non affectés : ${pourcent.toFixed(0)} %. Ajoute des parties ou des motifs pour les dossiers ci-dessus (ou mets-les dans "ignore") puis relance build.`);
+console.log(rapport.join('\n'));

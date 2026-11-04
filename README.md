@@ -2,349 +2,345 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png">
-  <img src="docs/images/logo-light.png" alt="Floorplan logo" height="88">
+  <img src="docs/images/logo-light.png" alt="Logo de Floorplan" height="88">
 </picture>
 
-# Floorplan
+# Floorplan (traduction française)
 
-**See how your app actually fits together.**
+**Vois comment ton appli tient vraiment ensemble.**
 
-Claude or Codex reads your codebase and draws an interactive map of it. Every part, file and web request gets a plain-English name, and every connection between them is shown.
+Claude ou Codex lit ton code et en dessine une carte interactive. Chaque partie, chaque fichier et chaque appel au serveur reçoit un nom en langage simple, et chaque lien entre eux est montré.
 
-[![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757?style=flat-square)](https://code.claude.com/docs/en/overview)
-[![Codex plugin](https://img.shields.io/badge/Codex-plugin-111?style=flat-square)](docs/codex.md)
-[![Tests](https://img.shields.io/github/actions/workflow/status/haydenschmitty/floorplan/test.yml?branch=main&style=flat-square&label=tests)](https://github.com/haydenschmitty/floorplan/actions/workflows/test.yml)
-[![Version](https://img.shields.io/badge/version-0.6.3-111?style=flat-square)](CHANGELOG.md)
-[![License: MIT](https://img.shields.io/badge/license-MIT-111?style=flat-square)](LICENSE)
-[![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-111?style=flat-square)](https://nodejs.org)
-[![Zero dependencies](https://img.shields.io/badge/dependencies-0-111?style=flat-square)](#how-it-works)
+Licence MIT · Node 18 ou plus · aucune dépendance
 
-<a href="https://trendshift.io/repositories/322616"><img src="https://trendshift.io/api/badge/trendshift/repositories/322616/daily?language=JavaScript" alt="Floorplan on Trendshift" width="250" height="55"></a>
-
-**[Try the live demo](https://haydenschmitty.github.io/floorplan-demo/)** · [Watch the video](https://youtu.be/NTUUzC7L_NQ) · [Install](#install) · [Quick start](#quick-start) · [Compared](#floorplan-archify-or-understand-anything) · [Features](#features) · [See it in action](#see-it-in-action) · [How it works](#how-it-works) · [Docs](docs/README.md) · [FAQ](#faq)
+[Installation](#installation) · [Démarrage rapide](#démarrage-rapide) · [Comparaison](#comparaison-avec-archify-et-understand-anything) · [Fonctions](#fonctions) · [Voir en images](#voir-en-images) · [Comment ça marche](#comment-ça-marche) · [Documentation](docs/README.md) · [FAQ](#faq)
 
 </div>
 
-<p align="center">
-  <a href="https://youtu.be/NTUUzC7L_NQ"><img src="docs/images/video.jpg" alt="Watch the walkthrough on YouTube: installing Floorplan, then a tour of the map of Brewline, a coffee subscription app" width="100%"></a>
-</p>
-<p align="center"><sub>▶ <a href="https://youtu.be/NTUUzC7L_NQ">Watch the walkthrough</a>: installing Floorplan, then a tour of Brewline, a demo coffee-subscription app built across four repos.</sub></p>
-<p align="center"><b><a href="https://haydenschmitty.github.io/floorplan-demo/">Try the live demo →</a></b> Explore the Brewline map in your browser, no install needed.</p>
+> **Traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/getting-started.md#reprendre-une-correction-de-lauteur)).
+>
+> Floorplan a été créé par **[Hayden Smith](https://github.com/haydenschmitty)**. Dépôt d'origine : <https://github.com/haydenschmitty/floorplan>. Le travail est à lui, cette copie ne fait que le traduire et en retirer quelques fonctions (voir le [journal des changements](CHANGELOG.md#version-française)). Licence MIT conservée, voir [LICENSE](LICENSE).
+>
+> **Les images** de ce dépôt (`docs/images/`) sont des captures d'écran de la version d'origine : leur interface est en anglais. Les noms des boutons dans le texte sont ceux de cette version française.
 
-## Why Floorplan?
+## Pourquoi Floorplan ?
 
-You built an app, probably with a lot of help from AI, and it works. But ask "what happens when someone checks out?" or "what breaks if I change this?" and the honest answer is *no idea*.
+Tu as construit une appli, probablement avec beaucoup d'aide de l'IA, et elle marche. Mais si on te demande « que se passe-t-il quand quelqu'un passe commande ? » ou « qu'est-ce qui casse si je change ça ? », la réponse honnête est *aucune idée*.
 
-Floorplan gives you the diagram nobody drew. Ask Claude Code or Codex for a floorplan and a few minutes later you have a map you can explore, ask questions on, and keep up to date as you work.
+Floorplan te donne le schéma que personne n'a dessiné. Demande une carte à Claude Code ou à Codex : quelques minutes plus tard tu as une carte que tu peux explorer, interroger, et garder à jour au fil de ton travail.
 
-- **For builders:** understand the app you made, in your own words, without reading the code.
-- **For teams:** onboard someone in minutes, from the big picture down to the exact file.
-- **For working with AI:** after every change Claude or Codex makes, see exactly which parts it touched and why.
+- **Pour toi qui construis :** comprendre l'appli que tu as faite, avec tes mots, sans lire le code.
+- **Pour une équipe :** accueillir quelqu'un en quelques minutes, de la vue d'ensemble jusqu'au fichier précis.
+- **Pour travailler avec une IA :** après chaque modification de Claude ou de Codex, voir exactement quelles parties il a touchées et pourquoi.
 
-## Floorplan, Archify or Understand Anything?
+## Comparaison avec Archify et Understand Anything
 
-All three turn code into something you can see, and all three are worth knowing. They answer different questions:
+Les trois outils transforment du code en quelque chose qu'on peut voir, et tous les trois valent d'être connus. Ils répondent à des questions différentes (comparaison faite par l'auteur d'origine, gardée telle quelle) :
 
 | | **Floorplan** | **[Archify](https://github.com/tt-a1i/archify)** | **[Understand Anything](https://github.com/Egonex-AI/Understand-Anything)** |
 |---|---|---|---|
-| **The question it answers** | How does the app I built actually work, and what should I worry about? | How do I show this clearly? | How does this big codebase work, down to the functions? |
-| **Made for** | People who build with AI and don't read the code | Anyone explaining a system, a process or an idea | Developers getting to know a large codebase |
-| **What you get** | A zoomable map of your whole app: parts, files and endpoints, the screens, the requests between frontend and backend (even across repos), and outside services | A polished diagram in one of 10 types (architecture, sequence, ERD…) or a one-page explainer, from a repo or just a description | A knowledge graph of every file, function and class, with layers, a business-domain view and guided tours |
-| **Only here** | **Health check** (keys in code, open Supabase tables and Firebase rules, fakeable Stripe webhooks, endpoints anyone can use), **Recent work** (what your AI just changed, and why), blueprints from a PRD | 10 diagram types, image and video exports, diagrams of things that aren't code | Diff impact, a dashboard that adapts to your role, knowledge-base graphs |
-| **Runs in** | Claude Code, Codex | Claude Code, Codex, Cursor, OpenCode and more | Claude Code, Codex, Cursor, Copilot, Gemini CLI and more |
+| **La question à laquelle il répond** | Comment marche vraiment l'appli que j'ai construite, et de quoi dois-je me méfier ? | Comment montrer ça clairement ? | Comment marche ce gros projet, jusqu'aux fonctions ? |
+| **Pour qui** | Les personnes qui construisent avec l'IA et ne lisent pas le code | Toute personne qui explique un système, un processus ou une idée | Les développeurs qui découvrent un gros projet |
+| **Ce que tu obtiens** | Une carte zoomable de toute ton appli : parties, fichiers et adresses du serveur, les écrans, les appels entre l'interface et le serveur (même entre dépôts), et les services extérieurs | Un schéma soigné parmi 10 types (architecture, séquence, base de données…) ou une page d'explication, à partir d'un dépôt ou d'une simple description | Un graphe de connaissances de chaque fichier, fonction et classe, avec des couches, une vue par domaine métier et des visites guidées |
+| **Seulement ici** | **Contrôle de santé** (clés dans le code, tables Supabase ouvertes et règles Firebase ouvertes, webhooks Stripe falsifiables, adresses du serveur que tout le monde peut utiliser), **Travail récent** (ce que ton IA vient de changer, et pourquoi), plans à partir d'un cahier des charges | 10 types de schémas, exports en image et en vidéo, schémas de choses qui ne sont pas du code | Impact d'une modification, un tableau de bord qui s'adapte à ton rôle, graphes de bases de connaissances |
+| **Fonctionne dans** | Claude Code, Codex | Claude Code, Codex, Cursor, OpenCode et d'autres | Claude Code, Codex, Cursor, Copilot, Gemini CLI et d'autres |
 
-**Pick Floorplan** to understand and check an app you own. **Pick Archify** to draw a diagram for a doc, a talk or a decision. **Pick Understand Anything** to study a large codebase function by function.
+**Choisis Floorplan** pour comprendre et contrôler une appli qui est à toi. **Choisis Archify** pour dessiner un schéma pour un document, un exposé ou une décision. **Choisis Understand Anything** pour étudier un gros projet fonction par fonction.
 
-They also work together: map your app with Floorplan, then use Archify to draw one flow for a presentation.
+Ils marchent aussi ensemble : cartographie ton appli avec Floorplan, puis dessine un parcours avec Archify pour une présentation.
 
-## Features
+## Fonctions
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-**🗺️ A map at every zoom**<br>
-Start with the whole app, then double-click into a part, a group of files, a file, and its endpoints. Each view shows what it's used by and what it uses.
+**🗺️ Une carte à chaque niveau de zoom**<br>
+Pars de l'appli entière, puis double-clique pour entrer dans une partie, un groupe de fichiers, un fichier, et ses adresses du serveur. Chaque vue montre ce qui l'utilise et ce qu'elle utilise.
 
 </td>
 <td width="50%" valign="top">
 
-**💬 Plain English everywhere**<br>
-"Takes card payments at checkout", not "Stripe API wrapper". Technical terms are explained on hover, and one switch shows the developer view.
+**💬 Du langage simple partout**<br>
+« Encaisse les paiements par carte à la commande », pas « enveloppe de l'API Stripe ». Les termes techniques s'expliquent au survol, et un interrupteur affiche la vue pour développeurs.
 
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-**🔌 Real connections, across repos**<br>
-It follows imports, and matches each web request in your frontend to the server endpoint that answers it, even across separate repos.
+**🔌 De vrais liens, même entre dépôts**<br>
+Elle suit les imports, et relie chaque appel au serveur de ton interface à l'adresse du serveur qui y répond, même quand ils sont dans des dépôts séparés.
 
 </td>
 <td valign="top">
 
-**🖥️ Start from a screen**<br>
-Pick a page you know and see everything behind it: its parts, the requests it makes, the server code, the data, and outside services.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-**🧭 Ask the map**<br>
-"How does a refund reach the customer's card?" comes back as an answer plus a mini-map of just the pieces involved, with a step-by-step walkthrough.
-
-</td>
-<td valign="top">
-
-**🩺 Health check**<br>
-Catches the classic mistakes in AI-built apps: keys in the code or sent to the browser, Supabase tables anyone can read, open Firebase rules, Stripe webhooks anyone could fake, and endpoints with no sign-in. Each comes with a ready-to-paste fix. A check, not an audit.
+**🖥️ Partir d'un écran**<br>
+Choisis une page que tu connais et vois tout ce qu'il y a derrière : ses parties, les appels qu'elle fait, le code du serveur, les données et les services extérieurs.
 
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-**🟢 Recent work**<br>
-The cards your AI just changed light up green, each with a note on how the change serves what you asked for.
+**🧭 Poser une question à la carte**<br>
+« Comment un remboursement arrive-t-il sur la carte bancaire du client ? » donne une réponse et une mini-carte des seuls éléments concernés, avec une explication pas à pas.
 
 </td>
 <td valign="top">
 
-**⚡ Stays current, stays yours**<br>
-Updates re-read only what changed, and an open map reloads itself. Everything runs on your machine, and nothing is committed to git.
+**🩺 Contrôle de santé**<br>
+Repère les erreurs classiques des applis faites avec l'IA : clés dans le code ou envoyées au navigateur, tables Supabase lisibles par tout le monde, règles Firebase ouvertes, webhooks Stripe que n'importe qui pourrait falsifier, adresses du serveur sans connexion. Chaque problème vient avec une demande de correction prête à coller. Un contrôle, pas un audit, et il se trompe parfois.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**🟢 Travail récent**<br>
+Les blocs que ton IA vient de changer s'allument en vert, chacun avec une note qui dit en quoi la modification répond à ce que tu avais demandé.
+
+</td>
+<td valign="top">
+
+**⚡ À jour, et à toi**<br>
+Une mise à jour ne relit que ce qui a changé, et une carte déjà ouverte se recharge toute seule. Tout tourne sur ta machine, et rien n'est enregistré dans Git.
 
 </td>
 </tr>
 </table>
 
-Plus guided **flows** you can request in plain words, a one-minute **Start here** tour, **Export** to send a copy to anyone as one HTML file, a layout for **phones and tablets** with drag and pinch, search, keyboard shortcuts, and right-click actions on every card.
+Il y a aussi des **parcours** guidés que tu peux demander avec tes mots, une **visite guidée** d'une minute (**Commencer ici**), **Exporter** pour envoyer une copie à n'importe qui en un seul fichier HTML, une disposition pour **téléphones et tablettes** avec glisser et pincer, la recherche, des raccourcis clavier et des actions au clic droit sur chaque bloc.
 
-### Also: blueprints, for apps you haven't built yet
+### Les plans, pour une appli pas encore construite
 
-Floorplan is made for mapping code you already have. It can also start from a PRD, a spec or a description of something you want to build, and draw a **blueprint**: the same kind of map, showing every part, file, endpoint and screen you'd need and how they'd fit together. Cards are dashed to show it's a plan. Instead of a Health check you get a review of what the plan still leaves open, each part has a ready request to build it, and you can reshape the plan from the map ("also plan out refunds"). Once the code exists, the blueprint becomes a map of the real thing. See [Plan something you haven't built yet](docs/getting-started.md#plan-something-you-havent-built-yet).
+Floorplan est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/getting-started.md#planifier-une-appli-pas-encore-construite).
 
-## See it in action
+## Voir en images
 
-Want to click around yourself? Open the [live demo](https://haydenschmitty.github.io/floorplan-demo/): the real Brewline map beside a scripted conversation, in Claude Code or Codex.
+Ces captures viennent de la version d'origine : leur interface est en anglais. Elles montrent la même chose que cette version française.
 
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/images/ask.png" alt="An answer board: the gift subscription traced from the gift page to the friend's inbox, with numbered cards and a written walkthrough">
-<p><b>Ask the map.</b> A real answer, from the Claude Code CLI in 31 seconds. It traced the gift from form to inbox across two repos, and spotted two bugs along the way.</p>
+<img src="docs/images/ask.png" alt="Un tableau de réponse : l'abonnement cadeau suivi de la page cadeau jusqu'à la boîte mail de l'ami, avec des blocs numérotés et une explication écrite">
+<p><b>Poser une question à la carte.</b> Une vraie réponse, donnée par le Claude Code en ligne de commande en 31 secondes. Elle a suivi le cadeau du formulaire jusqu'à la boîte mail à travers deux dépôts, et a repéré deux bogues en route.</p>
 </td>
 <td width="50%" valign="top">
-<img src="docs/images/screens.png" alt="Everything behind the Gift page: its form, the requests it makes, the server code, the database, Stripe and SendGrid">
-<p><b>Start from a screen.</b> Pick any page and see everything behind it, from the button down to the database and outside services.</p>
+<img src="docs/images/screens.png" alt="Tout ce qu'il y a derrière la page Cadeau : son formulaire, les appels qu'elle fait, le code du serveur, la base de données, Stripe et SendGrid">
+<p><b>Partir d'un écran.</b> Choisis une page et vois tout ce qu'il y a derrière, du bouton jusqu'à la base de données et aux services extérieurs.</p>
 </td>
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/images/recent.png" alt="The Recent work board for a gift subscriptions feature: what was asked, what was done, and a note on every changed card">
-<p><b>Recent work.</b> What you asked for, what changed, and why each change was needed, on one board.</p>
+<img src="docs/images/recent.png" alt="Le tableau Travail récent d'une fonction d'abonnements cadeaux : ce qui était demandé, ce qui a été fait, et une note sur chaque bloc modifié">
+<p><b>Travail récent.</b> Ce que tu avais demandé, ce qui a changé et pourquoi chaque changement était nécessaire, sur un seul tableau.</p>
 </td>
 <td valign="top">
-<img src="docs/images/health.png" alt="The Health panel listing a secret key written into the code and an endpoint anyone can use, each with Show on map and a Fix button">
-<p><b>Health check.</b> A password left in the code and an endpoint anyone can call, each with a one-click fix prompt.</p>
+<img src="docs/images/health.png" alt="Le panneau Santé qui liste une clé secrète écrite dans le code et une adresse du serveur que tout le monde peut utiliser, chacune avec un bouton pour la montrer sur la carte et un bouton de correction">
+<p><b>Contrôle de santé.</b> Un mot de passe oublié dans le code et une adresse du serveur que tout le monde peut appeler, chacun avec une demande de correction en un clic.</p>
 </td>
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/images/inside.png" alt="Inside the Business rules part of the server: its files in the middle, what uses them on the left, and outside services on the right">
-<p><b>Zoom in.</b> Inside any part: what's in it, what uses it, and what it relies on. Green tags mark what just changed.</p>
+<img src="docs/images/inside.png" alt="L'intérieur de la partie Règles métier du serveur : ses fichiers au milieu, ce qui les utilise à gauche et les services extérieurs à droite">
+<p><b>Zoomer.</b> Dans n'importe quelle partie : ce qu'elle contient, ce qui l'utilise et ce dont elle dépend. Les étiquettes vertes marquent ce qui vient de changer.</p>
 </td>
 <td valign="top">
-<img src="docs/images/flow.png" alt="A guided flow, step 4 of 6, showing the main server emailing the gift code through SendGrid">
-<p><b>Guided flows.</b> Watch a request travel through the app step by step, or ask for a new one to be traced.</p>
+<img src="docs/images/flow.png" alt="Un parcours guidé, étape 4 sur 6, qui montre le serveur principal en train d'envoyer le code cadeau par mail avec SendGrid">
+<p><b>Parcours guidés.</b> Regarde un appel traverser l'appli étape par étape, ou demande qu'on en suive un nouveau.</p>
 </td>
 </tr>
 </table>
 
-## Install
+## Installation
 
-You need [Node.js 18+](https://nodejs.org) and either Claude Code or Codex. Floorplan runs on the plan you already have, with no API keys.
+Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code ou Codex. Floorplan marche avec l'abonnement que tu as déjà, sans clé d'API.
+
+Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `floorplan-fr`.
 
 ### Claude Code
 
-In the desktop app's Code tab or the CLI:
+Dans l'onglet Code de l'application de bureau ou en ligne de commande, depuis le dossier de cette copie :
 
 ```bash
-claude plugin marketplace add haydenschmitty/floorplan
-claude plugin install floorplan@floorplan
+claude plugin marketplace add /chemin/vers/floorplan-fr
+claude plugin install floorplan-fr@floorplan-fr
 ```
 
-Start a new session and it's ready. Installing the Claude Code CLI is recommended even if you use the desktop app, because it lets the map's Ask bar read your real code. More in [Getting started](docs/getting-started.md).
+(ou, depuis le dépôt Git de cette copie : `claude plugin marketplace add <compte>/floorplan-fr`, si ton Git a accès au dépôt.)
+
+Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/getting-started.md).
 
 ### Codex
 
-Signed in with ChatGPT. No terminal needed:
+Connecté avec ChatGPT. Pas besoin de terminal :
 
-1. In the Codex app, open **Plugins** and choose **Add a marketplace**.
-2. For **Source**, enter `haydenschmitty/floorplan` and click **Add marketplace**.
-3. Find **Floorplan** and click **+** to install it.
+1. Dans l'application Codex, ouvre **Plugins** et choisis **Add a marketplace**.
+2. Pour **Source**, entre le chemin du dossier de cette copie (ou son dépôt Git) et clique sur **Add marketplace**.
+3. Trouve **Floorplan** et clique sur **+** pour l'installer.
 
-Or, from a terminal:
+Ou depuis un terminal :
 
 ```bash
-codex plugin marketplace add haydenschmitty/floorplan
-codex plugin add floorplan@floorplan
+codex plugin marketplace add /chemin/vers/floorplan-fr
+codex plugin add floorplan-fr@floorplan-fr
 ```
 
-Start a new chat and ask for a floorplan, or type `$floorplan`. The map's Ask bar runs on your own Codex sign-in, with no API key. More in [Floorplan in Codex](docs/codex.md).
+Ouvre une nouvelle discussion et demande une carte, ou tape `$floorplan`. La bulle de questions de la carte utilise ta propre connexion à Codex, sans clé d'API. La suite est dans [Floorplan dans Codex](docs/codex.md).
 
-## Quick start
+## Démarrage rapide
 
-1. Open your project in Claude Code or Codex. For a frontend and backend in separate repos, open the folder that holds both.
-2. Ask:
-   > Make me a floorplan of this app.
+1. Ouvre ton projet dans Claude Code ou Codex. Si l'interface et le serveur sont dans des dépôts séparés, ouvre le dossier qui contient les deux.
+2. Demande :
+   > Fais-moi un floorplan de cette appli.
 
-   (In Codex you can also type `$floorplan`.)
-3. Explore. The map opens on its own, starting with a short tour.
+   (Dans Claude Code tu peux aussi taper `/floorplan-fr:floorplan`, et dans Codex `$floorplan`.)
+3. Explore. La carte s'ouvre toute seule, en commençant par une courte visite guidée.
 
-When you've done more work, ask:
+Quand tu as avancé, demande :
 
-> Update the floorplan.
+> Mets à jour le floorplan.
 
-Only what changed is re-read, and what you just worked on lights up under **Recent work**.
+Seul ce qui a changé est relu, et ce sur quoi tu viens de travailler s'allume dans **Travail récent**.
 
-**No code yet?** Floorplan can plan an app from a PRD or spec instead. Share the document and ask:
+**Pas encore de code ?** Floorplan peut planifier une appli à partir d'un cahier des charges ou d'une spécification. Donne le document et demande :
 
-> Here's my PRD. Make me a floorplan of what we'd need to build.
+> Voici mon cahier des charges. Fais-moi un floorplan de ce qu'il faudrait construire.
 
-You get a [blueprint](#also-blueprints-for-apps-you-havent-built-yet) of the planned system, clearly marked as a plan.
+Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du système prévu, clairement marqué comme un plan.
 
-### Things to try
+### À essayer
 
-| Ask Claude Code or Codex | Ask the map |
+| Demande à Claude Code ou à Codex | Demande à la carte |
 |---|---|
-| "Make me a floorplan of this app" | "What happens when someone places an order?" |
-| "Update the floorplan" | "Where do we talk to Stripe?" |
-| "Fix the important issues from the floorplan's Health check" | "If I change the users table, what breaks?" |
-| "Add a flow showing how a new user signs up" | "Which files handle login?" |
-| "Rewrite the floorplan for developers" | "What did we change for refunds?" |
-| "Export the floorplan so I can send it to the team" | |
+| « Fais-moi un floorplan de cette appli » | « Que se passe-t-il quand quelqu'un passe commande ? » |
+| « Mets à jour le floorplan » | « Où parle-t-on à Stripe ? » |
+| « Corrige les problèmes importants du contrôle de santé du floorplan » | « Si je change la table des utilisateurs, qu'est-ce qui casse ? » |
+| « Ajoute un parcours qui montre comment un nouvel utilisateur s'inscrit » | « Quels fichiers gèrent la connexion ? » |
+| « Réécris le floorplan pour des développeurs » | « Qu'avons-nous changé pour les remboursements ? » |
+| « Exporte le floorplan que je l'envoie à l'équipe » | |
 
-## How it works
+## Comment ça marche
 
 ```mermaid
 flowchart LR
-    code["Your codebase<br/>one repo or several"] --> scan["Scan<br/>files, imports, routes, requests"]
-    scan --> agent["Claude or Codex<br/>names the parts, describes every file"]
-    agent --> build["Build<br/>map, health, screens, recent work"]
-    build --> map["floorplan/index.html<br/>opens in your browser"]
-    map -. "update the floorplan" .-> scan
+    code["Ton code<br/>un dépôt ou plusieurs"] --> scan["Analyse<br/>fichiers, imports, routes, appels"]
+    scan --> agent["Claude ou Codex<br/>nomme les parties, décrit chaque fichier"]
+    agent --> build["Construction<br/>carte, santé, écrans, travail récent"]
+    build --> map["floorplan/index.html<br/>s'ouvre dans ton navigateur"]
+    map -. "mets à jour le floorplan" .-> scan
 ```
 
-Scripts do the mechanical work: finding repos, parsing code in a dozen languages, matching web requests to endpoints, laying out the map. They're plain Node with no dependencies. Claude or Codex does the part only a reader can: deciding what the parts of your app *are*, and saying so plainly. Details in [How it works](docs/how-it-works.md).
+Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude ou Codex fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/how-it-works.md).
 
-**Languages:** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, plus Vue, Svelte and Astro files, with lighter support for others.<br>
-**Endpoints:** Express, Fastify, Koa, Hono, Next.js, Firebase Cloud Functions, Flask, FastAPI, Django, Go's net/http, Gin, Echo and chi, Actix, Axum, Spring, and route tables keyed by method and path (`"GET /api/orders": listOrders`) in JavaScript and Python.<br>
-**Screens:** Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack.
+**Langages :** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, plus les fichiers Vue, Svelte et Astro, avec une prise en charge plus légère des autres.<br>
+**Adresses du serveur :** Express, Fastify, Koa, Hono, Next.js, Firebase Cloud Functions, Flask, FastAPI, Django, net/http de Go, Gin, Echo et chi, Actix, Axum, Spring, et les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.<br>
+**Écrans :** Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack.
 
-## What it adds to your project
+## Ce que ça ajoute à ton projet
 
-A `floorplan/` folder holding the map. In Claude Code, if you say yes, it also adds a short section to `CLAUDE.local.md` so future sessions know the map is there. **Neither is committed:** the folder ignores itself in git, and `CLAUDE.local.md` goes in your clone's private ignore list. In Codex, only the `floorplan/` folder is added. Your `.gitignore` and other tracked files are never touched. See [What's in your project](docs/project-files.md).
+Un dossier `floorplan/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/project-files.md).
 
-## Privacy
+## Confidentialité
 
-- The scan, the map and its small local server all run on your computer. The server only accepts connections from your own machine.
-- No dependencies or install scripts, and the map works offline: its layout engine and fonts are built in.
-- Questions on the map go to your own account, through the Claude Code CLI or Codex, which can read your code but not change it.
-- The Health check never stores or shows secret values, only where they are.
-- No analytics or tracking. The map may ask once whether you'd like an email when Floorplan Cloud launches. Nothing is sent unless you sign up, and then only your email and "just me" or "with my team".
+- L'analyse, la carte et son petit serveur local tournent sur ton ordinateur. Le serveur n'accepte que les connexions venant de ta propre machine (`127.0.0.1`).
+- Floorplan lui-même n'envoie rien sur Internet : pas de statistiques, pas de suivi, pas de liste d'attente. La carte marche hors connexion, son moteur de mise en page et ses polices sont intégrés.
+- Pas de dépendances ni de scripts d'installation.
+- **Mais Claude lit ton code pour le décrire, et ce code part chez Anthropic** (ou chez OpenAI avec Codex), sur ton compte, comme n'importe quelle tâche que tu lui donnes.
+- Les questions posées sur la carte passent par la ligne de commande de Claude Code ou par Codex, qui peuvent lire ton code mais pas le modifier. Avec Claude Code, la bulle de questions ne peut pas ouvrir les fichiers de secrets (`.env`, `*.pem`, `*.key`…), mais elle lit le reste de tes fichiers.
+- Le contrôle de santé ne garde aucune partie d'une clé (seulement sa longueur). Il donne des fausses alertes et n'est pas un audit de sécurité.
 
-More in [Privacy and security](docs/privacy-and-security.md). Wondering whether a plugin is safe to install? [Is it safe to install?](docs/is-it-safe.md) lists everything Floorplan does on your computer, how a test checks that on every change, and how to verify your copy.
+Plus de détails dans [Confidentialité et sécurité](docs/privacy-and-security.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/is-it-safe.md) liste tout ce que Floorplan fait sur ton ordinateur et ses limites.
 
 ## Documentation
 
 | | |
 |---|---|
-| [Getting started](docs/getting-started.md) | Install, first map, updating, planning from a PRD, removing |
-| [Floorplan in Codex](docs/codex.md) | Installing and using it in Codex |
-| [Using the map](docs/using-the-map.md) | Every button, view, shortcut and menu |
-| [How it works](docs/how-it-works.md) | The pipeline, connection matching, refreshes |
-| [What's in your project](docs/project-files.md) | Every file Floorplan creates, and how to edit it |
-| [Privacy and security](docs/privacy-and-security.md) | What runs where, and what leaves your machine |
-| [Is it safe to install?](docs/is-it-safe.md) | No hooks, MCP servers, dependencies or downloads; every program it runs; checking your installed copy |
-| [Troubleshooting](docs/troubleshooting.md) | Common problems and fixes |
-| [Developing Floorplan](docs/development.md) | Repo layout, local installs, releases |
+| [Pour commencer](docs/getting-started.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
+| [Floorplan dans Codex](docs/codex.md) | Installer et utiliser Floorplan dans Codex |
+| [Utiliser la carte](docs/using-the-map.md) | Chaque bouton, vue, raccourci et menu |
+| [Comment ça marche](docs/how-it-works.md) | Le déroulé, la mise en relation des appels, les mises à jour |
+| [Ce qu'il y a dans ton projet](docs/project-files.md) | Chaque fichier créé par Floorplan, et comment le modifier |
+| [Confidentialité et sécurité](docs/privacy-and-security.md) | Ce qui tourne où, et ce qui quitte ta machine |
+| [Est-ce sûr à installer ?](docs/is-it-safe.md) | Ce que fait le plugin, les programmes qu'il lance, ses limites honnêtes |
+| [Dépannage](docs/troubleshooting.md) | Les problèmes courants et leurs solutions |
+| [Développer Floorplan](docs/development.md) | Organisation du dépôt, tests, versions marquées |
 
 ## FAQ
 
 <details>
-<summary><b>Is it safe to install?</b></summary>
+<summary><b>Est-ce sûr à installer ?</b></summary>
 
-Floorplan has no hooks, no MCP servers and no dependencies, downloads nothing, and never runs code from the internet. Its only outside request is the opt-in waitlist. A test checks all of that on every change, and every release lists a fingerprint of each file so you can confirm your installed copy is the real thing. Everything is in [Is it safe to install?](docs/is-it-safe.md).
+Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne télécharge rien et n'exécute jamais de code venu d'Internet. Il ne se connecte à aucun service extérieur. Un test vérifie tout cela, et tu peux le relancer toi-même. Mais ça ne veut pas dire « sans risque » : Claude lit ton code et l'envoie à Anthropic, et le contrôle de santé n'est pas un audit. Tout est dans [Est-ce sûr à installer ?](docs/is-it-safe.md).
 </details>
 
 <details>
-<summary><b>Does my code leave my computer?</b></summary>
+<summary><b>Mon code quitte-t-il mon ordinateur ?</b></summary>
 
-Only the way Claude Code and Codex always work: the AI reads the files it needs to describe your app, through your own account. The map itself is a local file and its server only listens on your machine. If you choose to open the map in the Claude app instead, Claude uploads the map (names, descriptions and structure, not your source code) to your private claude.ai account, and asks first. The one thing Floorplan itself ever sends is your email, and only if you sign up for the [Floorplan Cloud waitlist](docs/privacy-and-security.md#floorplan-cloud-waitlist).
+Oui, de la façon dont Claude Code et Codex fonctionnent toujours : l'IA lit les fichiers dont elle a besoin pour décrire ton appli, et ils partent chez Anthropic (ou OpenAI) sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. Floorplan lui-même n'envoie rien.
 </details>
 
 <details>
-<summary><b>How long does it take, and what does it cost?</b></summary>
+<summary><b>Combien de temps ça prend, et combien ça coûte ?</b></summary>
 
-A first map takes a few minutes for a small app and longer for a big one, because every file and endpoint gets described. It uses your Claude or ChatGPT plan like any other task. Big projects are split across parallel helpers. Updates re-read only what changed, so they're quick and cheap.
+Une première carte prend quelques minutes pour une petite appli et plus pour une grosse, parce que chaque fichier et chaque adresse du serveur est décrit. Ça consomme ton abonnement Claude ou ChatGPT comme n'importe quelle autre tâche. Les gros projets sont répartis entre plusieurs aides en parallèle. Les mises à jour ne relisent que ce qui a changé : elles sont rapides et légères.
 </details>
 
 <details>
-<summary><b>Do I need a CLI for the Ask bar?</b></summary>
+<summary><b>Faut-il la ligne de commande pour la bulle de questions ?</b></summary>
 
-No. The map works without one. The Ask bar answers through the Claude Code CLI or Codex, which can read your real code. Codex's desktop app already includes what it needs. With Claude, without the CLI you can ask from the Claude app instead, using the map alone.
+Non, la carte marche sans. La bulle de questions répond grâce à la ligne de commande de Claude Code ou à Codex, qui peuvent lire ton vrai code. L'application de bureau de Codex contient déjà ce qu'il faut. Avec Claude, sans la ligne de commande, tu peux poser tes questions depuis l'application Claude, à partir de la carte seule.
 </details>
 
 <details>
-<summary><b>Will it change or commit my files?</b></summary>
+<summary><b>Va-t-elle modifier ou enregistrer mes fichiers ?</b></summary>
 
-It only writes its own `floorplan/` folder (and, in Claude Code if you say yes, a section in `CLAUDE.local.md`), and neither is committed. It never changes your code, your `.gitignore` or your `CLAUDE.md`.
+Elle n'écrit que dans son propre dossier `floorplan/`, qui n'est pas enregistré dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
 </details>
 
 <details>
-<summary><b>The names it picked aren't how we talk about it. Can I change them?</b></summary>
+<summary><b>Les noms choisis ne sont pas ceux qu'on utilise chez nous. Puis-je les changer ?</b></summary>
 
-Yes. Just ask ("rename 'Main server' to 'Shop API' on the floorplan"), or edit `floorplan/architecture.json` and `floorplan/descriptions/` yourself. Your edits are kept on every update.
+Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans le floorplan »), ou modifie toi-même `floorplan/architecture.json` et `floorplan/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
 </details>
 
 <details>
-<summary><b>Does it work with Codex as well as Claude Code?</b></summary>
+<summary><b>Est-ce que ça marche avec Codex comme avec Claude Code ?</b></summary>
 
-Yes. It's the same plugin, the same map and the same Health check. Each app runs it on your own plan: Claude Code on your Claude account, Codex on your ChatGPT sign-in. A map made in one opens fine with the other. See [Floorplan in Codex](docs/codex.md).
+Oui. C'est le même plugin, la même carte et le même contrôle de santé. Chaque application le fait tourner sur ton propre abonnement : Claude Code sur ton compte Claude, Codex sur ta connexion ChatGPT. Une carte faite avec l'un s'ouvre sans problème avec l'autre. Une limite, honnête : le blocage des fichiers de secrets de la bulle de questions n'existe qu'avec Claude Code. Voir [Floorplan dans Codex](docs/codex.md).
 </details>
 
 <details>
-<summary><b>Can I use it before I've written any code?</b></summary>
+<summary><b>Puis-je l'utiliser avant d'avoir écrit du code ?</b></summary>
 
-Yes, though mapping existing code is what it's mainly for. Share a PRD, a spec or a description of your app and ask for a floorplan, and you get a blueprint: a map of what you'd need to build, marked as a plan, with a review of the decisions still open. You can change it from the map, then switch to a map of the real code once it's built. See [Plan something you haven't built yet](docs/getting-started.md#plan-something-you-havent-built-yet).
+Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande un floorplan : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/getting-started.md#planifier-une-appli-pas-encore-construite).
 </details>
 
 <details>
-<summary><b>Does it work on monorepos and multi-repo setups?</b></summary>
+<summary><b>Est-ce que ça marche avec les monorepos et les projets en plusieurs dépôts ?</b></summary>
 
-Yes. Point it at a monorepo, a subfolder of one, or a plain folder that holds several repos side by side. It finds every repo and connects them.
+Oui. Pointe-le sur un monorepo, sur un sous-dossier, ou sur un simple dossier qui contient plusieurs dépôts côte à côte. Il trouve chaque dépôt et les relie.
 </details>
 
 <details>
-<summary><b>How is this different from Archify or Understand Anything?</b></summary>
+<summary><b>Quelle différence avec Archify ou Understand Anything ?</b></summary>
 
-Archify draws diagrams of anything, and Understand Anything builds a developer's knowledge graph of a codebase. Floorplan maps the app you built, in plain English, and tells you what's risky and what your AI just changed. See [Floorplan, Archify or Understand Anything?](#floorplan-archify-or-understand-anything)
+Archify dessine des schémas de n'importe quoi, et Understand Anything construit un graphe de connaissances de développeur pour un projet. Floorplan cartographie l'appli que tu as construite, en langage simple, et te dit ce qui est risqué et ce que ton IA vient de changer. Voir [la comparaison](#comparaison-avec-archify-et-understand-anything).
 </details>
 
-## Star history
+<details>
+<summary><b>Pourquoi une version française ?</b></summary>
 
-<a href="https://star-history.com/#haydenschmitty/floorplan&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=haydenschmitty/floorplan&type=Date&theme=dark">
-    <img src="https://api.star-history.com/svg?repos=haydenschmitty/floorplan&type=Date" alt="Floorplan's GitHub stars over time" width="100%">
-  </picture>
-</a>
+Cette copie existe pour que le plugin, son code, ses messages et ses réponses soient entièrement en français, par et pour un francophone. Elle n'est pas reliée à l'original : voir [Pour commencer](docs/getting-started.md#reprendre-une-correction-de-lauteur) pour reprendre une correction de l'auteur.
+</details>
 
-## Contributing
+## Signaler un problème
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and [Developing Floorplan](docs/development.md).
+Pour un défaut de sécurité, lis [SECURITY.md](SECURITY.md). Pour le reste, écris à la personne qui tient ce dépôt. L'auteur d'origine n'a rien à voir avec cette copie : ne lui envoie pas de demande à son sujet.
 
-## License
+## Licence
 
 [MIT](LICENSE) © 2026 [Hayden Smith](https://github.com/haydenschmitty)
+
+Cette traduction est elle aussi sous licence MIT. La mention de copyright de l'auteur d'origine reste dans le fichier [LICENSE](LICENSE).

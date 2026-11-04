@@ -1,80 +1,80 @@
 #!/usr/bin/env node
-// Facts for marking "recent work" on the map: what changed since the last map (from refresh.mjs),
-// uncommitted changes, and recent commits, each tied to the card it shows up as. Claude adds the why
-// (what the user asked for) and writes floorplan/recent-work.json. Read-only.
-// usage: node recent.mjs [root] [--days 7]
+// Faits pour marquer le « travail récent » sur la carte : ce qui a changé depuis la dernière carte (d’après refresh.mjs),
+// les changements non commités et les commits récents, chacun relié au bloc qu’il devient. Claude ajoute le pourquoi
+// (ce que la personne avait demandé) et écrit floorplan/recent-work.json. Lecture seule.
+// usage : node recent.mjs [racine] [--days 7]
 import fs from 'node:fs';
 import path from 'node:path';
 import { git, lireArguments, dossierCarte } from './lib/common.mjs';
 
-const args = lireArguments(process.argv.slice(2));
-const root = path.resolve(args._[0] || '.');
-const dir = dossierCarte(root);
-const graphFile = path.join(dir, 'graph.json');
-if (!fs.existsSync(graphFile)) { console.error('✗ No floorplan/graph.json. Run build.mjs first.'); process.exit(1); }
-const G = JSON.parse(fs.readFileSync(graphFile, 'utf8'));
-const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
-const changes = readJson(path.join(dir, '.cache', 'changes.json'));
-const current = readJson(path.join(dir, 'recent-work.json'));
+const params = lireArguments(process.argv.slice(2));
+const racine = path.resolve(params._[0] || '.');
+const dossier = dossierCarte(racine);
+const fichierGraphe = path.join(dossier, 'graph.json');
+if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de floorplan/graph.json. Lance d’abord build.mjs.'); process.exit(1); }
+const G = JSON.parse(fs.readFileSync(fichierGraphe, 'utf8'));
+const lireJson = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
+const changements = lireJson(path.join(dossier, '.cache', 'changes.json'));
+const actuel = lireJson(path.join(dossier, 'recent-work.json'));
 
-const files = new Map(G.files.map((f) => [f.p, f]));
-const labels = new Map(G.nodes.map((n) => [n.id, n.label]));
-const routesOf = new Map();
-for (const r of G.routes) { if (!routesOf.has(r.f)) routesOf.set(r.f, []); routesOf.get(r.f).push(`${r.m} ${r.p}`); }
-const card = (p) => {
-  const f = files.get(p);
-  if (!f) return '(not on the map)';
-  const rs = routesOf.get(p) || [];
-  return `"${f.name}" in ${labels.get(f.n) || f.n}${rs.length ? ` · ${rs.length} endpoint(s)` : ''}`;
+const fichiers = new Map(G.files.map((f) => [f.p, f]));
+const etiquettes = new Map(G.nodes.map((n) => [n.id, n.label]));
+const routesDe = new Map();
+for (const r of G.routes) { if (!routesDe.has(r.f)) routesDe.set(r.f, []); routesDe.get(r.f).push(`${r.m} ${r.p}`); }
+const blocDe = (p) => {
+  const f = fichiers.get(p);
+  if (!f) return '(pas sur la carte)';
+  const routesFichier = routesDe.get(p) || [];
+  return `"${f.name}" dans ${etiquettes.get(f.n) || f.n}${routesFichier.length ? ` · ${routesFichier.length} adresse(s) du serveur` : ''}`;
 };
 const L = [];
-const MAX = 40;
-const list = (rows) => { rows.slice(0, MAX).forEach((r) => L.push('  ' + r)); if (rows.length > MAX) L.push(`  … +${rows.length - MAX} more`); };
+const MAXIMUM = 40;
+const liste = (lignes) => { lignes.slice(0, MAXIMUM).forEach((r) => L.push('  ' + r)); if (lignes.length > MAXIMUM) L.push(`  … +${lignes.length - MAXIMUM} de plus`); };
 
-L.push(`RECENT WORK FACTS for ${G.projet.name}  (map built ${G.meta.generatedAt})`);
-L.push(current?.tasks
-  ? `Current recent-work.json: ${current.tasks.length} task(s), updated ${current.updatedAt || 'unknown'}. Rewrite it: it replaces the previous highlights.`
-  : 'No recent-work.json yet.');
+L.push(`TRAVAIL RÉCENT  faits pour ${G.projet.name}  (carte construite le ${G.meta.generatedAt})`);
+L.push(actuel?.tasks
+  ? `recent-work.json actuel : ${actuel.tasks.length} tâche(s), mis à jour le ${actuel.updatedAt || 'date inconnue'}. Réécris-le : il remplace les blocs mis en avant précédemment.`
+  : 'Pas encore de recent-work.json.');
 
-if (changes) {
-  L.push('', `CHANGED SINCE THE PREVIOUS MAP (${changes.since} → ${changes.at})`);
-  const rows = [
-    ...changes.files.new.map((p) => `new      ${p}  → ${card(p)}`),
-    ...changes.files.edited.map((p) => `edited   ${p}  → ${card(p)}`),
-    ...changes.files.moved.map((m) => `moved    ${m.from} → ${m.to}  → ${card(m.to)}`),
-    ...changes.files.deleted.map((p) => `deleted  ${p}  (gone from the map; mention it in the task summary)`),
-    ...changes.routes.new.map((k) => `new endpoint      ${k}`),
-    ...changes.routes.moved.map((m) => `re-pathed endpoint ${m.from} → ${m.to}`),
-    ...changes.routes.removed.map((k) => `removed endpoint  ${k}`),
+if (changements) {
+  L.push('', `CHANGÉ DEPUIS LA CARTE PRÉCÉDENTE (${changements.since} → ${changements.at})`);
+  const lignes = [
+    ...changements.files.new.map((p) => `nouveau  ${p}  → ${blocDe(p)}`),
+    ...changements.files.edited.map((p) => `modifié  ${p}  → ${blocDe(p)}`),
+    ...changements.files.moved.map((m) => `déplacé  ${m.from} → ${m.to}  → ${blocDe(m.to)}`),
+    ...changements.files.deleted.map((p) => `supprimé ${p}  (disparu de la carte ; mentionne-le dans le résumé de la tâche)`),
+    ...changements.routes.new.map((k) => `nouvelle adresse du serveur  ${k}`),
+    ...changements.routes.moved.map((m) => `adresse du serveur au nouveau chemin  ${m.from} → ${m.to}`),
+    ...changements.routes.removed.map((k) => `adresse du serveur retirée  ${k}`),
   ];
-  if (rows.length) list(rows); else L.push('  nothing');
+  if (lignes.length) liste(lignes); else L.push('  rien');
 }
 
-const since = changes?.since || current?.updatedAt || new Date(Date.now() - (Number(args.days) || 7) * 86400000).toISOString();
+const depuis = changements?.since || actuel?.updatedAt || new Date(Date.now() - (Number(params.days) || 7) * 86400000).toISOString();
 for (const r of G.meta.repos || []) {
-  const abs = path.join(root, r.path);
-  const prefix = r.path === '.' ? '' : r.path + '/';
-  const status = (git(abs, ['status', '--porcelain=v1', '-uall']) || '').split('\n').filter(Boolean);
-  const log = (git(abs, ['log', `--since=${since}`, '--max-count=20', '--no-merges', '--name-only', '--date=short', '--format=@@%h %ad %s']) || '').trim();
-  if (!status.length && !log) continue;
-  L.push('', `REPO ${r.path === '.' ? G.meta.rootName : r.path}`);
-  if (status.length) {
-    L.push('  uncommitted:');
-    list(status.map((s) => { const p = prefix + s.slice(3).replace(/^.* -> /, '').replace(/"/g, ''); return `  ${s.slice(0, 2).trim().padEnd(2)} ${p}  → ${card(p)}`; }));
+  const absolu = path.join(racine, r.path);
+  const prefixe = r.path === '.' ? '' : r.path + '/';
+  const statut = (git(absolu, ['status', '--porcelain=v1', '-uall']) || '').split('\n').filter(Boolean);
+  const journal = (git(absolu, ['log', `--since=${depuis}`, '--max-count=20', '--no-merges', '--name-only', '--date=short', '--format=@@%h %ad %s']) || '').trim();
+  if (!statut.length && !journal) continue;
+  L.push('', `DÉPÔT ${r.path === '.' ? G.meta.rootName : r.path}`);
+  if (statut.length) {
+    L.push('  non commités :');
+    liste(statut.map((s) => { const p = prefixe + s.slice(3).replace(/^.* -> /, '').replace(/"/g, ''); return `  ${s.slice(0, 2).trim().padEnd(2)} ${p}  → ${blocDe(p)}`; }));
   }
-  if (log) {
-    L.push(`  commits since ${since.slice(0, 10)}:`);
-    for (const block of log.split('@@').filter(Boolean)) {
-      const [head, ...paths] = block.trim().split('\n').filter(Boolean);
-      L.push(`    ${head}`);
-      paths.slice(0, 8).forEach((p) => L.push(`        ${prefix + p}  → ${card(prefix + p)}`));
-      if (paths.length > 8) L.push(`        … +${paths.length - 8} more files`);
+  if (journal) {
+    L.push(`  commits depuis le ${depuis.slice(0, 10)} :`);
+    for (const bloc of journal.split('@@').filter(Boolean)) {
+      const [entete, ...chemins] = bloc.trim().split('\n').filter(Boolean);
+      L.push(`    ${entete}`);
+      chemins.slice(0, 8).forEach((p) => L.push(`        ${prefixe + p}  → ${blocDe(prefixe + p)}`));
+      if (chemins.length > 8) L.push(`        … +${chemins.length - 8} fichiers de plus`);
     }
   }
 }
 
-L.push('', 'Write floorplan/recent-work.json (refs: a file path, a node id, or "METHOD /path"; see references/schema.md#recent-work):',
-  '  { "tasks": [ { "title": "…", "request": "what the user asked for", "summary": "what was done toward it, and where it stands",',
-  '      "items": [ { "ref": "<file path>", "change": "changed|new", "note": "what changed here, and how it serves the request" } ] } ] }',
-  'Then run build.mjs. Use { "tasks": [] } when nothing was worked on.');
+L.push('', 'Écris floorplan/recent-work.json (refs : un chemin de fichier, un id de partie, ou "METHODE /chemin" ; voir references/schema.md#recent-work) :',
+  '  { "tasks": [ { "title": "…", "request": "ce que la personne a demandé", "summary": "ce qui a été fait pour y répondre, et où ça en est",',
+  '      "items": [ { "ref": "<chemin du fichier>", "change": "changed|new", "note": "ce qui a changé ici, et en quoi ça sert la demande" } ] } ] }',
+  'Puis lance build.mjs. Utilise { "tasks": [] } quand rien n’a été travaillé.');
 console.log(L.join('\n'));

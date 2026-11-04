@@ -1,79 +1,71 @@
-# Privacy and security
+# Confidentialité et sécurité
 
-For what the plugin itself can and can't do on your computer (no hooks, MCP servers, dependencies or downloads, and how to verify your copy), see [Is it safe to install?](is-it-safe.md).
+Cette page dit ce qui est vrai pour cette copie française de Floorplan, y compris ses limites. Pour ce que le plugin peut et ne peut pas faire sur ton ordinateur (pas de crochets, pas de serveurs MCP, pas de dépendances, pas de téléchargements), voir [Est-ce sûr à installer ?](is-it-safe.md).
 
-## What runs where
+## Ce qui sort de ta machine, en bref
 
-| Part | Where it runs | What it sends |
+1. **Ton code part chez Anthropic (ou OpenAI avec Codex).** Floorplan fonctionne parce que Claude ou Codex lit ton code pour le décrire. Ce qu'il lit est envoyé à Anthropic (ou OpenAI) sur ton compte, selon leurs conditions, comme pour n'importe quelle tâche que tu leur donnes. Floorplan ne peut pas l'éviter.
+2. **La bulle de questions de la carte lit tes fichiers**, à l'exception des fichiers de secrets avec Claude Code (voir plus bas). Ce qu'elle lit part au même endroit.
+3. **Floorplan lui-même n'envoie rien** : pas de statistiques, pas de suivi, pas de signalement, pas de liste d'attente, aucun appel à un serveur de l'auteur ni de la personne qui tient cette copie.
+
+## Ce qui tourne où
+
+| Partie | Où elle tourne | Ce qu'elle envoie |
 |---|---|---|
-| Scan, build, updates | your computer (Node.js) | nothing |
-| Writing names and descriptions | Claude or Codex, through your session | the files it reads, the same as any other task you give it |
-| The map | your browser | nothing. Its layout engine and fonts are bundled into the file, so it works offline |
-| The map's server (`serve.mjs`) | your computer, listening on `127.0.0.1` only | nothing on its own |
-| Asking questions (Claude Code CLI) | a `claude -p` session on your computer, with your account | your question, and the files Claude chooses to read |
-| Asking questions (Codex) | a `codex exec` run on your computer, with your ChatGPT sign-in, not saved to your Codex history | your question, and the files Codex chooses to read |
-| Changing a blueprint from the map | the same as asking questions, with Claude Code or Codex; the map's server then writes only the plan's files in `floorplan/` | your request, and the files the AI chooses to read |
-| Asking questions (Claude app) | your claude.ai account | the map (names, descriptions, structure), never your source code. Claude asks before publishing it there |
-| Exporting a copy | your computer: the map's server writes one HTML file | nothing. You decide who gets the file. It holds the map, plus Health or recent work only if you tick them, and never your folder path, git remotes or source code |
-| Floorplan Cloud waitlist (only if you sign up) | the map's server, to Floorplan's waitlist service | the email you typed or chose, and "just me" or "with my team". See [below](#floorplan-cloud-waitlist) |
+| Analyse, construction, mises à jour | ton ordinateur (Node.js) | rien |
+| Écriture des noms et descriptions | Claude ou Codex, dans ta session | les fichiers qu'il lit, comme pour n'importe quelle autre tâche que tu lui donnes |
+| La carte | ton navigateur | rien. Son moteur de mise en page et ses polices sont intégrés au fichier, elle marche donc hors connexion |
+| Le serveur de la carte (`serve.mjs`) | ton ordinateur, à l'écoute sur `127.0.0.1` seulement | rien de lui-même |
+| Poser des questions (ligne de commande de Claude Code) | une session `claude -p` sur ton ordinateur, avec ton compte | ta question, et les fichiers que Claude choisit de lire |
+| Poser des questions (Codex) | une exécution `codex exec` sur ton ordinateur, avec ta connexion ChatGPT, non gardée dans ton historique Codex | ta question, et les fichiers que Codex choisit de lire |
+| Modifier un plan depuis la carte | comme poser des questions, avec Claude Code ou Codex ; le serveur de la carte n'écrit alors que les fichiers du plan dans `floorplan/` | ta demande, et les fichiers que l'IA choisit de lire |
+| Poser des questions (application Claude) | ton compte claude.ai | la carte (noms, descriptions, structure), jamais ton code source. Claude te demande avant de la publier là |
+| Exporter une copie | ton ordinateur : le serveur de la carte écrit un seul fichier HTML | rien. C'est toi qui décides à qui va le fichier. Il contient la carte, plus la Santé ou le travail récent seulement si tu les coches, et jamais le chemin de ton dossier, tes dépôts Git distants ni ton code source |
 
-Floorplan has no analytics or telemetry, no dependencies to install, and no install scripts. Its only outside connection is the opt-in waitlist below, and nothing reaches it unless you sign up. The map's few links to documentation open only when you click them.
+Il n'y a aucune ligne « service de Floorplan » dans ce tableau, parce qu'il n'y en a aucun. Le moteur de mise en page ([elkjs](https://github.com/kieler/elkjs) 0.9.3, EPL-2.0) et les polices (Inter et JetBrains Mono, licence SIL Open Font) sont intégrés dans `skills/floorplan/assets/vendor/` avec leurs licences, et chaque construction les copie dans la carte. Les quelques liens de la carte vers de la documentation s'ouvrent seulement quand tu cliques dessus.
 
-The layout engine ([elkjs](https://github.com/kieler/elkjs) 0.9.3, EPL-2.0) and fonts (Inter and JetBrains Mono, SIL Open Font License) are bundled in `skills/floorplan/assets/vendor/` with their licenses, and every build copies them into the map.
+Ce que Claude Code et Codex gardent de leur côté (historique des conversations, journaux) dépend d'eux et de tes réglages, pas de Floorplan. Les questions posées par la carte avec Codex sont lancées sans sauvegarde dans l'historique ; pour Claude Code, regarde ses propres réglages.
 
-## The local server
+## Le serveur local
 
-- It listens on `127.0.0.1` only, so other machines on your network can't reach it.
-- Every start creates a random token, which only the map page it serves receives. Asking questions and saving flows require that token, and those requests are refused when they come from another website.
-- It answers only to `127.0.0.1` and `localhost` at its own port, so a website that points its own domain at your computer (DNS rebinding) can't load the map or its token.
-- Questions run Claude with **read-only** tools: reading files, searching, and the map's own lookup script. It can't edit files or run other commands.
-- With Codex, questions run in Codex's **read-only** sandbox: it can read and search, but not write files.
-- On a blueprint (a map planned from a PRD), **Change** requests run the same read-only way. The agent replies with the updated plan, and the server itself writes only `floorplan/plan.json`, `floorplan/architecture.json` and `floorplan/recent-work.json`, after checking them, keeping the old copies for Undo.
-- It stops by itself two hours after the last tab closes, and `node floorplan/serve.mjs --stop` stops it immediately.
+- Il écoute sur `127.0.0.1` seulement, donc les autres machines de ton réseau ne peuvent pas l'atteindre.
+- Chaque démarrage crée un jeton aléatoire, que seule la page de la carte qu'il sert reçoit. Poser des questions et enregistrer des parcours demandent ce jeton, et ces demandes sont refusées quand elles viennent d'un autre site web.
+- Il ne répond qu'à `127.0.0.1` et à `localhost` sur son propre port, donc un site web qui fait pointer son propre nom de domaine vers ton ordinateur (le « rebond DNS ») ne peut ni charger la carte ni son jeton.
+- Avec Claude Code, les questions lancent Claude avec des outils **en lecture seule** : lire des fichiers, chercher, et le script de recherche de la carte. Il ne peut ni modifier de fichiers ni lancer d'autres commandes.
+- Avec Codex, les questions tournent dans le bac à sable **en lecture seule** de Codex : il peut lire et chercher, mais pas écrire de fichiers.
+- Sur un plan (une carte prévue à partir d'un cahier des charges), les demandes **Modifier** tournent de la même façon, en lecture seule. L'agent répond avec le plan mis à jour, et c'est le serveur lui-même qui écrit uniquement `floorplan/plan.json`, `floorplan/architecture.json` et `floorplan/recent-work.json`, après les avoir vérifiés et gardé les anciennes copies pour Annuler.
+- Il s'arrête tout seul deux heures après la fermeture du dernier onglet, et `node floorplan/serve.mjs --stop` l'arrête tout de suite.
 
-## Floorplan Cloud waitlist
+Limite honnête : n'importe quel programme qui tourne sur ton ordinateur avec ton compte peut aussi se connecter à `127.0.0.1`. La protection par jeton et par nom d'hôte vise les pages web et les autres machines, pas un programme malveillant déjà installé chez toi.
 
-Once a map has been open for two minutes, a card in its bottom-left corner asks whether you'd like an email when **Floorplan Cloud** launches. It's a hosted version with one shared map per team, kept in sync with GitHub. It asks once:
-- **Not now** asks again in two weeks.
-- **Don't ask again** and signing up both stop it for good, in every project.
+## La bulle de questions et les fichiers de secrets
 
-Nothing is sent unless you click **Notify me**.
+Pour limiter ce que la bulle de questions envoie, cette version fait deux choses avec Claude Code :
 
-**What's sent:** only the email address in the box, and whether you'd use Floorplan Cloud just yourself or with a team. Nothing about you, your project or your code goes with it.
+- **Elle lui interdit d'ouvrir les fichiers de secrets** : `.env`, `.env.*`, `*.pem`, `*.key` (et aussi `*.p12`, `*.pfx`, `id_rsa`, `id_ed25519`, les dossiers `.ssh` et `.aws`), et tout fichier dont le nom contient `secret`, `token` ou `credential`.
+- **Elle ne charge pas les serveurs MCP de ta machine.** Claude est lancé avec une liste de serveurs MCP vide, donc aucun outil branché chez toi (agenda, base de données, messagerie…) n'est disponible pour répondre à une question de la carte.
 
-**Use my Claude email:** this button fills the box with the email of the Claude account your Claude Code is signed in with. Claude Code is asked only at that moment, and you see the address before anything is sent. Nothing is read when you don't click it.
+Les limites, honnêtement :
 
-**Where it goes:**
-- The map's local server sends it to a small service on Google Cloud Run. You can read its code [here](https://github.com/haydenschmitty/floorplan/blob/4cb4ff9337b2d021abbd52148e25a1e0016f099d/services/waitlist/server.mjs). It's kept in this repo's history rather than in the plugin, so it isn't downloaded when you install Floorplan.
-- That service adds a row to a private Google Sheet that only Floorplan's maker, [Hayden Smith](https://github.com/haydenschmitty), can see. The row holds the date, the email and your answer.
+- **Tout le reste est lisible.** La bulle de questions lit les fichiers de ton projet pour répondre. La liste ci-dessus est une liste de noms : un secret écrit dans un fichier au nom banal (`config.json`, `settings.py`) ou directement dans le code n'est pas protégé, et sera envoyé si Claude ouvre ce fichier.
+- **Avec Codex, ce blocage n'existe pas.** Codex lit en lecture seule, mais sans la liste ci-dessus. Si des fichiers de secrets sont dans ton projet, préfère Claude Code pour la bulle de questions, ou ne pose pas de questions avec Codex sur ce projet.
+- Cette protection vient des réglages de la ligne de commande de Claude Code : si elle change sa façon de les appliquer, il faut la revérifier.
 
-**What it's used for:** only to email you when Floorplan Cloud launches, and to gauge whether it's worth building. The list is never sold or shared. Every email on it will include a way to unsubscribe, and you can ask to be removed at any time by emailing [hismith142@gmail.com](mailto:hismith142@gmail.com).
+## Le contrôle de santé et les secrets
 
-**Your IP address** is used briefly to rate-limit sign-ups and is never written to the sheet. Google Cloud keeps its standard request logs, which include IP addresses, for 30 days.
+Le contrôle de santé cherche dans ton code des mots de passe, des clés d'API et des clés privées, et des fichiers `.env` qui seraient enregistrés dans Git. Quand il en trouve un, il enregistre seulement le fichier, la ligne, le genre de secret et **la longueur** de la valeur, par exemple « 20 caractères ». **Il ne garde aucun caractère de la clé elle-même** (pas même le début), et un mot de passe écrit dans une adresse (`https://nom:mot-de-passe@site`) est retiré du nom du site. **Les valeurs des secrets ne sont jamais enregistrées dans la carte, affichées ni envoyées par Floorplan**, et on demande à Claude de ne jamais les répéter.
 
-**Turning it off:**
-- Click **Don't ask again**, or
-- set the environment variable `FLOORPLAN_NO_PROMPTS=1`.
+Mais, honnêtement :
 
-Your answer is kept in `~/.floorplan/settings.json`.
-
-**How the service is protected:** its address is in Floorplan's public code, so it's built to be harmless if abused.
-- It only accepts new sign-ups, and never returns anything from the list.
-- A repeat sign-up looks the same as a new one, so nobody can check whether an address is on the list.
-- Input is checked strictly and saved as plain text.
-- Sign-ups are limited per IP address and overall, and the list has a size cap.
-- It runs as a single small instance, so a flood of requests can't run up costs.
-
-## Secrets
-
-The Health check looks for passwords, API keys and private keys in your code, and for `.env` files that would be committed. When it finds one, it records only the file, the line, the kind of secret, and a masked hint like "starts AKIA…, 20 characters". **Secret values are never stored in the map, printed, or sent anywhere**, and Claude is instructed never to repeat them.
-
-The check is a helpful first pass, not a security audit.
+- **Il donne des fausses alertes** : il lit des motifs dans le code, pas le sens. C'est pour ça que le bouton **Pas un problème** existe (il reste sur ta machine).
+- **Il laisse passer des choses.** Un « rien trouvé » ne veut pas dire « sûr ».
+- **Ce n'est pas un audit de sécurité.** C'est une première passe utile. Pour une appli qui compte, fais-la relire par quelqu'un.
+- Pour trouver un secret, Floorplan doit lire le fichier qui le contient. Cette lecture se fait en local, mais si Claude lit ensuite ce fichier pour décrire ton code, son contenu part chez Anthropic comme le reste (voir plus haut).
 
 ## Git
 
-Nothing Floorplan creates is committed. See [What's in your project](project-files.md#staying-out-of-git).
+Rien de ce que Floorplan crée n'est enregistré dans Git. Voir [Ce qu'il y a dans ton projet](project-files.md#rester-hors-de-git).
 
-## Reporting a vulnerability
+## Signaler une faille
 
-Please report security problems privately, as described in [SECURITY.md](../SECURITY.md), rather than in a public issue.
+Signale les problèmes de sécurité en privé, comme décrit dans [SECURITY.md](../SECURITY.md), plutôt que dans un ticket public.

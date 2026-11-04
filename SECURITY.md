@@ -1,29 +1,27 @@
-# Security policy
+# Politique de sécurité
 
-## Reporting a vulnerability
+Cette copie française de Floorplan n'est pas officielle et n'a aucun lien avec l'auteur d'origine, Hayden Smith.
 
-Please report security problems privately through GitHub: open the repository's **Security** tab and choose **Report a vulnerability**. Don't open a public issue.
+## Signaler une faille
 
-Helpful details:
-- what the problem is, and what someone could do with it;
-- the steps to reproduce it;
-- which version of Floorplan you're on (see `.claude-plugin/plugin.json`).
+Signale-la en privé à la personne qui tient ce dépôt, sans l'écrire dans un ticket public. Si le dépôt est sur GitHub, utilise l'onglet **Security** puis **Report a vulnerability** quand il est disponible ; sinon, contacte directement la personne qui te l'a donné.
 
-You'll get a reply within a few days. Once a fix is out, you'll be credited unless you'd rather not be.
+Dis ce qu'est le problème et ce qu'on pourrait en faire, comment le reproduire, et la version concernée (`.claude-plugin/plugin.json`, et la marque Git si tu en as une).
 
-## What the plugin can do
+Si le défaut vient visiblement du code d'origine (il existe aussi dans la version de l'auteur), signale-le aussi à l'auteur, sur son dépôt : <https://github.com/haydenschmitty/floorplan>.
 
-[Is it safe to install?](docs/is-it-safe.md) lists everything Floorplan does on your computer: its one outbound request, every program it runs, and what it never does. [`tests/supply-chain.test.mjs`](tests/supply-chain.test.mjs) enforces that on every push and pull request, and each release's `CHECKSUMS.txt` lets you confirm an installed copy matches it (`node tools/checksums.mjs --check <folder>`).
+## Ce que le plugin peut faire
 
-## Scope
+[Est-ce sûr à installer ?](docs/is-it-safe.md) liste tout ce que Floorplan fait sur ton ordinateur, les programmes qu'il lance, ce qu'il ne fait jamais, et ses limites. [`tests/supply-chain.test.mjs`](tests/supply-chain.test.mjs) le vérifie (`node --test`).
 
-In scope:
-- the map's local server (`serve.mjs`);
-- anything that could leak secrets or source code;
-- anything that writes outside the project's `floorplan/` folder and `CLAUDE.local.md`.
+## Dans le périmètre
 
-Out of scope: issues in Claude Code itself, which go to [Anthropic](https://www.anthropic.com/responsible-disclosure-policy), and in Codex itself, which go to [OpenAI](https://help.openai.com/en/articles/6653653-how-to-report-security-vulnerabilities-to-openai).
+- le serveur local de la carte (`serve.mjs`) ;
+- tout ce qui pourrait faire fuir des secrets ou du code source ;
+- tout ce qui écrirait en dehors du dossier `floorplan/` du projet ou enverrait quelque chose sur Internet.
 
-## Supported versions
+Hors périmètre : les défauts de Claude Code lui-même, à signaler à [Anthropic](https://www.anthropic.com/responsible-disclosure-policy), et ceux de Codex lui-même, à signaler à [OpenAI](https://help.openai.com/en/articles/6653653-how-to-report-security-vulnerabilities-to-openai).
 
-Only the latest release gets security fixes.
+## Versions concernées
+
+Seule la dernière version marquée de cette copie reçoit des corrections.

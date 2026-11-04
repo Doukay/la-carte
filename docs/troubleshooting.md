@@ -1,84 +1,87 @@
-# Troubleshooting
+# Dépannage
 
-### The Ask bar says it needs the Claude Code CLI
-The map is open without a way to ask questions. Either:
-- install the [Claude Code CLI](https://code.claude.com/docs/en/overview), sign in, then ask Claude to update the floorplan or run `node floorplan/serve.mjs`;
-- or open the map in the Claude app: ask Claude to "publish my floorplan to the Claude app". Answers there come from the map only.
+### La bulle de questions dit qu'il lui faut la ligne de commande de Claude Code
+La carte est ouverte sans moyen de poser des questions. Soit :
+- installe la [ligne de commande de Claude Code](https://code.claude.com/docs/en/overview), connecte-toi, puis demande à Claude de mettre à jour le floorplan ou lance `node floorplan/serve.mjs` ;
+- soit ouvre la carte dans l'application Claude : demande à Claude de « publier mon floorplan dans l'application Claude ». Les réponses ne viennent alors que de la carte.
 
-### The CLI is installed but isn't found
-`serve.mjs` looks for `claude` on your PATH and in `~/.local/bin`. If it lives somewhere else:
-
-```bash
-node floorplan/serve.mjs --claude /path/to/claude
-```
-
-### Codex: the Ask bar says it needs Codex
-The map's server looks for `codex` on your PATH and, on Windows, for the CLI that comes with the Codex desktop app. Install the [Codex CLI](https://developers.openai.com/codex/cli), or point the server at yours:
+### La ligne de commande est installée mais n'est pas trouvée
+`serve.mjs` cherche `claude` dans ton PATH et dans `~/.local/bin`. S'il est ailleurs :
 
 ```bash
-node floorplan/serve.mjs --codex /path/to/codex
+node floorplan/serve.mjs --claude /chemin/vers/claude
 ```
 
-If it says Codex isn't signed in, open the Codex app (or run `codex login`) and sign in with ChatGPT. More in [Floorplan in Codex](codex.md).
+### Codex : la bulle de questions dit qu'il lui faut Codex
+Le serveur de la carte cherche `codex` dans ton PATH et, sous Windows, la ligne de commande qui vient avec l'application de bureau Codex. Installe la [ligne de commande de Codex](https://developers.openai.com/codex/cli), ou indique la tienne au serveur :
 
-### Codex: the map didn't open, or Ask stopped working after Codex opened it
-Codex runs commands in a sandbox, and the map's server needs to keep running and reach the network. Allow the server to run outside the sandbox when Codex asks, or run `node floorplan/serve.mjs` yourself from the project folder.
+```bash
+node floorplan/serve.mjs --codex /chemin/vers/codex
+```
 
-### `node` isn't recognized
-Install [Node.js](https://nodejs.org) 18 or newer, then start a new session so Claude Code or Codex picks it up.
+Si elle dit que Codex n'est pas connecté, ouvre l'application Codex (ou lance `codex login`) et connecte-toi avec ChatGPT. Plus de détails dans [Floorplan dans Codex](codex.md).
 
-### Claude or Codex keeps asking to run `node` scripts
-In Claude Code, Floorplan pre-approves its own scripts while it's running, but it may still ask in some setups. Choose the option to always allow them for this project. Codex asks according to your approval settings; allowing Floorplan's `node` scripts for the project stops the prompts.
+### Codex : la carte ne s'est pas ouverte, ou la bulle de questions a cessé de marcher après l'ouverture par Codex
+Codex lance ses commandes dans un bac à sable, et le serveur de la carte doit rester actif et joindre le réseau. Autorise le serveur à tourner hors du bac à sable quand Codex te le demande, ou lance toi-même `node floorplan/serve.mjs` depuis le dossier du projet.
 
-### The skill doesn't show up
-Plugins load when a session starts, so start a new one after installing. Check that it's installed and enabled:
+### `node` n'est pas reconnu
+Installe [Node.js](https://nodejs.org) 18 ou plus, puis ouvre une nouvelle session pour que Claude Code ou Codex le prenne en compte.
+
+### Claude ou Codex demande sans cesse l'autorisation de lancer des scripts `node`
+Dans Claude Code, Floorplan autorise d'avance ses propres scripts tant qu'il tourne, mais il peut quand même demander dans certaines configurations. Choisis l'option qui les autorise toujours pour ce projet. Codex demande selon tes réglages d'approbation ; autoriser les scripts `node` de Floorplan pour le projet arrête les demandes.
+
+### La compétence n'apparaît pas
+Les plugins se chargent au démarrage d'une session, donc ouvre-en une nouvelle après l'installation. Vérifie qu'il est installé et activé :
 
 ```bash
 claude plugin list
 ```
 
-Plain requests like "make me a floorplan" work without the slash command. If you do want it, it's `/floorplan:floorplan`.
+Les demandes simples comme « fais-moi un floorplan » marchent sans la commande avec la barre oblique. Si tu la veux, c'est `/floorplan-fr:floorplan`.
 
-In Codex, check **Plugins** in the app, or run `codex plugin list`, and start a new chat after installing. To call it by name, type `$floorplan`.
+Dans Codex, regarde **Plugins** dans l'application, ou lance `codex plugin list`, et ouvre une nouvelle discussion après l'installation. Pour l'appeler par son nom, tape `$floorplan`.
 
-### The map looks out of date
-Ask Claude or Codex to "update the floorplan". If a tab was already open, it reloads itself once the update finishes.
+### La carte n'est plus à jour
+Demande à Claude ou à Codex de « mettre à jour le floorplan ». Si un onglet était déjà ouvert, il se recharge tout seul quand la mise à jour est finie.
 
-### The map is blank, or stuck on "Laying out"
-Maps made before version 0.1.3 load their layout engine from the internet, so check your connection or any content blocker, or ask Claude to "update the floorplan". Newer maps have everything built in and work offline.
+### La carte est vide, ou bloquée sur « Mise en page »
+Les cartes faites avant la version 0.1.3 de l'auteur chargent leur moteur de mise en page depuis Internet : vérifie ta connexion ou ton bloqueur de contenu, ou demande à Claude de « mettre à jour le floorplan ». Les cartes plus récentes ont tout d'intégré et marchent hors connexion.
 
-### The Ask bar has no Change switch
-**Change** appears only on a [blueprint](getting-started.md#plan-something-you-havent-built-yet), opened through its server (`node floorplan/serve.mjs`) with the Claude Code CLI or Codex available. A map of real code doesn't have it: ask Claude Code or Codex to change the code, then update the floorplan.
+### La bulle de questions n'a pas d'interrupteur Modifier
+**Modifier** n'apparaît que sur un [plan](getting-started.md#planifier-une-appli-pas-encore-construite), ouvert par son serveur (`node floorplan/serve.mjs`) avec la ligne de commande de Claude Code ou Codex disponible. Une carte de vrai code ne l'a pas : demande à Claude Code ou à Codex de changer le code, puis de mettre à jour le floorplan.
 
-### A change to a blueprint failed, or I don't like it
-If the updated plan doesn't pass Floorplan's checks after a second try, nothing is saved and the map stays as it was; try asking more specifically. If a change went through but isn't what you wanted, press **Undo** in its summary, or ask for another change. The previous versions are kept in `floorplan/.cache/history/`.
+### Une modification d'un plan a échoué, ou elle ne me plaît pas
+Si le plan mis à jour ne passe pas les contrôles de Floorplan au second essai, rien n'est enregistré et la carte reste comme avant ; essaie de demander plus précisément. Si une modification est passée mais n'est pas ce que tu voulais, appuie sur **Annuler** dans son résumé, ou demande un autre changement. Les versions précédentes sont gardées dans `floorplan/.cache/history/`.
 
-### A connection is missing
-Floorplan finds most web requests and imports by reading the code, but not all of them, for example requests to an address that only exists in settings. Ask Claude to add the missing connection to the floorplan; it records it in `architecture.json` and it stays on every update.
+### Un lien manque
+Floorplan trouve la plupart des appels au serveur et des imports en lisant le code, mais pas tous, par exemple les appels vers une adresse qui n'existe que dans des réglages. Demande à Claude d'ajouter le lien manquant au floorplan ; il l'enregistre dans `architecture.json` et il reste à chaque mise à jour.
 
-### A file is in the wrong part, or under "Unassigned"
-Ask Claude to move it, or edit the `paths` patterns in `floorplan/architecture.json` and ask for an update.
+### Un fichier est dans la mauvaise partie, ou sous « Non affecté »
+Demande à Claude de le déplacer, ou modifie les motifs `paths` dans `floorplan/architecture.json` et demande une mise à jour.
 
-### "floorplan/ already exists here and isn't a map"
-Your project has its own folder called `floorplan`, which Floorplan won't write into. Rename your folder, or ask Claude to build the map somewhere else; the scan and build scripts accept `--out <folder>`.
+### « floorplan/ existe déjà ici et ce n'est pas une carte »
+Ton projet a son propre dossier appelé `floorplan`, dans lequel Floorplan refuse d'écrire. Renomme ton dossier, ou demande à Claude de construire la carte ailleurs ; les scripts d'analyse et de construction acceptent `--out <dossier>`.
 
-### `git status` shows files under `floorplan/`
-They were committed before Floorplan started ignoring the folder. Untrack them, keeping the files on disk:
+### `git status` montre des fichiers sous `floorplan/`
+Ils ont été enregistrés avant que Floorplan ne se mette à ignorer le dossier. Retire-les du suivi en gardant les fichiers sur le disque :
 
 ```bash
 git rm -r --cached floorplan
 ```
 
-### Port 4378 is in use
-Nothing to do. The server moves to the next free port, and the URL it prints, or that Claude gives you, is the right one.
+### Le port 4378 est pris
+Rien à faire. Le serveur passe au port libre suivant, et l'adresse qu'il affiche, ou que Claude te donne, est la bonne.
 
-### Stopping the background server
+### Arrêter le serveur d'arrière-plan
 
 ```bash
 node floorplan/serve.mjs --stop
 ```
 
-It also stops by itself two hours after the last tab closes.
+Il s'arrête aussi tout seul deux heures après le dernier onglet fermé.
 
-### Still stuck?
-[Open an issue](https://github.com/haydenschmitty/floorplan/issues/new/choose) with what you asked, what happened, whether you used Claude Code or Codex, and the output it showed. Please leave out anything private from your code.
+### La bulle de questions refuse de lire un fichier
+C'est voulu, avec Claude Code : les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`) sont interdits à la bulle de questions. Pour qu'elle parle d'un tel fichier, dis-lui ce qu'il contient avec tes mots, sans coller de secret.
+
+### Toujours bloqué ?
+Cette copie n'a pas de page de tickets de l'auteur : il n'a rien à voir avec elle. Écris à la personne qui tient ce dépôt, en disant ce que tu avais demandé, ce qui s'est passé, si tu utilisais Claude Code ou Codex, et ce qui s'est affiché. Laisse de côté tout ce qui est privé dans ton code. Si le défaut vient visiblement du code d'origine, regarde aussi s'il est déjà connu dans les [tickets de l'auteur](https://github.com/haydenschmitty/floorplan/issues) (en lecture seulement : n'y envoie rien de privé).

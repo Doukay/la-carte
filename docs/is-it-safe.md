@@ -1,93 +1,85 @@
-# Is it safe to install?
+# Est-ce sûr à installer ?
 
-Plugins for Claude Code and Codex can run code on your computer, so it's worth asking. Some malicious plugins look harmless when you install them, then download and run something else later (a "stage two"). Floorplan is built so it can't do that, a test checks it on every change, and you can confirm all of it yourself.
+Les plugins de Claude Code et de Codex peuvent lancer du code sur ton ordinateur, donc la question se pose. Certains plugins malveillants ont l'air inoffensifs à l'installation, puis téléchargent et lancent autre chose plus tard (une « seconde étape »). Floorplan est construit pour ne pas pouvoir faire ça, un test le vérifie à chaque changement, et tu peux tout confirmer toi-même.
 
-## What Floorplan never does
+Cette page dit ce qui est vrai pour **cette copie française**, y compris ce qu'elle ne garantit pas. Lis les limites à la fin avant de décider.
 
-- **No hooks.** Hooks run code automatically on events in every session, which makes them a common hiding place. Floorplan has none.
-- **No MCP servers.** Floorplan has none, so it never starts a server that downloads its newest version with `npx`.
-- **No dependencies, no install scripts.** Nothing comes from npm, at install time or ever. Its `package.json` exists only to run the tests.
-- **Never downloads anything, and never runs code from the internet.** No `eval`, no loading code at run time, no encoded payloads.
-- **Never changes your code.** It writes only its own `floorplan/` folder and, in Claude Code and only if you say yes, a marked section of `CLAUDE.local.md`. See [What's in your project](project-files.md).
-- **No analytics or tracking.**
+## Ce que Floorplan ne fait jamais
 
-## Everything it does
+- **Pas de crochets (hooks).** Les crochets lancent du code automatiquement à chaque événement de chaque session, ce qui en fait une cachette classique. Floorplan n'en a aucun.
+- **Pas de serveurs MCP.** Floorplan n'en a aucun, donc il ne démarre jamais un serveur qui télécharge sa dernière version avec `npx`.
+- **Pas de dépendances, pas de scripts d'installation.** Rien ne vient de npm, ni à l'installation ni plus tard. Son `package.json` n'existe que pour lancer les tests.
+- **Ne télécharge jamais rien et n'exécute jamais de code venu d'Internet.** Pas de `eval`, pas de chargement de code à l'exécution, pas de contenu encodé caché.
+- **Ne se connecte à aucun service extérieur.** Pas de statistiques, pas de suivi, pas de liste d'attente, pas de signalement envoyé à qui que ce soit.
+- **Ne modifie jamais ton code et n'écrit nulle part ailleurs que dans son dossier `floorplan/`.** Ni `CLAUDE.md`, ni `CLAUDE.local.md`, ni `.gitignore`, ni `.git/info/exclude`, ni un fichier de réglages dans ton dossier personnel. Voir [Ce qu'il y a dans ton projet](project-files.md). (Les demandes « Corriger avec Claude » que tu copies et colles ensuite dans Claude demandent à Claude de modifier ton code : c'est toi qui les envoies, et Claude te demande ses autorisations comme d'habitude.)
 
-### The network
+## Tout ce qu'il fait
 
-- **The map's server** (`floorplan/serve.mjs`) listens on `127.0.0.1` only, so other machines can't reach it. It answers only to `127.0.0.1` and `localhost` at its own port, and its API needs a token that only the map page receives.
-- **One outbound request: the Floorplan Cloud waitlist,** sent only if you type your email into the card on the map and click to join. It goes to `floorplan-waitlist-690500262396.us-central1.run.app` and carries your email and "just me" or "with my team". Details in [Privacy and security](privacy-and-security.md#floorplan-cloud-waitlist).
-- **The map page loads nothing from the internet.** Its layout engine and fonts are built into the file. It only links to documentation, which opens when you click.
-- **Reporting a false alarm is yours to send.** If you tick the box under **Not a problem** in Health, the map opens a new GitHub issue in your browser with the text filled in, shown to you first. Nothing goes anywhere unless you submit it there.
+### Le réseau
 
-Asking questions on the map runs Claude Code or Codex, which talk to Anthropic or OpenAI the way they always do, on your account. Floorplan itself sends nothing.
+- **Le serveur de la carte** (`floorplan/serve.mjs`) écoute sur `127.0.0.1` seulement, donc les autres machines ne peuvent pas l'atteindre. Il ne répond qu'à `127.0.0.1` et à `localhost` sur son propre port, et son API demande un jeton que seule la page de la carte reçoit.
+- **Aucune requête sortante.** Les seules requêtes de la carte vont à son propre serveur local. Un test le vérifie.
+- **La page de la carte ne charge rien depuis Internet.** Son moteur de mise en page et ses polices sont intégrés au fichier. Elle contient seulement des liens vers de la documentation, qui s'ouvrent quand tu cliques.
+- **Le bouton « Pas un problème »** du contrôle de santé reste sur ta machine : il écrit seulement dans `floorplan/`. Il n'envoie plus rien à l'auteur.
 
-### The programs it runs
+Poser des questions sur la carte lance Claude Code ou Codex, qui parlent à Anthropic ou à OpenAI comme ils le font toujours, avec ton compte. Floorplan lui-même n'envoie rien. Mais **ce que ces outils lisent part chez eux** : voir les limites plus bas.
 
-| Program | When | Why |
+### Les programmes qu'il lance
+
+| Programme | Quand | Pourquoi |
 |---|---|---|
-| `git` | scan | Read-only: which files are tracked, the current branch and commit, what changed since the last map |
-| `where` (Windows) or `which` | starting the map's server | Finding the Claude Code or Codex CLI |
-| `claude` or `codex` | when you ask a question on the map | Answering it, read-only: `claude -p` limited to reading files and Floorplan's lookup script, or `codex exec --sandbox read-only` |
-| `node` | throughout | Running Floorplan's own scripts |
-| `cmd /c start`, `open` or `xdg-open` | opening the map | Opening the map's local address in your browser |
+| `git` | analyse | En lecture seule : quels fichiers sont suivis, la branche et le commit actuels, ce qui a changé depuis la dernière carte |
+| `where` (Windows) ou `which` | démarrage du serveur de la carte | Trouver la ligne de commande de Claude Code ou de Codex |
+| `claude` ou `codex` | quand tu poses une question sur la carte | Y répondre, en lecture seule : `claude -p` limité à la lecture de fichiers et au script de recherche de Floorplan (avec les fichiers de secrets interdits et sans les serveurs MCP de ta machine), ou `codex exec --sandbox read-only` |
+| `node` | partout | Lancer les scripts de Floorplan |
+| `cmd /c start`, `open` ou `xdg-open` | ouverture de la carte | Ouvrir l'adresse locale de la carte dans ton navigateur |
 
-Each is started directly with its arguments, never as a command line for a shell to interpret. The one shell is Windows' `cmd /c start`, given only the map's own local address.
+Chacun est lancé directement avec ses arguments, jamais comme une ligne de commande qu'un interpréteur de commandes (shell) réinterprète. Le seul interpréteur est `cmd /c start` de Windows, à qui on ne donne que l'adresse locale de la carte.
 
-### What runs without asking
+### Ce qui se lance sans demander
 
-In Claude Code, while the skill is in use, it pre-approves one kind of command: `node` running one of its own scripts, each named exactly (`scripts/build.mjs`, `describe.mjs`, `open.mjs`, `plan.mjs`, `recent.mjs`, `refresh.mjs`, `scan.mjs` and `status.mjs`). That list is fixed by the tests below. Anything else Claude does asks according to your permission settings, as usual. Codex asks according to your approval settings.
+Dans Claude Code, quand la compétence est utilisée, elle autorise d'avance une seule sorte de commande : `node` qui lance un de ses propres scripts, chacun nommé exactement (`scripts/build.mjs`, `describe.mjs`, `open.mjs`, `plan.mjs`, `recent.mjs`, `refresh.mjs`, `scan.mjs` et `status.mjs`). Cette liste est fixée par les tests plus bas. Tout le reste que fait Claude demande une autorisation selon tes réglages, comme d'habitude. Codex demande selon tes réglages d'approbation.
 
-### Three things worth explaining
+### Trois choses qui méritent une explication
 
-- **`skills/floorplan/assets/vendor/elk.bundled.js`** is a 1.6 MB minified file: the layout engine that arranges the map. It's [elkjs](https://github.com/kieler/elkjs) 0.9.3, byte for byte the same as the official package on npm. Its SHA-256 is `b0745abd7f23cd91690a1587e377edbe19fd7233c783300290936720546216d4`. To check it yourself:
+- **`skills/floorplan/assets/vendor/elk.bundled.js`** est un fichier minifié de 1,6 Mo : le moteur de mise en page qui dispose la carte. C'est [elkjs](https://github.com/kieler/elkjs) 0.9.3, octet pour octet le même que le paquet officiel sur npm. Son SHA-256 est `b0745abd7f23cd91690a1587e377edbe19fd7233c783300290936720546216d4`. Pour le vérifier toi-même :
   ```bash
   npm pack elkjs@0.9.3
   tar -xzf elkjs-0.9.3.tgz package/lib/elk.bundled.js
   ```
-  Then compare `package/lib/elk.bundled.js` with Floorplan's copy, for example with `sha256sum` (macOS: `shasum -a 256`; Windows PowerShell: `Get-FileHash`).
-- **One `new Function`** in `serve.mjs` loads the map's lookup code from `floorplan/query.mjs`, a file Floorplan's build wrote into your project. It never runs anything from the network.
-- **Health reads the middle part of tokens it finds** (it decodes them from base64) to tell what kind of token each is, so it can skip ones that are public by design. It never stores or shows the token itself.
+  Compare ensuite `package/lib/elk.bundled.js` avec la copie de Floorplan, par exemple avec `sha256sum` (macOS : `shasum -a 256` ; PowerShell sous Windows : `Get-FileHash`).
+- **Un seul `new Function`** dans `serve.mjs` charge le code de recherche de la carte depuis `floorplan/query.mjs`, un fichier que la construction de Floorplan a écrit dans ton projet. Il n'exécute jamais rien venu du réseau.
+- **Le contrôle de santé lit le milieu des jetons qu'il trouve** (il les décode depuis le base64) pour savoir de quel genre est chaque jeton, afin d'ignorer ceux qui sont publics par conception. Il n'enregistre ni n'affiche jamais le jeton lui-même, ni même un seul de ses caractères : seulement sa longueur.
 
-## Checked on every change
+## Vérifié à chaque changement
 
-[`tests/supply-chain.test.mjs`](../tests/supply-chain.test.mjs) runs on every push and pull request, on Linux and Windows (and weekly on macOS). It fails if a change would:
+[`tests/supply-chain.test.mjs`](../tests/supply-chain.test.mjs) échoue si un changement devait :
 
-- add a hook, an MCP server, a dependency or an install script;
-- send a request anywhere other than the map's own server and the waitlist;
-- start a program not in the table above, or start one through a shell;
-- use `eval`, load code at run time, or hide a long encoded string in the code;
-- add a script that would run without asking;
-- change the bundled layout engine, or add a vendored file.
+- ajouter un crochet, un serveur MCP, une dépendance ou un script d'installation ;
+- envoyer une requête ailleurs que vers le serveur local de la carte ;
+- lancer un programme absent du tableau ci-dessus, ou en lancer un à travers un interpréteur de commandes ;
+- utiliser `eval`, charger du code à l'exécution, ou cacher une longue chaîne encodée dans le code ;
+- ajouter un script qui se lancerait sans demander ;
+- changer le moteur de mise en page intégré, ou ajouter un fichier venu d'ailleurs.
 
-Each check was tested by planting exactly that kind of change and seeing it fail. A change to any of this has to change the test and this page together, in the open.
-
-To run the same checks on your own copy:
+Pour les relancer sur ta propre copie :
 
 ```bash
 node --test tests/supply-chain.test.mjs
 ```
 
-## Check that your installed copy is a real release
+Dans cette copie, les tests se lancent avec `node --test` sur l'ordinateur de la personne qui la tient. Les tests sur GitHub ne tournent que sur demande, donc rien ne les relance tout seul à chaque enregistrement : relance-les toi-même avant de te fier à une version.
 
-Every release includes `CHECKSUMS.txt`: a SHA-256 fingerprint of every file the plugin runs from (the skill, the plugin manifests and the marketplace files). To compare your installed copy with the release on GitHub:
+## Les limites honnêtes
 
-```bash
-git clone --depth 1 --branch floorplan--v<version> https://github.com/haydenschmitty/floorplan floorplan-check
-node floorplan-check/tools/checksums.mjs --check <installed folder>
-```
+- **Claude lit ton code et l'envoie à Anthropic.** Floorplan fonctionne parce que Claude (ou Codex, chez OpenAI) lit ton code pour le décrire. Ça part sous ton compte, selon les conditions du fournisseur, comme n'importe quelle tâche que tu lui donnes. Aucune vérification de ce plugin ne change ça. Si ton code est confidentiel, décide-le avant.
+- **La bulle de questions lit le reste de tes fichiers.** Avec Claude Code, elle ne peut pas ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et elle ne charge pas tes serveurs MCP. Mais un secret écrit dans un fichier au nom banal, ou dans le code, peut être lu et envoyé. **Avec Codex, ce blocage n'existe pas.**
+- **Le contrôle de santé donne des fausses alertes et n'est pas un audit.** Il repère des motifs, il en rate, et il se trompe. « Rien trouvé » ne veut pas dire « sûr ».
+- **Le serveur local écoute sur `127.0.0.1`.** Les autres machines ne le voient pas, et les pages web d'autres sites sont refusées. Mais un programme déjà installé sur ton ordinateur peut s'y connecter comme n'importe quel programme local.
+- **Les tests ne prouvent pas l'absence de défauts.** Ils vérifient une liste précise de choses (celles du haut de cette page). Ils ne remplacent pas une relecture du code.
+- **C'est une copie non officielle, réécrite.** Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur, sans être relu ligne par ligne par lui. Tu fais confiance à la personne qui tient cette copie, pas à l'auteur d'origine. Le code de l'auteur d'origine n'est plus identique octet pour octet à celui-ci, à l'exception du moteur de mise en page. Les corrections de l'auteur n'arrivent pas toutes seules (voir [Reprendre une correction de l'auteur](getting-started.md#reprendre-une-correction-de-lauteur)).
+- **Une mise à jour apporte ce que contient la version la plus récente de cette copie.** Avant de mettre à jour, lis le [journal des changements](../CHANGELOG.md) et relance les tests.
 
-`<version>` is the version you have (`claude plugin list` or `codex plugin list` shows it). The installed folder is:
-- **Claude Code:** `~/.claude/plugins/cache/floorplan/floorplan/<version>`
-- **Codex:** `~/.codex/plugins/cache/floorplan/floorplan/<version>`
+## Tu as trouvé quelque chose ?
 
-It prints either that all files are identical, or which ones changed, are extra or are missing.
-
-## The honest limits
-
-- Claude Code and Codex install a plugin from its repository, and an update brings whatever the newest release contains, for this plugin as for any other. Releases are made only by the maintainer, and `main` is protected: its history can't be rewritten or deleted. Outside pull requests are reviewed before they're run or merged, and the checks above run on every one of them. Before you update, you can read the changes in the [changelog](../CHANGELOG.md) and verify the new version with its checksums.
-- Floorplan works by having Claude or Codex read your code to describe it. That goes to Anthropic or OpenAI under your account, like any other task you give them. See [Privacy and security](privacy-and-security.md).
-
-## Found something?
-
-Please report it privately, as described in the [security policy](../SECURITY.md).
+Signale-le en privé, comme décrit dans la [politique de sécurité](../SECURITY.md).
