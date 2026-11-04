@@ -116,7 +116,9 @@ test('the Claude Code CLI comes first for a map Claude built, with read-only too
   await ask(s, 'And then?', answer.session);
   const [first, second] = s.calls();
   assert.ok(first.args.includes('-p'));
-  assert.deepEqual(first.args.slice(first.args.indexOf('--allowedTools') + 1), ['Bash(node floorplan/query.mjs:*)', 'Read', 'Grep', 'Glob']);
+  assert.deepEqual(first.args.slice(first.args.indexOf('--allowedTools') + 1, first.args.indexOf('--disallowedTools')), ['Bash(node floorplan/query.mjs:*)', 'Read', 'Grep', 'Glob']);
+  assert.ok(first.args.includes('Read(**/.env)') && first.args.includes('Read(**/.env.*)'), 'secret files stay closed');
+  assert.ok(first.args.includes('--strict-mcp-config'), 'the machine's MCP servers stay out of the prompt');
   assert.equal(first.input, 'How do refunds work?');
   assert.equal(second.args[second.args.indexOf('--resume') + 1], 'test-session');
 });

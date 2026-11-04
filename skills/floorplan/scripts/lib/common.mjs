@@ -117,14 +117,9 @@ export function keepOutOfGit(dir) {
   return `${tracked.length} file(s) in ${rel}/ were committed to git before; they stay tracked until you run: git rm -r --cached ${rel}  (this keeps the files on disk)`;
 }
 
-/** The map folder for a codebase root. Moves an old show-code/ map into place unless migrate is false. */
-export function mapDir(root, { migrate = true } = {}) {
+/** The map folder for a codebase root. */
+export function mapDir(root) {
   const dir = path.join(root, MAP_DIR);
-  const old = path.join(root, LEGACY_MAP_DIR);
-  if (migrate && !fs.existsSync(dir) && isMapDir(old)) {
-    fs.renameSync(old, dir);
-    console.error(`(moved the existing map from ${LEGACY_MAP_DIR}/ to ${MAP_DIR}/)`);
-  }
   if (fs.existsSync(dir) && !isMapDir(dir) && fs.readdirSync(dir).length) {
     console.error(`✗ ${MAP_DIR}/ already exists here and isn't a map (it's part of the project). Pass --out <folder> to put the map somewhere else.`);
     process.exit(1);

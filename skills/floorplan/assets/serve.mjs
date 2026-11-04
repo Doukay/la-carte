@@ -225,49 +225,6 @@ if (idleExit) setInterval(() => { if (!tabs.size && !running.size && Date.now() 
 const flowsFile = path.join(here, 'custom-flows.json');
 const readFlows = () => { try { return JSON.parse(fs.readFileSync(flowsFile, 'utf8')).flows || []; } catch { return []; } };
 
-// ---------- Floorplan Cloud waitlist (opt-in) ----------
-// The map may ask, once, whether you want an email when Floorplan Cloud launches. Nothing is sent unless
-// you click "Notify me", and then only the email you see in the box and whether it's for you or a team.
-// Where it goes: a small Cloud Run service that adds it to a Google Sheet (docs/privacy-and-security.md
-// links its code). Your answer (joined, later,
-// never) is kept in ~/.floorplan/settings.json so every project's map remembers it.
-// FLOORPLAN_NO_PROMPTS=1 turns the question off.
-const WAITLIST_URL = process.env.FLOORPLAN_WAITLIST_URL || 'https://floorplan-waitlist-690500262396.us-central1.run.app/';
-const settingsFile = path.join(process.env.HOME || process.env.USERPROFILE || here, '.floorplan', 'settings.json');
-const readSettings = () => { try { return JSON.parse(fs.readFileSync(settingsFile, 'utf8')); } catch { return {}; } };
-function saveCloud(cloud) {
-  try { fs.mkdirSync(path.dirname(settingsFile), { recursive: true }); fs.writeFileSync(settingsFile, JSON.stringify({ ...readSettings(), cloud }, null, 2) + '\n'); } catch {}
-}
-function cloudPrompt() {
-  if (!WAITLIST_URL || /^(1|true|yes)$/i.test(process.env.FLOORPLAN_NO_PROMPTS || '')) return false;
-  const c = readSettings().cloud || {};
-  return !c.status || (c.status === 'later' && Date.now() > Date.parse(c.until || 0));
-}
-/** The email of the claude.ai account Claude Code is signed in with, or null (API key, Bedrock, not signed in). */
-function claudeEmail() {
-  if (engine !== 'claude') return null;
-  try {
-    const out = execFileSync(cli.cmd, [...cli.args, 'auth', 'status', '--json'], { encoding: 'utf8', timeout: 15000, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true, env: cliEnv() });
-    const email = JSON.parse(out).email;
-    return typeof email === 'string' && EMAIL.test(email) ? email : null;
-  } catch { return null; }
-}
-// starts with a letter or digit, so a spreadsheet never reads it as a formula
-const EMAIL = /^[A-Za-z0-9][^\s@]{0,63}@[^\s@]+\.[^\s@]{2,}$/;
-async function joinWaitlist(body) {
-  const email = String(body.email || '').trim();
-  const use = body.use === 'team' ? 'team' : 'solo';
-  if (!WAITLIST_URL) return { ok: false, error: 'not_configured' };
-  if (email.length > 254 || !EMAIL.test(email)) return { ok: false, error: 'bad_email' };
-  try {
-    const r = await fetch(WAITLIST_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ email, use }), redirect: 'follow', signal: AbortSignal.timeout(20000) });
-    const out = await r.json().catch(() => ({}));
-    if (!r.ok || !out.ok) return { ok: false, error: out.error || 'send_failed' };
-  } catch { return { ok: false, error: 'send_failed' }; }
-  saveCloud({ status: 'joined', at: new Date().toISOString() });
-  return { ok: true };
-}
-
 // ---------- asking ----------
 const nameFor = (id) => { try { return core.q.brief(id)?.name || id; } catch { return id; } };
 const running = new Map();
@@ -317,11 +274,16 @@ function parseAnswer(ev) {
 }
 const failCode = (msg) => /not logged in|logged out|\/login|log ?in again|sign in|authenticat|unauthori[sz]ed|\b401\b/i.test(msg) ? 'not_logged_in'
   : /usage limit|rate limit|too many requests|\b429\b/i.test(msg) ? 'rate_limited' : 'cli_error';
+// files the Ask bar never opens: their content would reach the AI provider
+const SECRET_FILES = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '**/*.p12', '**/*.pfx', '**/id_rsa', '**/id_ed25519', '**/*secret*', '**/*token*', '**/*credential*', '**/.ssh/**', '**/.aws/**'];
 // Claude Code: `claude -p` with read-only tools, answering in the schema; follow-ups resume its session
 function claudeRun(body, mode) {
   const args = [...cli.args, '-p', '--output-format', 'stream-json', '--verbose',
     '--json-schema', JSON.stringify(mode.schema), '--append-system-prompt', mode.instructions,
-    '--tools', 'Read,Grep,Glob,Bash', '--allowedTools', 'Bash(node floorplan/query.mjs:*)', 'Read', 'Grep', 'Glob'];
+    '--tools', 'Read,Grep,Glob,Bash', '--allowedTools', 'Bash(node floorplan/query.mjs:*)', 'Read', 'Grep', 'Glob',
+    '--disallowedTools', ...SECRET_FILES.map((f) => `Read(${f})`),
+    // without the machine's own MCP servers: their tool lists alone can overflow the prompt
+    '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}'];
   if (body.session) args.push('--resume', String(body.session));
   if (model) args.push('--model', model);
   return {
@@ -569,26 +531,6 @@ const server = http.createServer((req, res) => {
           if (req.method === 'POST') dismissed.push(cleanDismissal(body));
           fs.writeFileSync(dismissedFile, JSON.stringify({ dismissed }, null, 2) + '\n');
           res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ dismissed }));
-        });
-        return;
-      }
-    }
-    if (url.pathname.startsWith('/api/cloud/')) {
-      const json = (data) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(data)); };
-      if (req.method === 'GET' && url.pathname === '/api/cloud/prompt') return json({ show: cloudPrompt() });
-      if (req.method === 'POST') {
-        let raw = '';
-        req.on('data', (d) => { raw += d; if (raw.length > 2000) req.destroy(); });
-        req.on('end', async () => {
-          let body = {}; try { body = JSON.parse(raw); } catch {}
-          // read only when the person clicks "Use my Claude email"
-          if (url.pathname === '/api/cloud/claude-email') return json({ email: claudeEmail() });
-          if (url.pathname === '/api/cloud/join') return json(await joinWaitlist(body));
-          if (url.pathname === '/api/cloud/dismiss') {
-            saveCloud(body.forever ? { status: 'never' } : { status: 'later', until: new Date(Date.now() + 14 * 864e5).toISOString() });
-            return json({ ok: true });
-          }
-          res.writeHead(404); res.end();
         });
         return;
       }

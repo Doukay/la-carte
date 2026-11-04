@@ -12,7 +12,6 @@
   const PLAN = !!SC.graph.meta.blueprint;
   const FIX = PLAN ? 'Resolve' : 'Fix';
   const CHECK = PLAN ? 'design review' : 'health check';
-  const ISSUES_URL = 'https://github.com/haydenschmitty/floorplan/issues/new';
 
   // ---------- "not a problem" ----------
   // Saved by serve.mjs to floorplan/health-dismissed.json (build folds it into graph.health.dismissed);
@@ -93,10 +92,6 @@
     #modal .hc-hint b { color: var(--text); font-weight: 500; }
     #modal .hc-why { width: 100%; min-height: 72px; resize: vertical; margin-top: 12px; background: rgba(var(--ink), .05); border: 0; border-radius: 14px; padding: 11px 13px; color: var(--text); outline: none; font: inherit; font-size: 13px; line-height: 1.5; box-sizing: border-box; }
     #modal .hc-why:focus { background: rgba(var(--ink), .07); box-shadow: 0 0 0 1px rgba(var(--ink), .14); }
-    #modal .hc-rep { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--text-2); cursor: pointer; }
-    #modal .hc-rep input { margin-top: 3px; }
-    #modal .hc-prev { margin-top: 8px; display: none; }
-    #modal .hc-prev.on { display: block; }
   `;
   document.head.appendChild(style);
 
@@ -125,36 +120,20 @@
       actions: [{ label: 'Copy prompt', primary: true, icon: 'copy', onClick: () => { SC.copy(issue.fix); SC.toast(`Copied. Paste it into ${A.app}.`); } }],
     });
   }
-  // The report is a GitHub issue the person reads and sends themselves: which check fired, its title (which
-  // can name a file or endpoint), the kinds of files involved and their note. Never code, values or the fix prompt.
-  const reportText = (issue, reason) => [
-    `**Check:** ${issue.kind} (${issue.severity})`,
-    `**What Floorplan said:** ${issue.title}`,
-    `**File types:** ${[...new Set((issue.locations || []).map((l) => (/\.[^./]+$/.exec(l.file) || [l.file.split('/').pop()])[0]))].slice(0, 6).join(', ') || 'none'}`,
-    ``,
-    `**Why it's not a problem:**`,
-    reason.slice(0, 1500) || '_(no note)_',
-  ].join('\n');
   function notAProblem(issue) {
     const m = SC.modal({
       title: 'Not a problem?',
       html: `<p class="hc-hint">Mark “${h(issue.title)}” as a false alarm and it moves to the bottom of the ${CHECK}, out of the count. It comes back if this check finds something new there.</p>
-        <textarea class="hc-why" placeholder="Why not? (optional) e.g. that value is a bcrypt hash, not the password" spellcheck="true"></textarea>
-        <label class="hc-rep"><input type="checkbox" class="hc-rep-on"><span>Also tell the Floorplan developer, so the check gets better. This opens a GitHub issue you can read and edit before sending. It includes only what’s shown below, never your code or any values.</span></label>
-        <pre class="hc-prev"></pre>`,
+        <textarea class="hc-why" placeholder="Why not? (optional) e.g. that value is a bcrypt hash, not the password" spellcheck="true"></textarea>`,
       actions: [{ label: 'Mark as not a problem', primary: true, icon: 'check', keepOpen: true, onClick: async (close) => {
         const reason = m.el.querySelector('.hc-why').value.trim();
-        const report = m.el.querySelector('.hc-rep-on').checked;
-        if (report) window.open(`${ISSUES_URL}?title=${encodeURIComponent(`False positive: ${issue.kind}`)}&body=${encodeURIComponent(reportText(issue, reason))}`, '_blank', 'noopener');
         if (!(await saveDismissal(issue, reason))) return;
         close();
         refresh();
-        SC.toast(report ? 'Marked as not a problem. Thanks for the report.' : 'Marked as not a problem.');
+        SC.toast('Marked as not a problem.');
       } }],
     });
-    const why = m.el.querySelector('.hc-why'), on = m.el.querySelector('.hc-rep-on'), prev = m.el.querySelector('.hc-prev');
-    const sync = () => { prev.classList.toggle('on', on.checked); prev.textContent = reportText(issue, why.value.trim()); };
-    why.addEventListener('input', sync); on.addEventListener('change', sync);
+    const why = m.el.querySelector('.hc-why');
     why.focus();
   }
   const onMap = (issue) => (issue.items || []).some((id) => SC.exists(id));

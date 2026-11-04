@@ -23,7 +23,7 @@ if (!fs.existsSync(path.join(dir, 'index.html')) || !fs.existsSync(serveFile)) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const readState = () => { try { return JSON.parse(fs.readFileSync(stateFile, 'utf8')); } catch { return null; } };
+const readState = () => { try { const s = JSON.parse(fs.readFileSync(stateFile, 'utf8')); return /^http:\/\/127\.0\.0\.1:\d+$/.test(s.url) ? s : null; } catch { return null; } };
 const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
 async function api(s, p) {
   try {

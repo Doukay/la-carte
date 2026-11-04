@@ -124,14 +124,6 @@ test('the page applies the same rule as the build', () => {
   for (const piece of [`d.severity && d.severity !== issue.severity`, `String(loc).replace(/:[^:]*$/, '')`, `left.get(l.file) || 0`]) assert.ok(ui.includes(piece), piece);
 });
 
-test('a report opens a GitHub issue for the person to send, and carries no code, fix prompt or detail', () => {
-  const ui = fs.readFileSync(new URL('../skills/floorplan/assets/ui/20-health.js', import.meta.url), 'utf8');
-  const report = /const reportText = [\s\S]*?\.join\('\\n'\);/.exec(ui)[0];
-  assert.ok(!/issue\.(fix|detail|notes)/.test(report), report);
-  assert.ok(/issues\/new/.test(ui));
-  assert.ok(!/fetch\([^)]*github/.test(ui), 'the page never sends a report itself');
-});
-
 // ---------- through the build and the server ----------
 let root, server, base, token;
 const NOTE = 'that value is only a sample, see the wiki';

@@ -34,33 +34,15 @@ test('a map built under Codex records it, and leaves the project notes alone', (
   } finally { cleanup(root); }
 });
 
-test('a map built under Claude Code records it, and adds the CLAUDE.local.md note only when asked', () => {
+test('a map built under Claude Code records it, and never writes project notes', () => {
   const root = shopApp();
   const notes = path.join(root, 'CLAUDE.local.md');
   try {
     run('scan.mjs', root);
-    assert.match(run('build.mjs', root, '--agent', 'claude'), /CLAUDE\.LOCAL\.MD {2}not added/);
+    const out = run('build.mjs', root, '--agent', 'claude', '--claude-md');
     assert.equal(readGraph(root).meta.agent, 'claude');
-    assert.ok(!fs.existsSync(notes), 'no CLAUDE.local.md until the user says yes');
-    run('build.mjs', root, '--agent', 'claude', '--claude-md');
-    assert.match(fs.readFileSync(notes, 'utf8'), /floorplan\/query\.mjs/);
-  } finally { cleanup(root); }
-});
-
-test('a CLAUDE.local.md note that already exists is kept current, and the opt-out marker still wins', () => {
-  const root = shopApp();
-  const notes = path.join(root, 'CLAUDE.local.md');
-  try {
-    run('scan.mjs', root);
-    fs.writeFileSync(notes, 'my notes\n\n<!-- floorplan:start -->\nold\n<!-- floorplan:end -->\n');
-    run('build.mjs', root, '--agent', 'claude');
-    const text = fs.readFileSync(notes, 'utf8');
-    assert.match(text, /^my notes/);
-    assert.match(text, /floorplan\/query\.mjs/);
-    assert.doesNotMatch(text, /\nold\n/);
-    fs.writeFileSync(notes, 'my notes\n<!-- floorplan:off -->\n');
-    assert.match(run('build.mjs', root, '--agent', 'claude', '--claude-md'), /CLAUDE\.LOCAL\.MD {2}skipped \(opted out\)/);
-    assert.equal(fs.readFileSync(notes, 'utf8'), 'my notes\n<!-- floorplan:off -->\n');
+    assert.doesNotMatch(out, /CLAUDE\.LOCAL\.MD/);
+    assert.ok(!fs.existsSync(notes), 'no CLAUDE.local.md, even when asked');
   } finally { cleanup(root); }
 });
 

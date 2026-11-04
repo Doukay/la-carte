@@ -91,7 +91,7 @@ const kindFromName = (name) => {
   if (/credential/.test(n)) return 'login credentials';
   return 'a secret key';
 };
-const mask = (v, password) => password || v.length < 12 ? `${v.length} characters` : `starts “${v.slice(0, 4)}…”, ${v.length} characters`;
+const mask = (v) => `${v.length} characters`;
 
 // A stored password hash isn't the password: bcrypt / argon2 / scrypt / crypt(3) ($2b$…, $argon2id$…,
 // $6$…), Django's pbkdf2_sha256$…, LDAP's {SSHA}…, and anything kept under a name that says it's a hash.
@@ -181,7 +181,7 @@ function findSecrets(src, f, out) {
     for (const m of src.matchAll(DB_URL)) {
       const [, user, pw, host] = m;
       if (LOCAL_HOST.test(host) || PLACEHOLDER.test(pw) || /^[:$%{<]/.test(pw) || pw.length < 4 || /^(password|pass|postgres|root|secret|admin|user)$/i.test(pw)) continue;
-      add(at(m.index), { what: 'a database password inside a connection address', svc: 'your database', sev: 'high', hint: mask(pw, true) });
+      add(at(m.index), { what: 'a database password inside a connection address', svc: 'your database', sev: 'high', hint: mask(pw) });
     }
   }
   if (isTest || f.category === 'docs') return;
@@ -202,7 +202,7 @@ function findSecrets(src, f, out) {
       if (!SECRET_NAME.test(n) || PUBLIC_NAME.test(n) || PUBLIC_TOKEN_VALUE.test(value) || !valueLooksReal(value, n)) continue;
       if (trackerToken(name.split('.').pop(), value, src, f.path)) continue;
       if (throwawayDb && /^(postgres|mysql|mariadb|mongo(_initdb_root)?|redis|pg|rabbitmq_default|db|database)_(root_)?(password|pass|pwd)$/.test(n)) continue;
-      add(i + 1, { what: kindFromName(name), name: name.split('.').pop(), sev: 'high', hint: mask(value, PASSWORD_NAME.test(n)), generic: true });
+      add(i + 1, { what: kindFromName(name), name: name.split('.').pop(), sev: 'high', hint: mask(value), generic: true });
     }
   });
 }

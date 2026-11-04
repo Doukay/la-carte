@@ -68,7 +68,7 @@ test('the only commands pre-approved are the skill’s own scripts, and that lis
   assert.deepEqual(scripts, SCRIPTS, `scripts/ list. ${UPDATE}`);
 });
 
-test('it reaches the internet in one place: the waitlist, only when someone signs up', () => {
+test('it never reaches the internet', () => {
   // no network modules except the map's own local server
   const netImports = find(/from\s+['"](?:node:)?(https?|http2|net|tls|dgram|dns|undici)['"]|require\(\s*['"](?:node:)?(https?|http2|net|tls|dgram|dns|undici)['"]\s*\)/);
   assert.deepEqual(netImports.map((x) => `${x.file}: ${x.text}`), [`assets/serve.mjs: from 'node:http'`], `network modules. ${UPDATE}`);
@@ -76,12 +76,11 @@ test('it reaches the internet in one place: the waitlist, only when someone sign
   assert.match(read(path.join(SKILL, 'assets', 'serve.mjs')), /server\.listen\(port, '127\.0\.0\.1'\);/);
   assert.doesNotMatch(read(path.join(SKILL, 'assets', 'serve.mjs')), /\.listen\([^)]*(0\.0\.0\.0|::)/);
 
-  // every request: to the map's own server, except the one waitlist call
+  // every request: to the map's own server
   const LOCAL = /^(['"`]\/|s\.url \+)/;
   const calls = find(/\bfetch\(\s*([^,)]+)/).map((x) => ({ ...x, arg: x.m[1].trim() }));
   const outside = calls.filter((c) => !LOCAL.test(c.arg));
-  assert.deepEqual(outside.map((c) => `${c.file}: fetch(${c.arg}`), ['assets/serve.mjs: fetch(WAITLIST_URL'], `requests that leave this computer. ${UPDATE}`);
-  assert.match(read(path.join(SKILL, 'assets', 'serve.mjs')), /const WAITLIST_URL = process\.env\.FLOORPLAN_WAITLIST_URL \|\| 'https:\/\/floorplan-waitlist-690500262396\.us-central1\.run\.app\/';/);
+  assert.deepEqual(outside.map((c) => `${c.file}: fetch(${c.arg}`), [], `requests that leave this computer. ${UPDATE}`);
   assert.deepEqual(find(/\b(WebSocket|XMLHttpRequest|sendBeacon|importScripts)\b/).map((x) => `${x.file}: ${x.text}`), [], `other ways to reach a server. ${UPDATE}`);
   assert.deepEqual(find(/new EventSource\(\s*(?!['"`]\/)/).map((x) => `${x.file}:${x.line}`), [], 'live reload only from the local server');
 

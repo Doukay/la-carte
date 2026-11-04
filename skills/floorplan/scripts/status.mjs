@@ -3,13 +3,11 @@
 // usage: node status.mjs [root]
 import fs from 'node:fs';
 import path from 'node:path';
-import { git, mapDir, LEGACY_MAP_DIR, isMapDir } from './lib/common.mjs';
+import { git, mapDir, isMapDir } from './lib/common.mjs';
 
 try {
   const root = path.resolve(process.argv[2] || '.');
-  const legacy = !fs.existsSync(path.join(root, 'floorplan')) && isMapDir(path.join(root, LEGACY_MAP_DIR));
-  if (legacy) console.log(`(a map from before the rename is in ${LEGACY_MAP_DIR}/; the next scan, build or refresh moves it to floorplan/)`);
-  const dir = legacy ? path.join(root, LEGACY_MAP_DIR) : mapDir(root, { migrate: false });
+  const dir = mapDir(root);
   const graphFile = path.join(dir, 'graph.json');
   const hasArch = fs.existsSync(path.join(dir, 'architecture.json'));
   if (!fs.existsSync(graphFile)) {
@@ -26,7 +24,7 @@ try {
   for (const r of g.meta.repos || []) {
     const abs = path.join(root, r.path);
     const head = git(abs, ['rev-parse', 'HEAD']);
-    if (!head || !r.head) { lines.push(`  ${r.path}: not a git repo now`); continue; }
+    if (!head || !/^[0-9a-f]{7,64}$/.test(r.head || '')) { lines.push(`  ${r.path}: not a git repo now`); continue; }
     const changed = head === r.head ? [] : (git(abs, ['diff', '--name-only', r.head, head]) || '').split('\n').filter(Boolean);
     const dirty = (git(abs, ['status', '--porcelain']) || '').split('\n').filter(Boolean).length;
     lines.push(`  ${r.path}: ${head === r.head ? 'same commit' : `${changed.length} file(s) changed since ${r.head.slice(0, 7)}`}${dirty ? `, ${dirty} uncommitted` : ''}`);

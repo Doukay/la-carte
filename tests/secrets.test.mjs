@@ -18,10 +18,16 @@ test('a hard-coded password is found, with its line, and masked', () => {
   assert.equal(s.hint, `${FAKE_PASSWORD.length} characters`, 'a password hint gives only its length');
 });
 
-test('a known key format is named after its service and shows only its first characters', () => {
+test('a password inside an address never reaches the list of outside sites', async () => {
+  const { extract } = await lib('extract.mjs');
+  const { hosts } = extract(`fetch("https://bob:${FAKE_PASSWORD}@api.example.com/x")`, 'javascript', 'a.js');
+  assert.deepEqual(hosts.map((h) => h.host), ['api.example.com']);
+});
+
+test('a known key format is named after its service and shows only its length', () => {
   const [s] = secrets(`token = "${FAKE_GITHUB_TOKEN}"`);
   assert.equal(s.svc, 'GitHub');
-  assert.match(s.hint, /^starts “ghp_…”, \d+ characters$/);
+  assert.equal(s.hint, `${FAKE_GITHUB_TOKEN.length} characters`);
 });
 
 test('the secret value never appears in what Health records', () => {

@@ -95,7 +95,8 @@ function normalizeCallLiteral(raw) {
   const fn = /^https?:\/\/[^/\s]*\.cloudfunctions\.net(\/.*)$/i.exec(s);
   if (fn) s = fn[1];
   const abs = /^https?:\/\/([^/${}\s]+)(.*)$/i.exec(s);
-  if (abs) { host = abs[1].toLowerCase(); s = abs[2] || '/'; }
+  // user:password@ is left out: only the site's name is kept
+  if (abs) { host = abs[1].toLowerCase().replace(/^.*@/, ''); s = abs[2] || '/'; }
   // leading interpolations: ${API_BASE}/x, {BASE_URL}/x
   s = s.replace(/^(?:\$\{[^}]*\}|\{[^}]*\})+/, '');
   if (!s.startsWith('/')) return null;
