@@ -267,4 +267,4 @@ export function lireArguments(argv, defauts = {}) {
   return sortie;
 }
 
-export const formaterNombre = (n) => n >= 10000 ? (n / 1000).toFixed(0) + 'k' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+export const formaterNombre = (n) => n >= 10000 ? (n / 1000).toFixed(0) + ' k' : n >= 1000 ? (n / 1000).toFixed(1).replace('.', ',') + ' k' : String(n);

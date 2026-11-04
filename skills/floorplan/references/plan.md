@@ -8,7 +8,7 @@ Tu écris deux fichiers dans `floorplan/` :
 - `plan.json` : les fichiers, les adresses du serveur et les liens que le système aurait (ce fichier).
 - `architecture.json` : les parties, les services extérieurs, les parcours et la visite, exactement comme pour une carte de code ([schema.md](schema.md)).
 
-`plan.mjs` transforme `plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans graphe.json, le plan est rangé sous la clé `ebauche` (graphe.json est généré : n'y touche pas).
+`plan.mjs` transforme `plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire ça avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans graphe.json, le plan est rangé sous la clé `ebauche` (graphe.json est généré : n'y touche pas).
 
 Sommaire : [Bien planifier](#bien-planifier) · [plan.json](#planjson) · [Contrôles](#ce-que-la-revue-du-plan-contrôle)
 

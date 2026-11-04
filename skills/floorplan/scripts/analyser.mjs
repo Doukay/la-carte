@@ -294,7 +294,7 @@ if (routesFirebase.length || declencheurs.length) {
 }
 
 const topExternes = analyse.externals.sort((a, b) => b.files - a.files).slice(0, 25);
-ligne(`PAQUETS EXTERNES (les ${topExternes.length} premiers, par nombre de fichiers qui les importent)`);
+ligne(topExternes.length ? `PAQUETS EXTERNES (les ${topExternes.length} premiers, par nombre de fichiers qui les importent)` : 'PAQUETS EXTERNES  aucun');
 ligne('  ' + topExternes.map((e) => `${e.id}(${e.files})`).join('  '));
 const nombreParHote = new Map();
 for (const h of hotes) nombreParHote.set(h.host, (nombreParHote.get(h.host) || 0) + 1);

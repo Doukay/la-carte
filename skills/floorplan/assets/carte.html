@@ -339,7 +339,8 @@ body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 .sec h3 { margin: 0 0 8px; font-size: 12.5px; font-weight: 500; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
 .sec h3 .c { color: var(--text-4); }
 .ph { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.ph .kindlabel { font-size: 12.5px; color: var(--text-3); text-transform: capitalize; }
+.ph .kindlabel { font-size: 12.5px; color: var(--text-3); display: inline-block; }
+.ph .kindlabel::first-letter, .td-genre::first-letter { text-transform: uppercase; }
 .pt { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; word-break: break-word; }
 .pd { margin: 0; color: var(--text-2); line-height: 1.6; }
 .pd.empty { color: var(--text-4); }
@@ -586,12 +587,12 @@ html.wk svg.dim .node:not(.hl) foreignObject { opacity: .28; }
     <nav id="crumbs"></nav>
   </div>
   <div class="hc">
-    <button class="btn" id="search-btn" aria-label="Rechercher des fichiers, des adresses du serveur, des modules"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="st">Rechercher des fichiers, des adresses du serveur, des modules</span><span class="kbd">/</span></button>
+    <button class="btn" id="search-btn" aria-label="Rechercher sur la carte"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="st">Rechercher sur la carte</span><span class="kbd">/</span></button>
   </div>
   <div class="hr">
     <div id="hdr-ext" class="hr-ext"></div>
     <div class="rel"><button class="btn" id="flows-btn" aria-label="Parcours"><svg class="i" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg><span class="bl">Parcours</span></button><div id="flowmenu" class="menu glass"></div></div>
-    <div class="rel"><button class="btn icon" id="filters-btn" title="Types de connexion" aria-label="Types de connexion"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button><div id="legend" class="menu glass"></div></div>
+    <div class="rel"><button class="btn icon" id="filters-btn" title="Types de liens" aria-label="Types de liens"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button><div id="legend" class="menu glass"></div></div>
     <button class="btn icon" id="btn-panel" title="Afficher ou masquer les détails (P)" aria-label="Afficher ou masquer les détails" aria-expanded="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M15 4v16"/></svg></button>
   </div>
 </header>
@@ -987,7 +988,7 @@ function infobulleBloc(id) {
   const endroit = i.type === 'node' ? (i.n.paths || []).join('\n') : i.type === 'route' ? `${i.f.p}${i.r.h ? ` · ${i.r.h}()` : ''}` : i.path || '';
   const taille = !st?.files ? '' : PLAN ? (i.type === 'file' || i.type === 'module' ? 'prévu' : 'prévu : ' + accorder(st.files, 'fichier')) : i.type === 'file' || i.type === 'module' ? `${formaterNombre(st.loc)} lignes` : `${accorder(st.files, 'fichier')} · ${formaterNombre(st.loc)} lignes`;
   const indications = [ouvrable(id) && etatVue.container !== id ? '<span><span class="kbd">2×clic</span> ouvrir</span>' : '', '<span><span class="kbd">clic droit</span> plus</span>'].join('');
-  return `<div class="tt">${h(i.name)}</div><div class="td" style="text-transform:capitalize">${h(nomGenre(genre))}${taille ? ` · ${taille}` : ''}</div>${endroit ? `<div class="tp">${h(endroit)}</div>` : ''}${infobulleRecent(id)}<div class="th">${indications}</div>`;
+  return `<div class="tt">${h(i.name)}</div><div class="td td-genre">${h(nomGenre(genre))}${taille ? ` · ${taille}` : ''}</div>${endroit ? `<div class="tp">${h(endroit)}</div>` : ''}${infobulleRecent(id)}<div class="th">${indications}</div>`;
 }
 /** Lignes au survol pour le travail récent : ce qui a changé sur ce bloc et en quoi cela sert la demande, ou ce qui a changé à l'intérieur. */
 function infobulleRecent(id) {
@@ -1473,7 +1474,7 @@ function afficherFilAriane() {
 function afficherLegende(vue) {
   const totaux = {}; for (const l of G.links) totaux[l.k] = (totaux[l.k] || 0) + 1;
   const ici = {}; for (const e of vue.edges) ici[e.k] = (ici[e.k] || 0) + 1;
-  const L = $('#legend'); L.innerHTML = '<div class="lh">Afficher les connexions</div>';
+  const L = $('#legend'); L.innerHTML = '<div class="lh">Afficher les liens</div>';
   const ligneTechnique = () => { const etiquette = document.createElement('label'); etiquette.className = 'tech' + (modeTechnique() ? '' : ' off'); etiquette.innerHTML = `<input type="checkbox" ${modeTechnique() ? 'checked' : ''}><span>Afficher le détail technique</span><span class="tog" style="margin-left:auto"></span>`; etiquette.querySelector('input').onchange = (ev) => reglerModeTechnique(ev.target.checked); return etiquette; };
   let nbDesactives = 0;
   for (const k of TYPES_CONNEXION) {
@@ -1508,7 +1509,7 @@ const ligneRoute = (ri, extra = '') => {
   const r = routes[ri];
   return `<a class="row" data-go="r:${ri}"><span class="method" style="--m:${varMethode(r.m)};margin-top:1px">${h(r.m)}</span><span class="rt"><div class="rn">${h(r.name)}</div>${r.d ? `<div class="rd">${h(r.d)}</div>` : ''}<div class="rp">${h(r.p)}</div></span>${extra ? `<span class="rc">${extra}</span>` : ''}</a>`;
 };
-const sectionListe = (titre, rangees, count, max = 30) => rangees.length ? `<div class="sec"><h3>${h(titre)} <span class="c">${count ?? rangees.length}</span></h3><div class="list">${rangees.slice(0, max).join('')}${rangees.length > max ? `<div class="more">+${rangees.length - max} more</div>` : ''}</div></div>` : '';
+const sectionListe = (titre, rangees, count, max = 30) => rangees.length ? `<div class="sec"><h3>${h(titre)} <span class="c">${count ?? rangees.length}</span></h3><div class="list">${rangees.slice(0, max).join('')}${rangees.length > max ? `<div class="more">+${rangees.length - max} de plus</div>` : ''}</div></div>` : '';
 const boiteChemin = (p) => `<div class="pp"><span>${h(p)}</span><button data-copy="${h(p)}" title="Copier">${pictoI('copy')}</button></div>`;
 function enteteFiche(i) {
   const genre = i.type === 'node' ? i.kind : i.type === 'symbol' ? i.symKind : i.type === 'route' ? 'route' : i.type === 'module' ? 'file' : i.type;

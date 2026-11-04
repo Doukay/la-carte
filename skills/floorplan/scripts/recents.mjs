@@ -31,7 +31,7 @@ const L = [];
 const MAXIMUM = 40;
 const liste = (lignes) => { lignes.slice(0, MAXIMUM).forEach((r) => L.push('  ' + r)); if (lignes.length > MAXIMUM) L.push(`  … +${lignes.length - MAXIMUM} de plus`); };
 
-L.push(`TRAVAIL RÉCENT  faits pour ${G.projet.name}  (carte construite le ${G.meta.generatedAt})`);
+L.push(`TRAVAIL RÉCENT  éléments pour ${G.projet.name}  (carte construite le ${G.meta.generatedAt})`);
 L.push(actuel?.tasks
   ? `travail-recent.json actuel : ${actuel.tasks.length} tâche(s), mis à jour le ${actuel.updatedAt || 'date inconnue'}. Réécris-le : il remplace les blocs mis en avant précédemment.`
   : 'Pas encore de travail-recent.json.');
@@ -73,7 +73,7 @@ for (const r of G.meta.repos || []) {
   }
 }
 
-L.push('', 'Écris floorplan/travail-recent.json (refs : un chemin de fichier, un id de partie, ou "METHODE /chemin" ; voir references/schema.md#recent-work) :',
+L.push('', 'Écris floorplan/travail-recent.json (refs : un chemin de fichier, un id de partie, ou "METHODE /chemin" ; voir references/schema.md#travail-récent) :',
   '  { "tasks": [ { "title": "…", "request": "ce que la personne a demandé", "summary": "ce qui a été fait pour y répondre, et où ça en est",',
   '      "items": [ { "ref": "<chemin du fichier>", "change": "changed|new", "note": "ce qui a changé ici, et en quoi ça sert la demande" } ] } ] }',
   'Puis lance construire.mjs. Utilise { "tasks": [] } quand rien n’a été travaillé.');

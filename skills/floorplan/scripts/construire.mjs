@@ -482,6 +482,6 @@ if (agent === 'codex') rapport.push('AGENT  Codex : les questions posées sur la
 if (analyse.ebauche) rapport.push('PLAN  prévu, pas encore construit : dessiné d’après floorplan/plan.json');
 rapport.push(avertissementSuivi ? `GIT  ! ${avertissementSuivi}` : 'GIT  floorplan/ reste hors de git (le dossier s’ignore lui-même)');
 rapport.push('');
-rapport.push(`✓ écrit ${path.relative(racine, path.join(dossierSortie, 'index.html'))} (${formaterNombre(Math.round(html.length / 1024))} Ko) et graphe.json`);
+rapport.push(`✓ écrit ${path.relative(racine, path.join(dossierSortie, 'index.html'))} (${Math.round(html.length / 1024)} Ko) et graphe.json`);
 if (pourcent > 10) rapport.push(`  Non affectés : ${pourcent.toFixed(0)} %. Ajoute des parties ou des motifs pour les dossiers ci-dessus (ou mets-les dans "ignore") puis relance build.`);
 console.log(rapport.join('\n'));
