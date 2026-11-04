@@ -1,12 +1,12 @@
-// What Floorplan reads out of source files: imports, endpoints, web requests and doc comments.
+// Ce que Floorplan lit dans les fichiers source : imports, adresses du serveur, appels au serveur et commentaires de documentation.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib } from './helpers.mjs';
 
 const { extraire, aplatirGabarits, nettoyerDoc } = await lib('extract.mjs');
-const routes = (src, lang, file) => extraire(src, lang, file).routes.map((r) => `${r.method} ${r.path}`);
+const adressesDe = (source, langage, fichier) => extraire(source, langage, fichier).routes.map((r) => `${r.method} ${r.path}`);
 
-test('JavaScript: imports and Express endpoints', () => {
+test('JavaScript : imports et adresses Express', () => {
   const r = extraire([
     `import express from 'express';`,
     `import { db, cache as c } from './db.js';`,
@@ -20,14 +20,14 @@ test('JavaScript: imports and Express endpoints', () => {
   assert.equal(r.routes[0].var, 'router');
 });
 
-test('Next.js app router: each exported method is an endpoint at the folder path', () => {
+test('Next.js app router : chaque méthode exportée est une adresse du serveur au chemin du dossier', () => {
   assert.deepEqual(
-    routes(`export async function GET(req) { return Response.json([]) }\nexport async function POST(req) {}\n`, 'typescript', 'web/app/api/orders/route.ts'),
+    adressesDe(`export async function GET(req) { return Response.json([]) }\nexport async function POST(req) {}\n`, 'typescript', 'web/app/api/orders/route.ts'),
     ['GET /api/orders', 'POST /api/orders'],
   );
 });
 
-test('Flask: blueprint prefix, methods list and handler docstring', () => {
+test('Flask : préfixe du blueprint, liste des méthodes et docstring de la fonction', () => {
   const r = extraire([
     `"""Order endpoints."""`,
     `from flask import Blueprint`,
@@ -45,7 +45,7 @@ test('Flask: blueprint prefix, methods list and handler docstring', () => {
   assert.equal(r.doc, 'Order endpoints.');
 });
 
-test('FastAPI: router prefix and path parameters', () => {
+test('FastAPI : préfixe du routeur et paramètres de chemin', () => {
   const r = extraire([
     `from fastapi import APIRouter`,
     `router = APIRouter(prefix="/items")`,
@@ -58,23 +58,23 @@ test('FastAPI: router prefix and path parameters', () => {
   assert.deepEqual(r.routers, { router: '/items' });
 });
 
-test('Go: grouped imports and http.HandleFunc endpoints', () => {
+test('Go : imports groupés et adresses http.HandleFunc', () => {
   const r = extraire(`package main\nimport (\n  "net/http"\n  "example.com/app/store"\n)\nfunc main() { http.HandleFunc("/health", h) }\n`, 'go', 'cmd/main.go');
   assert.deepEqual(r.imports.map((i) => i.spec), ['net/http', 'example.com/app/store']);
   assert.deepEqual(r.routes.map((x) => `${x.method} ${x.path}`), ['ANY /health']);
 });
 
-test('web requests: fetch with template strings and axios with a method', () => {
+test('appels au serveur : fetch avec des gabarits de texte et axios avec une méthode', () => {
   const r = extraire([
     'export const load = (id) => fetch(`/api/orders/${id}`);',
     `export const pay = (id) => axios.post('/api/orders/' + id + '/pay');`,
   ].join('\n'), 'typescript', 'web/src/api.ts');
-  const calls = r.calls.map((c) => `${c.method || '*'} ${c.path}`);
-  assert.ok(calls.includes('* /api/orders/${x}'), calls.join(', '));
-  assert.ok(calls.includes('POST /api/orders/'), calls.join(', '));
+  const appels = r.calls.map((c) => `${c.method || '*'} ${c.path}`);
+  assert.ok(appels.includes('* /api/orders/${x}'), appels.join(', '));
+  assert.ok(appels.includes('POST /api/orders/'), appels.join(', '));
 });
 
-test('comments: a /* inside a string is not a comment, so the code after it is still read', () => {
+test('commentaires : un /* dans une chaîne n’est pas un commentaire, donc le code qui suit est quand même lu', () => {
   const r = extraire([
     `import { Hono } from 'hono';`,
     `const app = new Hono();`,
@@ -87,11 +87,11 @@ test('comments: a /* inside a string is not a comment, so the code after it is s
   assert.deepEqual(r.routes.map((x) => `${x.method} ${x.path} :${x.line}`), ['GET /api/items :4', 'POST /api/items :5', 'GET /health :7']);
 });
 
-test('flattenTemplates replaces every ${…} with a placeholder, nested or not', () => {
+test('aplatirGabarits remplace chaque ${…} par un repère, imbriqué ou non', () => {
   assert.equal(aplatirGabarits('fetch(`${API}/users/${id}`)'), 'fetch(`${x}/users/${x}`)');
 });
 
-test('doc comments: JSDoc is cleaned, license headers are ignored', () => {
+test('commentaires de documentation : JSDoc est nettoyé, les en-têtes de licence sont ignorés', () => {
   assert.equal(nettoyerDoc('/**\n * Lists orders.\n * @param x\n */'), 'Lists orders.');
   assert.equal(nettoyerDoc('# Copyright 2020 Example Corp'), null);
 });

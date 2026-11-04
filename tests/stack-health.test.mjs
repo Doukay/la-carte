@@ -1,8 +1,8 @@
-// Health's checks for the usual mistakes in apps built on Supabase, Firebase, Stripe, Next.js and Vite:
-// tables without row-level security, Firebase rules that let anyone in, Stripe webhooks that don't
-// check the signature, secret keys in variables the browser gets, and CORS that allows every website.
-// Each check has cases it must find and look-alikes it must leave alone (a false alarm costs more than
-// a miss). Secret-looking values are assembled at runtime so none is ever committed to this repo.
+// Contrôles de Santé pour les erreurs habituelles des applis construites sur Supabase, Firebase, Stripe, Next.js et Vite :
+// tables sans sécurité au niveau des lignes, règles Firebase qui laissent entrer n’importe qui, webhooks Stripe qui ne
+// vérifient pas la signature, clés secrètes dans des variables que reçoit le navigateur, et CORS qui autorise tous les sites.
+// Chaque contrôle a des cas qu’il doit trouver et des sosies qu’il doit laisser tranquilles (une fausse alerte coûte plus cher
+// qu’un oubli). Les valeurs qui ressemblent à des secrets sont assemblées à l’exécution pour qu’aucune ne soit jamais enregistrée dans ce dépôt.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,37 +10,37 @@ import path from 'node:path';
 import { lib, makeProject, scanAndBuild, readGraph, cleanup, openEndpoints } from './helpers.mjs';
 
 const { trouverProblemes, variablePubliqueFuyante } = await lib('health.mjs');
-const find = (src, file, lang, k) => trouverProblemes(src, { path: file, category: 'code', lang }).filter((x) => x.k === k);
-const FAKE_OPENAI_KEY = ['sk', 'proj', 'Zq8x', 'T3Bl', 'bkFJ', 'k2m9', 'Wv4r', 'Lp7d', 'Hs1n'].join('');
-const NEXT_YEAR = new Date().getUTCFullYear() + 1;
+const trouver = (source, fichier, langage, k) => trouverProblemes(source, { path: fichier, category: 'code', lang: langage }).filter((x) => x.k === k);
+const FAUSSE_CLE_OPENAI = ['sk', 'proj', 'Zq8x', 'T3Bl', 'bkFJ', 'k2m9', 'Wv4r', 'Lp7d', 'Hs1n'].join('');
+const ANNEE_SUIVANTE = new Date().getUTCFullYear() + 1;
 
-// ---------- secret keys in variables the browser gets ----------
+// ---------- clés secrètes dans des variables que reçoit le navigateur ----------
 
-test('public variables named like secret keys are recognised, and keys that are public by design are not', () => {
+test('les variables publiques nommées comme des clés secrètes sont reconnues, et les clés publiques par conception ne le sont pas', () => {
   assert.equal(variablePubliqueFuyante('VITE_OPENAI_API_KEY'), 'OpenAI');
   assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY'), 'Supabase');
   assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_STRIPE_SECRET_KEY'), 'Stripe');
   assert.equal(variablePubliqueFuyante('REACT_APP_ANTHROPIC_KEY'), 'Anthropic');
   assert.equal(variablePubliqueFuyante('NEXT_PUBLIC_DATABASE_URL'), '');
-  for (const ok of ['NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', 'VITE_FIREBASE_API_KEY',
+  for (const bonne of ['NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', 'VITE_FIREBASE_API_KEY',
     'VITE_GOOGLE_MAPS_API_KEY', 'NEXT_PUBLIC_GITHUB_CLIENT_ID', 'NEXT_PUBLIC_RECAPTCHA_SITE_KEY', 'NEXT_PUBLIC_API_KEY', 'OPENAI_API_KEY', 'STRIPE_SECRET_KEY']) {
-    assert.equal(variablePubliqueFuyante(ok), null, ok);
+    assert.equal(variablePubliqueFuyante(bonne), null, bonne);
   }
 });
 
-test('code that reads a secret from a public variable is found, wherever the framework reads them', () => {
-  assert.deepEqual(find(`const key = import.meta.env.VITE_OPENAI_API_KEY;\n`, 'src/chat.ts', 'typescript', 'public-env').map((x) => [x.name, x.line]), [['VITE_OPENAI_API_KEY', 1]]);
-  assert.equal(find(`fetch(u, { headers: { Authorization: process.env['NEXT_PUBLIC_STRIPE_SECRET_KEY'] } })`, 'app/page.tsx', 'typescript', 'public-env').length, 1);
-  assert.equal(find(`import { PUBLIC_OPENAI_KEY } from '$env/static/public';`, 'src/routes/+page.svelte', 'svelte', 'public-env').length, 1);
-  // PUBLIC_ means nothing to Node, the anon key is public by design, and tests are left alone
-  assert.deepEqual(find(`const k = process.env.PUBLIC_OPENAI_KEY;`, 'server.js', 'javascript', 'public-env'), []);
-  assert.deepEqual(find(`createClient(url, import.meta.env.VITE_SUPABASE_ANON_KEY)`, 'src/db.ts', 'typescript', 'public-env'), []);
-  assert.deepEqual(find(`const key = import.meta.env.VITE_OPENAI_API_KEY;`, 'src/chat.test.ts', 'typescript', 'public-env'), []);
+test('le code qui lit un secret dans une variable publique est trouvé, quelle que soit la façon dont le framework les lit', () => {
+  assert.deepEqual(trouver(`const key = import.meta.env.VITE_OPENAI_API_KEY;\n`, 'src/chat.ts', 'typescript', 'public-env').map((x) => [x.name, x.line]), [['VITE_OPENAI_API_KEY', 1]]);
+  assert.equal(trouver(`fetch(u, { headers: { Authorization: process.env['NEXT_PUBLIC_STRIPE_SECRET_KEY'] } })`, 'app/page.tsx', 'typescript', 'public-env').length, 1);
+  assert.equal(trouver(`import { PUBLIC_OPENAI_KEY } from '$env/static/public';`, 'src/routes/+page.svelte', 'svelte', 'public-env').length, 1);
+  // PUBLIC_ ne veut rien dire pour Node, la clé anon est publique par conception, et les tests sont laissés tranquilles
+  assert.deepEqual(trouver(`const k = process.env.PUBLIC_OPENAI_KEY;`, 'server.js', 'javascript', 'public-env'), []);
+  assert.deepEqual(trouver(`createClient(url, import.meta.env.VITE_SUPABASE_ANON_KEY)`, 'src/db.ts', 'typescript', 'public-env'), []);
+  assert.deepEqual(trouver(`const key = import.meta.env.VITE_OPENAI_API_KEY;`, 'src/chat.test.ts', 'typescript', 'public-env'), []);
 });
 
-// ---------- Stripe webhooks ----------
+// ---------- webhooks Stripe ----------
 
-test('code that acts on Stripe payment events without checking the signature is found', () => {
+test('le code qui agit sur des événements de paiement Stripe sans vérifier la signature est trouvé', () => {
   const js = [
     `import Stripe from 'stripe';`,
     `export async function POST(req) {`,
@@ -51,30 +51,30 @@ test('code that acts on Stripe payment events without checking the signature is 
     `  }`,
     `}`,
   ].join('\n');
-  const [hit] = find(js, 'app/api/webhooks/stripe/route.ts', 'typescript', 'stripe-unsigned');
-  assert.equal(hit.line, 5);
-  assert.deepEqual(hit.events, ['checkout.session.completed', 'customer.subscription.deleted']);
+  const [resultat] = trouver(js, 'app/api/webhooks/stripe/route.ts', 'typescript', 'stripe-unsigned');
+  assert.equal(resultat.line, 5);
+  assert.deepEqual(resultat.events, ['checkout.session.completed', 'customer.subscription.deleted']);
   const py = `import stripe\n@app.post("/stripe")\nasync def hook(request):\n    event = await request.json()\n    if event["type"] == "invoice.paid":\n        grant_credits(event)\n`;
-  assert.equal(find(py, 'api/billing.py', 'python', 'stripe-unsigned').length, 1);
+  assert.equal(trouver(py, 'api/billing.py', 'python', 'stripe-unsigned').length, 1);
 });
 
-test('verified Stripe webhooks, and code that only starts a checkout, are left alone', () => {
-  const verified = `const event = stripe.webhooks.constructEvent(body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);\nif (event.type === 'checkout.session.completed') fulfil(event);`;
-  assert.deepEqual(find(verified, 'server/stripe.js', 'javascript', 'stripe-unsigned'), []);
+test('les webhooks Stripe vérifiés, et le code qui ne fait que lancer un paiement, sont laissés tranquilles', () => {
+  const verifie = `const event = stripe.webhooks.constructEvent(body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);\nif (event.type === 'checkout.session.completed') fulfil(event);`;
+  assert.deepEqual(trouver(verifie, 'server/stripe.js', 'javascript', 'stripe-unsigned'), []);
   const py = `event = stripe.Webhook.construct_event(payload, sig, secret)\nif event["type"] == "invoice.paid":\n    pay()`;
-  assert.deepEqual(find(py, 'billing.py', 'python', 'stripe-unsigned'), []);
-  // listing the events to subscribe to isn't handling them
-  const setup = `await stripe.webhookEndpoints.create({ url, enabled_events: ['checkout.session.completed'] });`;
-  assert.deepEqual(find(setup, 'scripts/setup-stripe.js', 'javascript', 'stripe-unsigned'), []);
+  assert.deepEqual(trouver(py, 'billing.py', 'python', 'stripe-unsigned'), []);
+  // lister les événements auxquels s’abonner, ce n’est pas les traiter
+  const preparation = `await stripe.webhookEndpoints.create({ url, enabled_events: ['checkout.session.completed'] });`;
+  assert.deepEqual(trouver(preparation, 'scripts/setup-stripe.js', 'javascript', 'stripe-unsigned'), []);
 });
 
 // ---------- CORS ----------
 
-test('CORS that allows every website is found, and marked serious only when login cookies go along', () => {
-  const cors = (src, file = 'server.js', lang = 'javascript') => find(src, file, lang, 'cors-any').map((x) => x.credentials);
+test('un CORS qui autorise tous les sites est trouvé, et jugé grave seulement quand les cookies de connexion suivent', () => {
+  const cors = (source, fichier = 'server.js', langage = 'javascript') => trouver(source, fichier, langage, 'cors-any').map((x) => x.credentials);
   assert.deepEqual(cors(`import cors from 'cors';\napp.use(cors());`), [false]);
   assert.deepEqual(cors(`const cors = require('cors');\napp.use(cors({ origin: true, credentials: true }));`), [true]);
-  // browsers refuse "*" together with cookies, so that pair isn't the dangerous one
+  // les navigateurs refusent "*" avec des cookies, donc cette paire n’est pas la dangereuse
   assert.deepEqual(cors(`import cors from 'cors';\napp.use(cors({ origin: '*', credentials: true }));`), [false]);
   assert.deepEqual(cors(`res.setHeader('Access-Control-Allow-Origin', req.headers.origin);\nres.setHeader('Access-Control-Allow-Credentials', 'true');`), [true]);
   assert.deepEqual(cors(`app.add_middleware(\n    CORSMiddleware,\n    allow_origins=["*"],\n    allow_credentials=True,\n)`, 'main.py', 'python'), [true]);
@@ -82,18 +82,18 @@ test('CORS that allows every website is found, and marked serious only when logi
   assert.deepEqual(cors(`CORS_ALLOW_ALL_ORIGINS = True\nCORS_ALLOW_CREDENTIALS = True`, 'mysite/settings.py', 'python'), [true]);
 });
 
-test('CORS limited to named websites is left alone', () => {
-  const none = (src, file = 'server.js', lang = 'javascript') => assert.deepEqual(find(src, file, lang, 'cors-any'), [], src);
-  none(`import cors from 'cors';\napp.use(cors({ origin: ['https://myapp.com'], credentials: true }));`);
-  none(`import cors from 'cors';\napp.use(cors({ origin: process.env.ALLOWED_ORIGINS.split(',') }));`);
-  none(`app.add_middleware(CORSMiddleware, allow_origins=["https://myapp.com"], allow_credentials=True)`, 'main.py', 'python');
-  none(`CORS(app, origins=["https://myapp.com"], supports_credentials=True)`, 'app.py', 'python');
-  none(`CORS(app, resources={r"/api/*": {"origins": "https://myapp.com"}})`, 'app.py', 'python');
+test('un CORS limité à des sites nommés est laissé tranquille', () => {
+  const aucun = (source, fichier = 'server.js', langage = 'javascript') => assert.deepEqual(trouver(source, fichier, langage, 'cors-any'), [], source);
+  aucun(`import cors from 'cors';\napp.use(cors({ origin: ['https://myapp.com'], credentials: true }));`);
+  aucun(`import cors from 'cors';\napp.use(cors({ origin: process.env.ALLOWED_ORIGINS.split(',') }));`);
+  aucun(`app.add_middleware(CORSMiddleware, allow_origins=["https://myapp.com"], allow_credentials=True)`, 'main.py', 'python');
+  aucun(`CORS(app, origins=["https://myapp.com"], supports_credentials=True)`, 'app.py', 'python');
+  aucun(`CORS(app, resources={r"/api/*": {"origins": "https://myapp.com"}})`, 'app.py', 'python');
 });
 
-// ---------- Supabase migrations ----------
+// ---------- migrations Supabase ----------
 
-test('migrations: tables, row-level security on and off, renames, drops and open rules are read in order', () => {
+test('migrations : tables, sécurité au niveau des lignes activée et désactivée, renommages, suppressions et règles ouvertes sont lus dans l’ordre', () => {
   const sql = [
     `create table public.profiles (id uuid primary key);`,
     `-- alter table public.profiles disable row level security;`,
@@ -106,8 +106,8 @@ test('migrations: tables, row-level security on and off, renames, drops and open
     `create policy "Owners read" on public.profiles for select using (auth.uid() = id);`,
     `create policy "Anyone reads" on public.posts for select using (true);`,
   ].join('\n');
-  const got = trouverProblemes(sql, { path: 'supabase/migrations/1_init.sql', category: 'code', lang: 'sql' }).map(({ k, table, on, to, line, cmd }) => [k, table, on ?? to ?? cmd ?? null, line]);
-  assert.deepEqual(got, [
+  const obtenu = trouverProblemes(sql, { path: 'supabase/migrations/1_init.sql', category: 'code', lang: 'sql' }).map(({ k, table, on, to, line, cmd }) => [k, table, on ?? to ?? cmd ?? null, line]);
+  assert.deepEqual(obtenu, [
     ['sql-table', 'public.profiles', null, 1],
     ['sql-rls', 'public.profiles', true, 3],
     ['sql-table', 'public.notes', null, 4],
@@ -117,17 +117,17 @@ test('migrations: tables, row-level security on and off, renames, drops and open
   ]);
 });
 
-// ---------- a whole app ----------
+// ---------- une appli entière ----------
 
-const futureRules = `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.time < timestamp.date(${NEXT_YEAR}, 3, 1);\n    }\n  }\n}\n`;
+const reglesFutures = `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.time < timestamp.date(${ANNEE_SUIVANTE}, 3, 1);\n    }\n  }\n}\n`;
 
-/** A Vite + Supabase app with one of every mistake, beside a Next.js-style Stripe webhook and an Express server. */
-function riskyApp() {
+/** Une appli Vite + Supabase avec une erreur de chaque sorte, à côté d’un webhook Stripe de style Next.js et d’un serveur Express. */
+function appARisques() {
   return makeProject({
     'package.json': JSON.stringify({ name: 'vibe', dependencies: { '@supabase/supabase-js': '^2.45.0', stripe: '^16.0.0', express: '^4.19.0', cors: '^2.8.5' } }),
     'src/db.ts': `import { createClient } from '@supabase/supabase-js';\nexport const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);\n`,
     'src/chat.ts': `export async function ask(q: string) {\n  return fetch('https://api.openai.com/v1/chat/completions', { headers: { Authorization: 'Bearer ' + import.meta.env.VITE_OPENAI_API_KEY } });\n}\n`,
-    '.env.local': `VITE_SUPABASE_URL=https://abcd.supabase.co\nVITE_OPENAI_API_KEY=${FAKE_OPENAI_KEY}\n`,
+    '.env.local': `VITE_SUPABASE_URL=https://abcd.supabase.co\nVITE_OPENAI_API_KEY=${FAUSSE_CLE_OPENAI}\n`,
     'supabase/migrations/20250101000000_init.sql': [
       `create table public.profiles (id uuid primary key references auth.users, name text);`,
       `create table public.notes (id bigint generated always as identity primary key, user_id uuid, body text);`,
@@ -137,7 +137,7 @@ function riskyApp() {
       `create policy "Anyone can join" on public.waitlist for insert to anon with check (true);`,
     ].join('\n'),
     'supabase/migrations/20250201000000_lock_profiles.sql': `alter table public.profiles enable row level security;\ndrop table public.old_stuff;\n`,
-    'firestore.rules': futureRules,
+    'firestore.rules': reglesFutures,
     'storage.rules': `rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    match /{allPaths=**} {\n      allow read, write;\n    }\n  }\n}\n`,
     'database.rules.json': `{\n  "rules": {\n    ".read": true,\n    ".write": "auth != null"\n  }\n}\n`,
     'app/api/webhooks/stripe/route.ts': `import Stripe from 'stripe';\nexport async function POST(req: Request) {\n  const event = await req.json();\n  if (event.type === 'checkout.session.completed') await fulfil(event.data.object);\n  return new Response('ok');\n}\nasync function fulfil(s: unknown) {}\n`,
@@ -145,64 +145,64 @@ function riskyApp() {
   }, { arch: { projet: { name: 'Vibe', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
 }
 
-test('a whole app: each mistake becomes one plain-English issue with a fix to paste', () => {
-  const root = riskyApp();
+test('une appli entière : chaque erreur devient un problème en langage simple avec un correctif à coller', () => {
+  const racine = appARisques();
   try {
-    scanAndBuild(root);
-    const graph = readGraph(root);
-    const issues = graph.sante.problemes;
-    const byId = (prefix) => issues.filter((i) => i.id.startsWith(prefix));
+    scanAndBuild(racine);
+    const graphe = readGraph(racine);
+    const problemes = graphe.sante.problemes;
+    const parId = (prefixe) => problemes.filter((i) => i.id.startsWith(prefixe));
 
-    // Supabase: only notes is open (profiles was locked later, old_stuff was dropped, waitlist has RLS)
-    const [rls] = byId('rls:');
+    // Supabase : seule notes est ouverte (profiles a été verrouillée ensuite, old_stuff a été supprimée, waitlist a la RLS)
+    const [rls] = parId('rls:');
     assert.equal(rls.severity, 'high');
-    assert.equal(rls.title, 'Anyone can read and change your notes table');
+    assert.equal(rls.title, 'N’importe qui peut lire et modifier ta table notes');
     assert.deepEqual(rls.locations, [{ file: 'supabase/migrations/20250101000000_init.sql', line: 2 }]);
     assert.match(rls.fix, /alter table <table> enable row level security/);
-    // the waitlist's open insert rule is worth a look, not an alarm
-    const [policy] = byId('open-policy:');
-    assert.equal(policy.severity, 'medium');
-    assert.match(policy.detail, /public form/);
+    // la règle d’insertion ouverte de waitlist mérite un coup d’œil, pas une alarme
+    const [politique] = parId('open-policy:');
+    assert.equal(politique.severity, 'medium');
+    assert.match(politique.detail, /formulaire public/);
 
-    // Firebase: test mode with its date, open storage, and a database anyone can read
-    const fb = Object.fromEntries(byId('firebase-rules:').map((i) => [i.id.split(':')[1], i]));
+    // Firebase : mode test avec sa date, stockage ouvert, et base de données lisible par tous
+    const fb = Object.fromEntries(parId('firebase-rules:').map((i) => [i.id.split(':')[1], i]));
     assert.equal(fb['firestore.rules'].severity, 'high');
-    assert.match(fb['firestore.rules'].title, new RegExp(`open to anyone until March 1, ${NEXT_YEAR}`));
+    assert.match(fb['firestore.rules'].title, new RegExp(`ouvert à tout le monde jusqu’au 1 mars ${ANNEE_SUIVANTE}`));
     assert.match(fb['firestore.rules'].fix, /firebase deploy --only firestore:rules/);
     assert.equal(fb['storage.rules'].severity, 'high');
-    assert.equal(fb['storage.rules'].title, 'Anyone can upload, replace or delete your Firebase files');
+    assert.equal(fb['storage.rules'].title, 'N’importe qui peut envoyer, remplacer ou supprimer tes fichiers Firebase');
     assert.equal(fb['database.rules.json'].severity, 'medium');
-    assert.equal(fb['database.rules.json'].title, 'Anyone can read everything in your Firebase Realtime Database');
+    assert.equal(fb['database.rules.json'].title, 'N’importe qui peut tout lire dans ton Firebase Realtime Database');
 
-    // Stripe: one specific issue, and the same webhook isn't also reported as an open endpoint
-    const [stripe] = byId('stripe-webhook:');
+    // Stripe : un problème précis, et le même webhook n’est pas aussi signalé comme adresse du serveur ouverte
+    const [stripe] = parId('stripe-webhook:');
     assert.equal(stripe.severity, 'high');
-    assert.match(stripe.title, /fake a Stripe payment/);
+    assert.match(stripe.title, /simuler un paiement Stripe/);
     assert.match(stripe.fix, /await req\.text\(\)/);
-    assert.ok(!openEndpoints(graph).includes('POST /api/webhooks/stripe'), openEndpoints(graph).join(', '));
+    assert.ok(!openEndpoints(graphe).includes('POST /api/webhooks/stripe'), openEndpoints(graphe).join(', '));
 
-    // the OpenAI key in a VITE_ variable: set in .env.local and read by browser code
-    const [pub] = byId('public-env');
+    // la clé OpenAI dans une variable VITE_ : définie dans .env.local et lue par le code du navigateur
+    const [pub] = parId('public-env');
     assert.equal(pub.severity, 'high');
-    assert.equal(pub.title, 'VITE_OPENAI_API_KEY is sent to every visitor’s browser');
+    assert.equal(pub.title, 'VITE_OPENAI_API_KEY est envoyé au navigateur de chaque visiteur');
     assert.deepEqual(pub.locations.map((l) => l.file).sort(), ['.env.local', 'src/chat.ts']);
 
-    // CORS that echoes any origin with cookies
-    const [cors] = byId('cors');
+    // CORS qui renvoie n’importe quelle origine avec des cookies
+    const [cors] = parId('cors');
     assert.equal(cors.severity, 'medium');
-    assert.equal(cors.title, 'Any website could act as your signed-in users');
+    assert.equal(cors.title, 'N’importe quel site web pourrait agir à la place de tes utilisateurs connectés');
 
-    // important issues come first, and no key value reaches anything Floorplan writes
-    assert.equal(issues[0].severity, 'high');
-    for (const f of fs.readdirSync(path.join(root, 'floorplan'), { recursive: true })) {
-      const p = path.join(root, 'floorplan', f);
-      if (fs.statSync(p).isFile()) assert.ok(!fs.readFileSync(p, 'utf8').includes(FAKE_OPENAI_KEY.slice(4)), `${f} contains the key`);
+    // les problèmes importants viennent en premier, et aucune valeur de clé n’arrive dans ce que Floorplan écrit
+    assert.equal(problemes[0].severity, 'high');
+    for (const f of fs.readdirSync(path.join(racine, 'floorplan'), { recursive: true })) {
+      const p = path.join(racine, 'floorplan', f);
+      if (fs.statSync(p).isFile()) assert.ok(!fs.readFileSync(p, 'utf8').includes(FAUSSE_CLE_OPENAI.slice(4)), `${f} contient la clé`);
     }
-  } finally { cleanup(root); }
+  } finally { cleanup(racine); }
 });
 
-test('the same app done right raises none of these issues', () => {
-  const root = makeProject({
+test('la même appli bien faite ne soulève aucun de ces problèmes', () => {
+  const racine = makeProject({
     'package.json': JSON.stringify({ name: 'tidy', dependencies: { '@supabase/supabase-js': '^2.45.0', stripe: '^16.0.0', cors: '^2.8.5' } }),
     'src/db.ts': `import { createClient } from '@supabase/supabase-js';\nexport const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);\n`,
     'supabase/migrations/20250101000000_init.sql': `create table public.notes (id bigint primary key, user_id uuid);\nalter table public.notes enable row level security;\ncreate policy "Own notes" on public.notes for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);\n`,
@@ -211,23 +211,23 @@ test('the same app done right raises none of these issues', () => {
     'server/index.js': `import express from 'express';\nimport cors from 'cors';\nconst app = express();\napp.use(cors({ origin: ['https://tidy.app'], credentials: true }));\napp.listen(3001);\n`,
   }, { arch: { projet: { name: 'Tidy', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'ui', summary: 'The app.', paths: ['**'] }] } });
   try {
-    scanAndBuild(root);
-    const kinds = readGraph(root).sante.problemes.map((i) => i.kind);
-    for (const k of ['database-rules', 'stripe-webhook', 'public-env-secret', 'cors']) assert.ok(!kinds.includes(k), `unexpected ${k}: ${kinds.join(', ')}`);
-  } finally { cleanup(root); }
+    scanAndBuild(racine);
+    const genres = readGraph(racine).sante.problemes.map((i) => i.kind);
+    for (const k of ['database-rules', 'stripe-webhook', 'public-env-secret', 'cors']) assert.ok(!genres.includes(k), `${k} inattendu : ${genres.join(', ')}`);
+  } finally { cleanup(racine); }
 });
 
-test('plain Postgres migrations without Supabase are not held to Supabase’s rules, and expired test mode is called out', () => {
-  const root = makeProject({
+test('les migrations Postgres simples sans Supabase ne sont pas soumises aux règles de Supabase, et le mode test expiré est signalé', () => {
+  const racine = makeProject({
     'db/schema.sql': `create table users (id serial primary key, email text);\n`,
     'firestore.rules': `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.time < timestamp.date(2020, 1, 1);\n    }\n  }\n}\n`,
   }, { arch: { projet: { name: 'Plain', summary: 'A sample app.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['**'] }] } });
   try {
-    scanAndBuild(root);
-    const issues = readGraph(root).sante.problemes;
-    assert.ok(!issues.some((i) => i.id.startsWith('rls:')), 'no row-level security issue without Supabase');
-    const [fb] = issues.filter((i) => i.id === 'firebase-rules:firestore.rules');
+    scanAndBuild(racine);
+    const problemes = readGraph(racine).sante.problemes;
+    assert.ok(!problemes.some((i) => i.id.startsWith('rls:')), 'aucun problème de sécurité au niveau des lignes sans Supabase');
+    const [fb] = problemes.filter((i) => i.id === 'firebase-rules:firestore.rules');
     assert.equal(fb.severity, 'medium');
-    assert.equal(fb.title, 'Your Firebase Firestore test-mode rules ran out on January 1, 2020');
-  } finally { cleanup(root); }
+    assert.equal(fb.title, 'Les règles en mode test de ton Firebase Firestore ont expiré le 1 janvier 2020');
+  } finally { cleanup(racine); }
 });

@@ -1,45 +1,45 @@
-// Touch gestures: the built map lets a finger drag it, two fingers pinch and move it, and no gesture leaves it stuck or
-// re-fits it. These are checks on the built page (the rules and the code are there), not on a real screen.
+// Gestes tactiles : sur la carte construite, un doigt la fait glisser, deux doigts pincent et la déplacent, et aucun geste ne la laisse bloquée ni
+// ne la recadre. Ce sont des contrôles sur la page construite (les règles et le code sont là), pas sur un vrai écran.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { shopApp, scanAndBuild, cleanup } from './helpers.mjs';
 
-let root, html;
-before(() => { root = shopApp(); scanAndBuild(root); html = fs.readFileSync(path.join(root, 'floorplan', 'index.html'), 'utf8'); });
-after(() => cleanup(root));
+let racine, page;
+before(() => { racine = shopApp(); scanAndBuild(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
+after(() => cleanup(racine));
 
-test('the map takes the touch itself, and the page does not bounce under it (touch screens only)', () => {
-  assert.match(html, /#svg \{ touch-action: none; \}/); // a finger can drag the map, and a pinch doesn't zoom the whole page
-  assert.match(html, /@media \(pointer: coarse\) \{ html, body \{ overscroll-behavior: none; \} \}/);
+test('la carte prend le toucher elle-même, et la page ne rebondit pas dessous (écrans tactiles seulement)', () => {
+  assert.match(page, /#svg \{ touch-action: none; \}/); // un doigt peut faire glisser la carte, et un pincement ne zoome pas toute la page
+  assert.match(page, /@media \(pointer: coarse\) \{ html, body \{ overscroll-behavior: none; \} \}/);
 });
 
-test('two fingers pinch the map (zooming around the point between them) and move it, using the same limits as the wheel', () => {
-  assert.match(html, /const k = clamp\(t0\.k \* now\.d \/ pinch\.d, 0\.08, 2\.5\)/);
-  assert.match(html, /const k = clamp\(state\.t\.k \* f, 0\.08, 2\.5\)/); // the wheel's limits
-  assert.match(html, /if \(fingers\.size === 2\) \{ if \(drag\?\.moved\) swallowClick = true; drag = null;/); // the second finger ends the one-finger drag
+test('deux doigts pincent la carte (zoom autour du point entre eux) et la déplacent, avec les mêmes limites que la molette', () => {
+  assert.match(page, /const k = borner\(t0\.k \* maintenant\.d \/ pincement\.d, 0\.08, 2\.5\)/);
+  assert.match(page, /const k = borner\(etatVue\.t\.k \* f, 0\.08, 2\.5\)/); // les limites de la molette
+  assert.match(page, /if \(doigts\.size === 2\) \{ if \(glisse\?\.moved\) avalerClic = true; glisse = null;/); // le deuxième doigt met fin au glissement à un doigt
 });
 
-test('a drag follows only the finger that started it, ends when the browser cancels the touch, and a phone\'s address bar does not re-fit the map', () => {
-  assert.match(html, /if \(!drag \|\| ev\.pointerId !== drag\.id\) return;/);
-  assert.match(html, /window\.addEventListener\('pointercancel', endDrag\)/);
-  assert.match(html, /window\.addEventListener\('pointercancel', liftFinger\)/);
-  assert.match(html, /if \(matchMedia\('\(pointer: coarse\)'\)\.matches && \(heightOnly \|\| drag \|\| pinch\)\) return;\n  fit\(false\);/);
+test('un glissement ne suit que le doigt qui l’a commencé, se termine quand le navigateur annule le toucher, et la barre d’adresse d’un téléphone ne recadre pas la carte', () => {
+  assert.match(page, /if \(!glisse \|\| ev\.pointerId !== glisse\.id\) return;/);
+  assert.match(page, /window\.addEventListener\('pointercancel', finGlisse\)/);
+  assert.match(page, /window\.addEventListener\('pointercancel', leverDoigt\)/);
+  assert.match(page, /if \(matchMedia\('\(pointer: coarse\)'\)\.matches && \(seulementHauteur \|\| glisse \|\| pincement\)\) return;\n  ajusterVue\(false\);/);
 });
 
-test('a third finger is ignored, and the click that ends a drag is swallowed once and cleared at the next touch, so the next tap still works', () => {
-  assert.match(html, /swallowClick = false; vp\.classList\.remove\('anim'\)/);
-  assert.match(html, /if \(ev\.pointerType === 'touch'\) \{\n    if \(fingers\.size >= 2\) return; \/\/ a third finger is ignored/);
+test('un troisième doigt est ignoré, et le clic qui termine un glissement est avalé une fois puis effacé au toucher suivant, pour que le toucher d’après marche encore', () => {
+  assert.match(page, /avalerClic = false; vp\.classList\.remove\('anim'\)/);
+  assert.match(page, /if \(ev\.pointerType === 'touch'\) \{\n    if \(doigts\.size >= 2\) return; \/\/ un troisième doigt est ignoré/);
 });
 
-test('a tap does not leave a hover tooltip over the details, and a tooltip stays on a narrow screen', () => {
-  assert.match(html, /\(ev\) => \{ touching = ev\.pointerType === 'touch'; \}/);
-  assert.match(html, /if \(!html \|\| touching \|\| drag\?\.moved/);
-  assert.match(html, /tip\.style\.left = Math\.max\(8, x\) \+ 'px'; tip\.style\.top = Math\.max\(8, y\) \+ 'px';/);
+test('un toucher ne laisse pas d’infobulle de survol sur les détails, et une infobulle reste à l’écran sur un écran étroit', () => {
+  assert.match(page, /\(ev\) => \{ toucheEnCours = ev\.pointerType === 'touch'; \}/);
+  assert.match(page, /if \(!html \|\| toucheEnCours \|\| glisse\?\.moved/);
+  assert.match(page, /infobulle\.style\.left = Math\.max\(8, x\) \+ 'px'; infobulle\.style\.top = Math\.max\(8, y\) \+ 'px';/);
 });
 
-test('none of this changes a mouse: the glide is only cancelled for a finger, and a mouse drag keeps its original one-time click guard', () => {
-  assert.match(html, /if \(ev\.pointerType === 'touch'\) swallowClick = true; else svg\.addEventListener\('click', \(e\) => e\.stopPropagation\(\), \{ capture: true, once: true \}\)/);
-  assert.match(html, /svg\.addEventListener\('click', \(\) => select\(null\)\);/);
+test('rien de tout ça ne change la souris : la glissade n’est annulée que pour un doigt, et le glissement à la souris garde sa protection d’origine contre le clic unique', () => {
+  assert.match(page, /if \(ev\.pointerType === 'touch'\) avalerClic = true; else svg\.addEventListener\('click', \(e\) => e\.stopPropagation\(\), \{ capture: true, once: true \}\)/);
+  assert.match(page, /svg\.addEventListener\('click', \(\) => choisir\(null\)\);/);
 });

@@ -1,142 +1,142 @@
-// Blueprints: a map planned from a PRD before any code exists. plan.mjs turns floorplan/plan.json
-// into a scan, and build.mjs draws it like a code map, with a design review instead of the code checks.
+// Plans : une carte prévue à partir d’un cahier des charges (PRD) avant que le code existe. plan.mjs transforme floorplan/plan.json
+// en analyse, et build.mjs la dessine comme une carte de code, avec une revue du plan à la place des contrôles du code.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { REPO, makeProject, run, readGraph, readJson, writeJson, routeKeys, cleanup } from './helpers.mjs';
 
-const FIXTURE = path.join(REPO, 'tests', 'fixtures', 'blueprint');
-let root, graph, planOut, buildOut;
+const EXEMPLE = path.join(REPO, 'tests', 'fixtures', 'blueprint');
+let racine, graphe, sortiePlan, sortieConstruction;
 before(() => {
-  root = makeProject({});
-  fs.cpSync(FIXTURE, root, { recursive: true });
-  planOut = run('plan.mjs', root);
-  buildOut = run('build.mjs', root, '--no-claude-md');
-  graph = readGraph(root);
+  racine = makeProject({});
+  fs.cpSync(EXEMPLE, racine, { recursive: true });
+  sortiePlan = run('plan.mjs', racine);
+  sortieConstruction = run('build.mjs', racine, '--no-claude-md');
+  graphe = readGraph(racine);
 });
-after(() => cleanup(root));
+after(() => cleanup(racine));
 
-/** A copy of the sample with plan.json changed, for the error cases. */
-function withPlan(change) {
+/** Une copie de l’exemple dont plan.json est modifié, pour les cas d’erreur. */
+function avecPlan(changement) {
   const r = makeProject({});
-  fs.cpSync(FIXTURE, r, { recursive: true });
-  const file = path.join(r, 'floorplan', 'plan.json');
-  const plan = readJson(file);
-  change(plan);
-  writeJson(file, plan);
+  fs.cpSync(EXEMPLE, r, { recursive: true });
+  const fichier = path.join(r, 'floorplan', 'plan.json');
+  const plan = readJson(fichier);
+  changement(plan);
+  writeJson(fichier, plan);
   return r;
 }
-const fails = (fn) => { try { fn(); } catch (e) { return String(e.stdout || '') + String(e.stderr || ''); } assert.fail('expected the script to fail'); };
+const echoue = (fonction) => { try { fonction(); } catch (e) { return String(e.stdout || '') + String(e.stderr || ''); } assert.fail('le script devait échouer'); };
 
-test('the planned files and endpoints are on the map, named as the plan names them', () => {
-  assert.match(planOut, /BLUEPRINT {2}21 planned files · 11 endpoints · 9 calls to planned endpoints · 5 links to services and data/);
-  assert.equal(graph.files.length, 21);
-  assert.equal(graph.files.filter((f) => f.auto).length, 0, 'every file is described');
-  assert.equal(graph.routes.length, 11);
-  assert.equal(graph.files.find((f) => f.p === 'web/app/page.tsx').name, 'Home page');
-  const book = graph.routes.find((r) => r.m === 'POST' && r.p === '/api/bookings');
-  assert.equal(book.name, 'Book a walk');
-  assert.equal(book.access, 'signed-in');
-  assert.deepEqual(graph.meta.ebauche.stack.slice(0, 2), ['Next.js websites for owners and walkers', 'Node.js + Express server']);
-  assert.equal(graph.meta.ebauche.source, 'docs/prd.md');
-  assert.match(buildOut, /DESCRIPTIONS {2}files 21\/21 · routes 11\/11/);
-  assert.match(buildOut, /BLUEPRINT {2}planned, not built yet/);
+test('les fichiers et les adresses du serveur prévus sont sur la carte, nommés comme le plan les nomme', () => {
+  assert.match(sortiePlan, /PLAN {2}21 fichiers prévus · 11 adresses du serveur · 9 appels vers des adresses prévues · 5 liens vers des services et des données/);
+  assert.equal(graphe.files.length, 21);
+  assert.equal(graphe.files.filter((f) => f.auto).length, 0, 'chaque fichier est décrit');
+  assert.equal(graphe.routes.length, 11);
+  assert.equal(graphe.files.find((f) => f.p === 'web/app/page.tsx').name, 'Home page');
+  const reservation = graphe.routes.find((r) => r.m === 'POST' && r.p === '/api/bookings');
+  assert.equal(reservation.name, 'Book a walk');
+  assert.equal(reservation.access, 'signed-in');
+  assert.deepEqual(graphe.meta.ebauche.stack.slice(0, 2), ['Next.js websites for owners and walkers', 'Node.js + Express server']);
+  assert.equal(graphe.meta.ebauche.source, 'docs/prd.md');
+  assert.match(sortieConstruction, /DESCRIPTIONS {2}fichiers 21\/21 · routes 11\/11/);
+  assert.match(sortieConstruction, /PLAN {2}prévu, pas encore construit/);
 });
 
-test('screens call endpoints, and files reach outside services and the database', () => {
-  const http = graph.links.filter((l) => l.k === 'http' && l.labels?.length && l.a.startsWith('f:web/app/bookings')).map((l) => `${l.b.slice(2)} ${l.labels.join(', ')}`);
+test('les écrans appellent des adresses du serveur, et les fichiers atteignent les services extérieurs et la base de données', () => {
+  const http = graphe.links.filter((l) => l.k === 'http' && l.labels?.length && l.a.startsWith('f:web/app/bookings')).map((l) => `${l.b.slice(2)} ${l.labels.join(', ')}`);
   assert.deepEqual(http, ['api/src/routes/bookings.ts GET /api/bookings, POST /api/bookings/:id/cancel']);
-  const toNodes = graph.links.filter((l) => l.b.startsWith('n:')).map((l) => `${l.a.slice(2)} ${l.k} ${l.b.slice(2)}`).sort();
-  assert.deepEqual(toNodes, [
+  const versNoeuds = graphe.links.filter((l) => l.b.startsWith('n:')).map((l) => `${l.a.slice(2)} ${l.k} ${l.b.slice(2)}`).sort();
+  assert.deepEqual(versNoeuds, [
     'api/src/db/bookings.ts data db', 'api/src/db/users.ts data db', 'api/src/db/walkers.ts data db',
     'api/src/services/email.ts http postmark', 'api/src/services/payments.ts http stripe',
   ]);
 });
 
-test('blueprint builds report that files are planned under both coding agents', async (t) => {
+test('la construction d’un plan indique que les fichiers sont prévus, avec les deux agents de code', async (t) => {
   for (const agent of ['codex', 'claude']) {
     await t.test(agent, () => {
       const r = makeProject({});
       try {
-        fs.cpSync(FIXTURE, r, { recursive: true });
+        fs.cpSync(EXEMPLE, r, { recursive: true });
         run('plan.mjs', r, '--agent', agent);
-        const output = run('build.mjs', r, '--agent', agent, '--claude-md');
+        const sortie = run('build.mjs', r, '--agent', agent, '--claude-md');
         assert.equal(readGraph(r).meta.agent, agent);
-        assert.match(output, /BLUEPRINT {2}planned, not built yet/);
-        if (agent === 'codex') assert.match(output, /AGENT {2}Codex/);
-        assert.doesNotMatch(output, /CLAUDE\.LOCAL\.MD/);
-        assert.ok(!fs.existsSync(path.join(r, 'CLAUDE.local.md')), 'blueprints do not add project notes');
+        assert.match(sortie, /PLAN {2}prévu, pas encore construit/);
+        if (agent === 'codex') assert.match(sortie, /AGENT {2}Codex/);
+        assert.doesNotMatch(sortie, /CLAUDE\.LOCAL\.MD/);
+        assert.ok(!fs.existsSync(path.join(r, 'CLAUDE.local.md')), 'un plan n’ajoute pas de notes au projet');
       } finally { cleanup(r); }
     });
   }
 });
 
-test('Screens show what each planned page relies on, down to Stripe', () => {
-  assert.deepEqual(graph.ecrans.map((s) => s.url).sort(), ['/', '/book/:walkerId', '/bookings', '/login', '/schedule']);
-  const book = graph.ecrans.find((s) => s.url === '/book/:walkerId');
-  const behind = book.behind.map((b) => `${b.kind} ${b.id}`);
-  assert.ok(behind.includes('server f:api/src/routes/bookings.ts'));
-  assert.ok(behind.includes('outside n:stripe'));
+test('Écrans montre ce sur quoi chaque page prévue s’appuie, jusqu’à Stripe', () => {
+  assert.deepEqual(graphe.ecrans.map((s) => s.url).sort(), ['/', '/book/:walkerId', '/bookings', '/login', '/schedule']);
+  const reservation = graphe.ecrans.find((s) => s.url === '/book/:walkerId');
+  const derriere = reservation.behind.map((b) => `${b.kind} ${b.id}`);
+  assert.ok(derriere.includes('server f:api/src/routes/bookings.ts'));
+  assert.ok(derriere.includes('outside n:stripe'));
 });
 
-test('Health is a design review of the plan', () => {
-  const issues = graph.sante.problemes;
-  const titles = issues.map((i) => `${i.severity} ${i.title}`);
-  assert.deepEqual(titles, [
-    'medium Anyone could change data through one planned endpoint',
-    'medium The plan doesn’t say who may use one endpoint',
+test('la Santé est une revue du plan', () => {
+  const problemes = graphe.sante.problemes;
+  const titres = problemes.map((i) => `${i.severity} ${i.title}`);
+  assert.deepEqual(titres, [
+    'medium N’importe qui pourrait modifier des données par une adresse du serveur prévue',
+    'medium Le plan ne dit pas qui peut utiliser une adresse du serveur',
     'medium Can owners cancel a walk for free, and up to when?',
-    'low Nothing in the plan uses one endpoint',
-    'low One planned file isn’t connected to anything',
+    'low Rien dans le plan n’utilise une adresse du serveur',
+    'low Un fichier prévu n’est relié à rien',
   ]);
-  const routesOf = (i) => i.items.filter((id) => id.startsWith('r:')).map((id) => `${graph.routes[+id.slice(2)].m} ${graph.routes[+id.slice(2)].p}`).sort();
-  // sign-in is open on purpose (publicBecause says why), so only sign-up is flagged
-  assert.deepEqual(routesOf(issues[0]), ['POST /api/auth/signup']);
-  assert.deepEqual(routesOf(issues[1]), ['DELETE /api/walkers/:id']);
-  assert.deepEqual(issues[2].items.sort(), ['f:web/app/bookings/page.tsx', `r:${graph.routes.findIndex((r) => r.p === '/api/bookings/:id/cancel')}`].sort());
-  assert.deepEqual(routesOf(issues[3]), ['DELETE /api/walkers/:id']);
-  assert.deepEqual(issues[4].items, ['f:api/src/lib/geo.ts']);
-  assert.match(issues[0].fix, /floorplan\/plan\.json/);
-  // each item also has a request to settle it from the map, for the person to finish or edit
-  assert.deepEqual(issues.map((i) => i.change), [
-    'Review who may use POST /api/auth/signup: anyone can change data through it now. ',
-    'Decide who may use DELETE /api/walkers/:id, going by the PRD. ',
-    'Open question: "Can owners cancel a walk for free, and up to when?" My answer: ',
-    'Nothing calls DELETE /api/walkers/:id. Add the screen or service that should use it, or remove it if not needed. ',
-    'api/src/lib/geo.ts isn’t connected to anything. Connect it to what should use it, or remove it. ',
+  const routesDe = (i) => i.items.filter((id) => id.startsWith('r:')).map((id) => `${graphe.routes[+id.slice(2)].m} ${graphe.routes[+id.slice(2)].p}`).sort();
+  // la connexion est ouverte exprès (publicBecause dit pourquoi), donc seule l’inscription est signalée
+  assert.deepEqual(routesDe(problemes[0]), ['POST /api/auth/signup']);
+  assert.deepEqual(routesDe(problemes[1]), ['DELETE /api/walkers/:id']);
+  assert.deepEqual(problemes[2].items.sort(), ['f:web/app/bookings/page.tsx', `r:${graphe.routes.findIndex((r) => r.p === '/api/bookings/:id/cancel')}`].sort());
+  assert.deepEqual(routesDe(problemes[3]), ['DELETE /api/walkers/:id']);
+  assert.deepEqual(problemes[4].items, ['f:api/src/lib/geo.ts']);
+  assert.match(problemes[0].fix, /floorplan\/plan\.json/);
+  // chaque élément a aussi une demande pour le régler depuis la carte, que la personne peut compléter ou modifier
+  assert.deepEqual(problemes.map((i) => i.change), [
+    'Passe en revue qui peut utiliser POST /api/auth/signup : n’importe qui peut actuellement modifier des données par ce biais. ',
+    'Décide qui peut utiliser DELETE /api/walkers/:id, d’après le cahier des charges (PRD). ',
+    'Question ouverte : « Can owners cancel a walk for free, and up to when? » Ma réponse : ',
+    'Rien n’appelle DELETE /api/walkers/:id. Ajoute l’écran ou le service qui doit s’en servir, ou retire-la si ce n’est pas utile. ',
+    'api/src/lib/geo.ts n’est relié à rien. Relie-le à ce qui doit s’en servir, ou retire-le. ',
   ]);
-  assert.match(buildOut, /DESIGN REVIEW {2}0 important · 3 worth fixing · 2 minor/);
+  assert.match(sortieConstruction, /REVUE DU PLAN {2}0 important\(s\) · 3 à corriger · 2 mineur\(s\)/);
 });
 
-test('the map page marks it as a blueprint, and Ask knows there is no code to read', () => {
-  const html = fs.readFileSync(path.join(root, 'floorplan', 'index.html'), 'utf8');
+test('la page de la carte la marque comme un plan, et Demander sait qu’il n’y a pas de code à lire', () => {
+  const html = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8');
   assert.ok(html.includes('/* ui/06-blueprint.js */'));
   assert.ok(html.includes('"ebauche":{"source":"docs/prd.md"'));
-  const query = fs.readFileSync(path.join(root, 'floorplan', 'query.mjs'), 'utf8');
-  assert.ok(query.includes('This map is a blueprint'));
-  assert.ok(!fs.existsSync(path.join(root, 'CLAUDE.local.md')));
+  const requete = fs.readFileSync(path.join(racine, 'floorplan', 'query.mjs'), 'utf8');
+  assert.ok(requete.includes('Cette carte est un plan'));
+  assert.ok(!fs.existsSync(path.join(racine, 'CLAUDE.local.md')));
 });
 
-test('an endpoint says which signed-in people may use it', () => {
-  const r = graph.routes.find((x) => x.p === '/api/walker/schedule');
+test('une adresse du serveur dit quelles personnes connectées peuvent l’utiliser', () => {
+  const r = graphe.routes.find((x) => x.p === '/api/walker/schedule');
   assert.equal(r.access, 'signed-in');
   assert.equal(r.who, 'walkers');
-  assert.match(graph.routes.find((x) => x.p === '/api/auth/login').publicBecause, /sign in before they are signed in/);
+  assert.match(graphe.routes.find((x) => x.p === '/api/auth/login').publicBecause, /sign in before they are signed in/);
 });
 
-test('a project holding only plan.json can be planned before architecture.json exists', () => {
+test('un projet qui ne contient que plan.json peut être planifié avant que architecture.json existe', () => {
   const r = makeProject({ 'PRD.md': '# A plan' });
   try {
     fs.mkdirSync(path.join(r, 'floorplan'));
-    fs.copyFileSync(path.join(FIXTURE, 'floorplan', 'plan.json'), path.join(r, 'floorplan', 'plan.json'));
-    assert.match(run('status.mjs', r), /a blueprint was started \(plan\.json\) but never drawn/);
-    assert.match(run('plan.mjs', r), /run build\.mjs once floorplan\/architecture\.json is written/);
+    fs.copyFileSync(path.join(EXEMPLE, 'floorplan', 'plan.json'), path.join(r, 'floorplan', 'plan.json'));
+    assert.match(run('status.mjs', r), /un plan a été commencé \(plan\.json\) mais jamais dessiné/);
+    assert.match(run('plan.mjs', r), /lance build\.mjs une fois floorplan\/architecture\.json écrit/);
   } finally { cleanup(r); }
 });
 
-test('plan.mjs names what is wrong with a plan', () => {
-  const r = withPlan((p) => {
+test('plan.mjs nomme ce qui ne va pas dans un plan', () => {
+  const r = avecPlan((p) => {
     p.files[0].uses.push('web/components/WalkerCrad.tsx');
     p.endpoints[0].access = 'everyone';
     p.endpoints[1].file = 'api/src/routes/walker.ts';
@@ -146,51 +146,51 @@ test('plan.mjs names what is wrong with a plan', () => {
     p.files.find((f) => f.services).services = ['strpe'];
   });
   try {
-    const out = fails(() => run('plan.mjs', r));
-    assert.match(out, /files "web\/app\/page\.tsx"\.uses "web\/components\/WalkerCrad\.tsx" is not one of the planned files/);
-    assert.match(out, /access "everyone" must be one of public, signed-in, team, webhook, internal/);
-    assert.match(out, /\.file "api\/src\/routes\/walker\.ts" is not one of the planned files/);
-    assert.match(out, /calls "cancel it" must look like "POST \/api\/orders"/);
-    assert.match(out, /calls "POST \/api\/payments" matches no planned endpoint/);
-    assert.match(out, /access "staff" must be one of .* \("team" is your own team; for some of the app’s users, use "signed-in" with "who"\)/);
-    assert.match(out, /services "strpe" is not a node id in architecture\.json \(did you mean "stripe"\?\)/);
+    const sortie = echoue(() => run('plan.mjs', r));
+    assert.match(sortie, /files "web\/app\/page\.tsx"\.uses "web\/components\/WalkerCrad\.tsx" n’est pas un des fichiers prévus/);
+    assert.match(sortie, /access "everyone" doit être l’une de : public, signed-in, team, webhook, internal/);
+    assert.match(sortie, /\.file "api\/src\/routes\/walker\.ts" n’est pas un des fichiers prévus/);
+    assert.match(sortie, /calls "cancel it" doit ressembler à "POST \/api\/orders"/);
+    assert.match(sortie, /calls "POST \/api\/payments" ne correspond à aucune adresse du serveur prévue/);
+    assert.match(sortie, /access "staff" doit être l’une de .* \("team" désigne ta propre équipe ; pour une partie des utilisateurs de l’app, utilise "signed-in" avec "who"\)/);
+    assert.match(sortie, /services "strpe" n’est pas un identifiant de partie dans architecture\.json \(tu voulais dire "stripe" \?\)/);
   } finally { cleanup(r); }
 });
 
-test('build.mjs catches a service that is not a node', () => {
-  const r = withPlan((p) => { p.files.find((f) => f.services).services = ['strpe']; });
+test('build.mjs repère un service qui n’est pas une partie', () => {
+  const r = avecPlan((p) => { p.files.find((f) => f.services).services = ['strpe']; });
   try {
-    // plan.mjs checks this when architecture.json exists; without it, the build is the safety net
-    const arch = path.join(r, 'floorplan', 'architecture.json'), saved = fs.readFileSync(arch);
-    fs.rmSync(arch);
+    // plan.mjs le contrôle quand architecture.json existe ; sans lui, c’est la construction qui sert de filet
+    const archi = path.join(r, 'floorplan', 'architecture.json'), sauvegarde = fs.readFileSync(archi);
+    fs.rmSync(archi);
     run('plan.mjs', r);
-    fs.writeFileSync(arch, saved);
-    const out = fails(() => run('build.mjs', r, '--no-claude-md'));
-    assert.match(out, /error\(s\) in floorplan.architecture\.json or plan\.json/);
-    assert.match(out, /names "strpe" in its services, which is not a node id in architecture\.json — did you mean "stripe"\?/);
+    fs.writeFileSync(archi, sauvegarde);
+    const sortie = echoue(() => run('build.mjs', r, '--no-claude-md'));
+    assert.match(sortie, /erreur\(s\) dans floorplan.architecture\.json ou plan\.json/);
+    assert.match(sortie, /nomme "strpe" dans ses services, qui n’est pas un identifiant de partie dans architecture\.json — tu voulais dire "stripe" \?/);
   } finally { cleanup(r); }
 });
 
-test('refresh redraws a blueprint from plan.json, and --from-code maps the real code instead', () => {
-  const r = withPlan(() => {});
+test('refresh redessine un plan d’après plan.json, et --from-code cartographie le vrai code à la place', () => {
+  const r = avecPlan(() => {});
   try {
     run('plan.mjs', r);
     run('build.mjs', r, '--no-claude-md');
-    assert.match(run('status.mjs', r), /a blueprint \(planned, not built, from docs\/prd\.md\)/);
+    assert.match(run('status.mjs', r), /un plan \(prévu, pas encore construit, d’après docs\/prd\.md\)/);
     const plan = readJson(path.join(r, 'floorplan', 'plan.json'));
     plan.endpoints.push({ method: 'GET', path: '/api/health', file: 'api/src/server.ts', name: 'Health check', access: 'public' });
     writeJson(path.join(r, 'floorplan', 'plan.json'), plan);
-    assert.match(run('refresh.mjs', r, '--no-claude-md'), /redrawn from floorplan\/plan\.json/);
+    assert.match(run('refresh.mjs', r, '--no-claude-md'), /redessiné d’après floorplan\/plan\.json/);
     assert.ok(routeKeys(readGraph(r)).includes('GET /api/health'));
 
     fs.mkdirSync(path.join(r, 'api', 'src'), { recursive: true });
     fs.writeFileSync(path.join(r, 'api', 'src', 'server.ts'), `import express from 'express';\nconst app = express();\napp.get('/api/health', (req, res) => res.send('ok'));\napp.listen(3000);\n`);
-    // the blueprint's flows point at files that aren't written yet, so the map of the code gets its own
+    // les parcours du plan pointent vers des fichiers pas encore écrits : la carte du code a donc les siens
     writeJson(path.join(r, 'floorplan', 'architecture.json'), { projet: { name: 'Pawprint', summary: 'Being built.' }, nodes: [{ id: 'api', label: 'Main server', kind: 'service', summary: 'The server.', paths: ['api/**'] }] });
     run('refresh.mjs', r, '--from-code', '--no-claude-md');
     const g = readGraph(r);
     assert.equal(g.meta.ebauche, undefined);
     assert.deepEqual(routeKeys(g), ['GET /api/health']);
-    assert.ok(fs.existsSync(path.join(r, 'floorplan', 'plan.json')), 'the plan is kept');
+    assert.ok(fs.existsSync(path.join(r, 'floorplan', 'plan.json')), 'le plan est conservé');
   } finally { cleanup(r); }
 });

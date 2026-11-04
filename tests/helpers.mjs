@@ -1,5 +1,5 @@
-// Shared helpers for the tests: build a throwaway project on disk, run the skill's scripts on it,
-// and read what they wrote. Every project lives in the OS temp folder and is removed afterwards.
+// Outils communs aux tests : construire un projet jetable sur le disque, lui appliquer les scripts du skill,
+// et lire ce qu’ils ont écrit. Chaque projet vit dans le dossier temporaire du système et est supprimé ensuite.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,68 +8,68 @@ import { fileURLToPath } from 'node:url';
 
 export const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const SKILL = path.join(REPO, 'skills', 'floorplan');
-export const lib = (name) => import(new URL(`../skills/floorplan/scripts/lib/${name}`, import.meta.url));
+export const lib = (nom) => import(new URL(`../skills/floorplan/scripts/lib/${nom}`, import.meta.url));
 
 /**
- * Writes `files` ({ 'relative/path': 'contents' }) into a new temp folder. Each folder in `repos`
- * becomes its own git repo, like a frontend and backend side by side. Returns the folder.
+ * Écrit `fichiers` ({ 'chemin/relatif': 'contenu' }) dans un nouveau dossier temporaire. Chaque dossier de `repos`
+ * devient son propre dépôt git, comme un frontend et un backend côte à côte. Renvoie le dossier.
  */
-export function makeProject(files, { repos = [], arch } = {}) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'floorplan-test-'));
-  for (const [p, src] of Object.entries(files)) {
-    fs.mkdirSync(path.dirname(path.join(root, p)), { recursive: true });
-    fs.writeFileSync(path.join(root, p), src);
+export function makeProject(fichiers, { repos: depots = [], arch: archi } = {}) {
+  const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'floorplan-test-'));
+  for (const [p, source] of Object.entries(fichiers)) {
+    fs.mkdirSync(path.dirname(path.join(racine, p)), { recursive: true });
+    fs.writeFileSync(path.join(racine, p), source);
   }
-  for (const r of repos) execFileSync('git', ['init', '-q', path.join(root, r)]);
-  if (arch) writeJson(path.join(root, 'floorplan', 'architecture.json'), arch);
-  return root;
+  for (const r of depots) execFileSync('git', ['init', '-q', path.join(racine, r)]);
+  if (archi) writeJson(path.join(racine, 'floorplan', 'architecture.json'), archi);
+  return racine;
 }
 
-/** Runs one of the skill's scripts (scan.mjs, build.mjs, …) on a project and returns what it printed. */
-export function run(script, root, ...args) {
-  return execFileSync(process.execPath, [path.join(SKILL, 'scripts', script), root, ...args], { encoding: 'utf8', stdio: 'pipe' });
+/** Lance un des scripts du skill (scan.mjs, build.mjs, …) sur un projet et renvoie ce qu’il a affiché. */
+export function run(script, racine, ...parametres) {
+  return execFileSync(process.execPath, [path.join(SKILL, 'scripts', script), racine, ...parametres], { encoding: 'utf8', stdio: 'pipe' });
 }
 
-/** scan + build, the way the skill does a first map (without touching CLAUDE.local.md). */
-export function scanAndBuild(root) {
-  return run('scan.mjs', root) + run('build.mjs', root, '--no-claude-md');
+/** scan + build, comme le skill fait une première carte (sans toucher à CLAUDE.local.md). */
+export function scanAndBuild(racine) {
+  return run('scan.mjs', racine) + run('build.mjs', racine, '--no-claude-md');
 }
 
-export const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-export const writeJson = (file, data) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(data, null, 2)); };
-export const readGraph = (root) => readJson(path.join(root, 'floorplan', 'graph.json'));
-export const cleanup = (root) => fs.rmSync(root, { recursive: true, force: true });
+export const readJson = (fichier) => JSON.parse(fs.readFileSync(fichier, 'utf8'));
+export const writeJson = (fichier, donnees) => { fs.mkdirSync(path.dirname(fichier), { recursive: true }); fs.writeFileSync(fichier, JSON.stringify(donnees, null, 2)); };
+export const readGraph = (racine) => readJson(path.join(racine, 'floorplan', 'graph.json'));
+export const cleanup = (racine) => fs.rmSync(racine, { recursive: true, force: true });
 
-/** Every file under a folder, as { path, text }. */
-export function allFiles(dir) {
-  return fs.readdirSync(dir, { recursive: true, withFileTypes: true })
+/** Chaque fichier d’un dossier, sous la forme { path, text }. */
+export function allFiles(dossier) {
+  return fs.readdirSync(dossier, { recursive: true, withFileTypes: true })
     .filter((e) => e.isFile())
     .map((e) => { const p = path.join(e.parentPath ?? e.path, e.name); return { path: p, text: fs.readFileSync(p, 'utf8') }; });
 }
 
-/** "METHOD /path" for every endpoint on the map. */
-export const routeKeys = (graph) => graph.routes.map((r) => `${r.m} ${r.p}`).sort();
+/** « MÉTHODE /chemin » pour chaque adresse du serveur de la carte. */
+export const routeKeys = (graphe) => graphe.routes.map((r) => `${r.m} ${r.p}`).sort();
 
-/** "METHOD /path" for every endpoint Health reports as callable by anyone. */
-export function openEndpoints(graph) {
-  return graph.sante.problemes
+/** « MÉTHODE /chemin » pour chaque adresse du serveur que la Santé signale comme appelable par n’importe qui. */
+export function openEndpoints(graphe) {
+  return graphe.sante.problemes
     .filter((i) => i.kind === 'unprotected-endpoint')
-    .flatMap((i) => i.items.filter((id) => id.startsWith('r:')).map((id) => graph.routes[+id.slice(2)]))
+    .flatMap((i) => i.items.filter((id) => id.startsWith('r:')).map((id) => graphe.routes[+id.slice(2)]))
     .map((r) => `${r.m} ${r.p}`)
     .sort();
 }
 
-// A fake password for the sample app. It's assembled at runtime so no secret-looking string is
-// ever committed to this repo, and the tests can check it never reaches anything Floorplan writes.
+// Un faux mot de passe pour l’appli d’exemple. Il est assemblé à l’exécution pour qu’aucune chaîne ressemblant à un secret
+// ne soit jamais versée dans ce dépôt, et pour que les tests vérifient qu’il n’atteint rien de ce que Floorplan écrit.
 export const FAKE_PASSWORD = ['correct', 'horse', 'battery', 'staple', '42'].join('-');
 
 /**
- * A small shop: an Express API and a web app in two repos. It has endpoints protected three ways
- * (middleware on the route, a check where the router is mounted, none at all), cross-repo web
- * requests, and a hard-coded password.
+ * Une petite boutique : une API Express et une appli web dans deux dépôts. Elle a des adresses du serveur protégées de trois façons
+ * (un middleware sur la route, un contrôle là où le routeur est monté, aucune), des appels au serveur
+ * entre dépôts et un mot de passe écrit en dur.
  */
 export function shopApp() {
-  const files = {
+  const fichiers = {
     'shop-api/package.json': JSON.stringify({ name: 'shop-api', type: 'module', dependencies: { express: '^4.19.0' } }),
     'shop-api/server.js': [
       `import express from 'express';`,
@@ -124,12 +124,12 @@ export function shopApp() {
       `export default function App() { return <button onClick={() => listOrders().then((o) => refund(o[0].id))}>Refund</button>; }`,
     ].join('\n'),
   };
-  const arch = {
+  const archi = {
     projet: { name: 'Shop', summary: 'A sample shop.' },
     nodes: [
       { id: 'api', label: 'Server', kind: 'service', summary: 'The shop server.', paths: ['shop-api/**'] },
       { id: 'web', label: 'Website', kind: 'ui', summary: 'The shop website.', paths: ['shop-web/**'] },
     ],
   };
-  return makeProject(files, { repos: ['shop-api', 'shop-web'], arch });
+  return makeProject(fichiers, { repos: ['shop-api', 'shop-web'], arch: archi });
 }

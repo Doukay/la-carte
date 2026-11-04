@@ -1,49 +1,49 @@
-// Files over the scan's size limit aren't read, but they stay on the map with their line count, and the
-// scan, Health and the map say they weren't checked (#16). The limit is lowered here to keep the sample small.
+// Les fichiers au-dessus de la limite de taille de l’analyse ne sont pas lus, mais ils restent sur la carte avec leur nombre de lignes, et
+// l’analyse, la Santé et la carte disent qu’ils n’ont pas été vérifiés (#16). La limite est baissée ici pour garder l’exemple petit.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeProject, run, readGraph, readJson, cleanup } from './helpers.mjs';
 
-const BIG_LINES = 1500;
-let root, scanOut, graph;
+const NB_LIGNES = 1500;
+let racine, sortieAnalyse, graphe;
 before(() => {
-  const big = Array.from({ length: BIG_LINES }, (_, i) => `def step_${i}(x):\n    return x + ${i}\n`).join('').split('\n').slice(0, BIG_LINES).join('\n') + '\n';
-  root = makeProject({
+  const gros = Array.from({ length: NB_LIGNES }, (_, i) => `def step_${i}(x):\n    return x + ${i}\n`).join('').split('\n').slice(0, NB_LIGNES).join('\n') + '\n';
+  racine = makeProject({
     'app/main.py': 'from app import rules\n\nprint(rules.step_1(1))\n',
-    'app/rules.py': big,
+    'app/rules.py': gros,
   }, { arch: { projet: { name: 'Sample', summary: 'A small sample.' }, nodes: [{ id: 'app', label: 'App', kind: 'service', summary: 'The app.', paths: ['app/**'] }] } });
-  scanOut = run('scan.mjs', root, '--max-file-kb', '8');
-  run('build.mjs', root, '--no-claude-md');
-  graph = readGraph(root);
+  sortieAnalyse = run('scan.mjs', racine, '--max-file-kb', '8');
+  run('build.mjs', racine, '--no-claude-md');
+  graphe = readGraph(racine);
 });
-after(() => cleanup(root));
+after(() => cleanup(racine));
 
-test('a file over the limit stays on the map with its line count', () => {
-  const scan = readJson(path.join(root, 'floorplan', '.cache', 'scan.json'));
-  const f = scan.files.find((x) => x.path === 'app/rules.py');
+test('un fichier au-dessus de la limite reste sur la carte avec son nombre de lignes', () => {
+  const analyse = readJson(path.join(racine, 'floorplan', '.cache', 'scan.json'));
+  const f = analyse.files.find((x) => x.path === 'app/rules.py');
   assert.equal(f.tooLarge, true);
-  assert.equal(f.loc, BIG_LINES);
-  const g = graph.files.find((x) => x.p === 'app/rules.py');
+  assert.equal(f.loc, NB_LIGNES);
+  const g = graphe.files.find((x) => x.p === 'app/rules.py');
   assert.equal(g.tooLarge, true);
-  assert.equal(g.loc, BIG_LINES);
-  assert.equal(graph.files.find((x) => x.p === 'app/main.py').tooLarge, undefined);
+  assert.equal(g.loc, NB_LIGNES);
+  assert.equal(graphe.files.find((x) => x.p === 'app/main.py').tooLarge, undefined);
 });
 
-test('the scan says which files it did not read and how to include them', () => {
-  assert.match(scanOut, /NOT READ {2}1 file\(s\) over 8 KB/);
-  assert.match(scanOut, /--max-file-kb/);
-  assert.match(scanOut, /KB {2}app\/rules\.py/);
+test('l’analyse dit quels fichiers elle n’a pas lus et comment les inclure', () => {
+  assert.match(sortieAnalyse, /NON LUS {2}1 fichier\(s\) de plus de 8 Ko/);
+  assert.match(sortieAnalyse, /--max-file-kb/);
+  assert.match(sortieAnalyse, /Ko {2}app\/rules\.py/);
 });
 
-test('Health lists it as a large file and says it was not checked', () => {
-  const big = graph.sante.problemes.find((i) => i.id === 'large-files');
-  assert.ok(big, 'expected a large-files item');
-  assert.match(big.notes['f:app/rules.py'], /^1,500 lines: too big for Floorplan to read/);
+test('la Santé le liste comme gros fichier et dit qu’il n’a pas été vérifié', () => {
+  const gros = graphe.sante.problemes.find((i) => i.id === 'large-files');
+  assert.ok(gros, 'un élément large-files était attendu');
+  assert.match(gros.notes['f:app/rules.py'], /^1\s500 lignes : trop gros pour que Floorplan le lise/);
 });
 
-test('the default limit reads a file over the old 512 KB limit', () => {
+test('la limite par défaut lit un fichier au-dessus de l’ancienne limite de 512 Ko', () => {
   const r = makeProject({ 'app/main.py': 'x = 1\n'.repeat(110000) });
   try {
     assert.ok(fs.statSync(path.join(r, 'app', 'main.py')).size > 512 * 1024);

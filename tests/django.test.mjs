@@ -1,10 +1,10 @@
-// Django: an app's urls.py included under a prefix by the project's urls.py.
+// Django : le urls.py d’une appli inclus sous un préfixe par le urls.py du projet.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { makeProject, run, readJson, cleanup } from './helpers.mjs';
 
-const root = makeProject({
+const racine = makeProject({
   'manage.py': '',
   'mysite/__init__.py': '',
   'mysite/urls.py': [
@@ -22,16 +22,16 @@ const root = makeProject({
   'shop/views.py': 'def cart(request): ...\n',
   'web/api.js': 'export const getOrder = (id) => fetch(`/api/orders/${id}/`);\n',
 });
-after(() => cleanup(root));
+after(() => cleanup(racine));
 
-test('urls included under a prefix get it, and the include line is not an endpoint itself', () => {
-  run('scan.mjs', root);
-  const scan = readJson(path.join(root, 'floorplan', '.cache', 'scan.json'));
-  assert.deepEqual(scan.routes.map((r) => `${r.file} ${r.path}`).sort(), [
+test('les urls incluses sous un préfixe le reçoivent, et la ligne include n’est pas elle-même une adresse du serveur', () => {
+  run('scan.mjs', racine);
+  const analyse = readJson(path.join(racine, 'floorplan', '.cache', 'scan.json'));
+  assert.deepEqual(analyse.routes.map((r) => `${r.file} ${r.path}`).sort(), [
     'orders/urls.py /api/orders',
     'orders/urls.py /api/orders/<int:pk>',
     'shop/urls.py /api/shop/cart',
   ]);
-  assert.ok(scan.edges.some((e) => e.from === 'mysite/urls.py' && e.to === 'orders/urls.py'), 'expected the project urls to use the app urls');
-  assert.deepEqual(scan.http.map((h) => `${h.from} -> ${h.path}`), ['web/api.js -> /api/orders/<int:pk>']);
+  assert.ok(analyse.edges.some((e) => e.from === 'mysite/urls.py' && e.to === 'orders/urls.py'), 'les urls du projet devaient utiliser les urls de l’appli');
+  assert.deepEqual(analyse.http.map((h) => `${h.from} -> ${h.path}`), ['web/api.js -> /api/orders/<int:pk>']);
 });
