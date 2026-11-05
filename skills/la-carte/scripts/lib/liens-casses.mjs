@@ -90,6 +90,8 @@ export function trouverLiensCasses(racine, fichiers, routes) {
       if (!debuts.has(segs[0])) continue;
       // /api/v1 seul est souvent une base à laquelle le code ajoute la suite : ce n'est pas une adresse manquante
       if (adresses.some((r) => segs.length < r.segs.length && segs.every((s, n) => s === r.segs[n] || s === '*' || r.segs[n] === '*'))) continue;
+      // le début de l'adresse d'un routeur peut être posé ailleurs, hors de portée de la lecture : l'appel complet finit alors par ce qu'on a lu
+      if (adresses.some((r) => r.segs.length && r.segs.length < segs.length && r.segs.every((s, n) => { const c = segs[segs.length - r.segs.length + n]; return s === c || s === '*' || c === '*'; }))) continue;
       const memeChemin = adresses.filter((r) => noterAppel(segs, r.segs));
       if (!memeChemin.length) casses.push({ from: f.path, kind: 'adresse', target: `${appel.method || 'GET'} ${appel.path}`, line: appel.line });
       else if (appel.method && !memeChemin.some((r) => r.method === appel.method || r.method === 'ANY')) casses.push({ from: f.path, kind: 'adresse', target: `${appel.method} ${appel.path}`, line: appel.line, mauvaiseMethode: true });

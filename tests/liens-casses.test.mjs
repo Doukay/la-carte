@@ -83,3 +83,18 @@ test('sans lien cassé, pas de bloc Introuvable', () => {
     assert.ok(!lireGraphe(r).nodes.some((n) => n.id === 'casse'));
   } finally { nettoyer(r); }
 });
+
+test('une adresse dont le début est posé ailleurs n’est pas un lien coupé', () => {
+  const racine = creerProjet({
+    'package.json': '{}',
+    'server/app.py': "from fastapi import APIRouter\nrouter = APIRouter()\n@router.get('/{espace_id}')\ndef lire(espace_id): pass\n@router.get('/contrats')\ndef contrats(): pass\napi = APIRouter(prefix='/api')\n@api.get('/api/sante')\ndef sante(): pass\n",
+    'scripts/essai.js': "fetch('/api/espaces');\nfetch('/api/contrats');\nfetch('/api/inconnue/rien/du/tout');\n",
+  });
+  try {
+    executer('analyser.mjs', racine);
+    const { casses } = JSON.parse(fs.readFileSync(path.join(racine, 'la-carte', '.cache', 'analyse.json'), 'utf8'));
+    const cibles = casses.filter((c) => c.kind === 'adresse').map((c) => c.target);
+    assert.ok(!cibles.includes('GET /api/espaces'), cibles.join());
+    assert.ok(!cibles.includes('GET /api/contrats'), cibles.join());
+  } finally { nettoyer(racine); }
+});

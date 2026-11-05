@@ -57,6 +57,8 @@ export function lireSuivi(racine, dossierCarte, avertir) {
   let texte = Array.isArray(suivi.sections) && suivi.sections.length ? extraireSections(brut, suivi.sections) : brut.trim();
   texte = texte
     .replace(RESSEMBLE_A_UNE_CLE, '•••')
+    // ce qui est barré n'est plus vrai : il reste dans le fichier, pas sur la fiche
+    .replace(/~~[^~\n]+~~\s*(→\s*)?/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // un lien du fichier ne mène nulle part depuis la carte
     .replace(/\n{3,}/g, '\n\n');
   if (!texte.trim()) { avertir(`Le fichier de suivi ${suivi.fichier} ne contient aucune des sections demandées.`); return null; }

@@ -246,7 +246,7 @@ function laCarteConsignesDescriptions(G) {
     : 'Écris pour la propriétaire de l’appli, qui n’est pas ingénieure : ce que ça fait pour elle ou pour ses utilisateurs, avec des mots de tous les jours mais précis. Pas de jargon.';
   return [
     `Tu nommes et tu décris des éléments de la carte du code « ${G.projet.name} », en français, même si le code est en anglais. ${style}`,
-    'Pour chaque élément de la liste donnée : lis ce qu’il faut du fichier pour comprendre son rôle, sans plus, et sans ouvrir d’autre fichier sauf vraie nécessité.',
+    'Ouvre chaque fichier de la liste avant de le décrire, au moins ses 120 premières lignes, même si la liste donne déjà un commentaire : il peut être dépassé. Une adresse du serveur se comprend en lisant son gestionnaire. N’écris rien que tu n’as pas vu dans le code, et n’ouvre pas d’autre fichier sauf vraie nécessité.',
     'Le nom fait de 2 à 5 mots, avec une majuscule seulement à la première lettre. Il dit ce que la chose est ou fait, sans répéter le nom du fichier. Une adresse du serveur se nomme du point de vue de celui qui l’appelle.',
     'La description est une seule phrase de 200 caractères au maximum, qui dit ce que ça fait, pas comment c’est écrit.',
     'Choisis pour chaque fichier l’icône de la liste qui dit ce qu’il fait dans ce projet.',

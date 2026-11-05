@@ -100,7 +100,7 @@ Si tu tiens une note de suivi, la fiche du projet peut la montrer. Dis à la car
 
 - **`fichier`** : un fichier `.md` ou `.txt`, depuis la racine du projet. Il peut être un dossier plus haut, pas davantage.
 - **`sections`** : les titres à montrer, sinon tout le fichier. Au-delà de 3 000 caractères, la fiche coupe et le dit.
-- **Mettre à jour** relit la note. Ce qui ressemble à une clé est masqué, les commentaires cachés et les adresses des liens sont retirés.
+- **Mettre à jour** relit la note. Ce qui ressemble à une clé est masqué ; les commentaires cachés, le texte barré et les adresses des liens sont retirés. Le début s'affiche, la suite se déplie.
 - La note reste hors des copies exportées, sauf si tu coches **Où j'en suis** (ou `--include suivi` en ligne de commande).
 
 Sans ce réglage, la carte n'en parle pas.

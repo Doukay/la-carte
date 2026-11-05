@@ -61,6 +61,6 @@ body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 .suivi p, .suivi li { color: var(--text-2); line-height: 1.55; font-size: 13px; }
 .suivi p { margin: 0 0 8px; }
 .suivi ul, .suivi ol { margin: 0 0 8px; padding-left: 18px; }
-.suivi s { color: var(--text-4); }
+.suivi summary { cursor: pointer; color: var(--text-3); font-size: 13px; margin-bottom: 8px; }
 .suivi .suivi-source { margin: 0; color: var(--text-4); font-size: 12px; }
 #panel.meme-sujet > .sec:first-child > .ph, #panel.meme-sujet > .sec:first-child > .pt, #panel.meme-sujet > .sec:first-child > .pd:not(.md) { display: none; } /* une information à un seul endroit : le titre et la description sont déjà en haut à gauche */

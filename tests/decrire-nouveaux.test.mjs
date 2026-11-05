@@ -112,6 +112,16 @@ test('un clic traite 40 éléments au plus, le reste attend le clic suivant', as
   assert.ok(!s.journalDe()[0].input.includes('src/f54.js'), 'le 41e n’est pas envoyé');
 });
 
+test('le lot prend d’abord ce qui est le plus utilisé, et les tests en dernier', () => {
+  const fichiers = { 'src/aaa-seul.js': 'export const a = 1;\n', 'src/commun.js': 'export const c = 1;\n', 'tests/aaa.test.js': "import { c } from '../src/commun.js';\nexport const t = c;\n" };
+  for (let i = 0; i < 4; i++) fichiers[`src/u${i}.js`] = `import { c } from './commun.js';\nexport const u${i} = c;\n`;
+  const racine = projet(fichiers);
+  const { demande } = JSON.parse(executer('nouveaux.mjs', racine, '--liste'));
+  const ordre = [...demande.matchAll(/^- (\S+)/gm)].map((m) => m[1]);
+  assert.equal(ordre[0], 'src/commun.js');
+  assert.equal(ordre.at(-1), 'tests/aaa.test.js');
+});
+
 test('les adresses du serveur sont décrites aussi, et une description écrite à la main n’est pas touchée', async () => {
   const racine = projet({ 'src/serveur.js': "import express from 'express';\nconst app = express();\napp.get('/api/prix', (req, res) => res.json({}));\n", 'src/main.js': 'export const m = 1;\n' });
   ecrireJson(path.join(racine, 'la-carte', 'sources', 'descriptions', 'main.json'), { files: { 'src/main.js': { name: 'Écrit à la main', description: 'Une phrase à moi.' } } });

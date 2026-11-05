@@ -69,6 +69,11 @@ const GROUPES_SYSTEMES = [
   { label: 'Services extérieurs', kinds: ['external'] },
   { label: 'Outils de développement', kinds: ['script', 'test', 'infra'] },
 ];
+/** Le premier paragraphe se lit tout de suite, le reste se déplie : la fiche du projet reste courte. */
+function noteSuivi(texte) {
+  const coupure = texte.indexOf('\n\n', 400);
+  return coupure < 0 ? md(texte) : `${md(texte.slice(0, coupure))}<details><summary>Voir la suite</summary>${md(texte.slice(coupure))}</details>`;
+}
 function sectionParties(racines) {
   const places = new Set();
   const parties = GROUPES_SYSTEMES.map((g) => {
@@ -88,7 +93,7 @@ function panneauApercu() {
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--accent)">${picto('feature')}</span><span class="kind">${PLAN ? 'Plan' : 'Projet'}</span></div><h2 class="pt">${h(p.name)}</h2>${p.summary ? `<p class="pd">${h(p.summary)}</p>` : ''}
       <div class="stats" style="margin-top:14px"><div><b>${formaterNombre(G.meta.counts.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? `<div><b>${formaterNombre((G.ecrans || []).length)}</b><span>écrans</span></div>` : `<div><b>${formaterNombre(G.meta.counts.loc)}</b><span>lignes</span></div>`}${routes.length ? `<div><b>${formaterNombre(routes.length)}</b><span>adresses du serveur</span></div>` : ''}</div>
       ${nonDecrits ? encartNonDecrits(nonDecrits) : ''}</div>
-    ${G.suivi ? `<div class="sec suivi"><h3>Où j’en suis</h3>${md(G.suivi.texte)}<p class="suivi-source">${h(G.suivi.fichier)} · ${new Date(G.suivi.date).toLocaleDateString('fr-FR')}${G.suivi.coupe ? ' · la suite est dans le fichier' : ''}</p></div>` : ''}
+    ${G.suivi ? `<div class="sec suivi"><h3>Où j’en suis</h3>${noteSuivi(G.suivi.texte)}<p class="suivi-source">${h(G.suivi.fichier)} · ${new Date(G.suivi.date).toLocaleDateString('fr-FR')}${G.suivi.coupe ? ' · la suite est dans le fichier' : ''}</p></div>` : ''}
     ${sectionParties(racines)}
     ${sectionListe('Parcours guidés', G.parcours.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} étapes</span></a>`))}
     ${sectionListe('Dépôts', G.meta.repos.map((r) => `<div class="row" style="cursor:default"><span class="dot" style="background:var(--text-4)"></span><span class="rt"><div class="rn">${h(r.name)}</div><div class="rp">${h(r.branch || '')} @ ${h((r.head || '').slice(0, 7))}</div></span></div>`))}

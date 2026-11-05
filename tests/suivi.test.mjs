@@ -24,7 +24,7 @@ Intro à ignorer.
 
 ## Où j'en suis
 - Le paiement marche, voir [le détail](docs/paiement.md).
-- ~~ancien~~ nouveau
+- ~~ancien~~ → nouveau
 - Clé collée par erreur : ${'aZ9'.repeat(20)}
 
 ### Détail
@@ -51,6 +51,8 @@ test('seules les sections demandées passent, dans l’ordre demandé, sans comm
   assert.match(suivi.texte, /voir le détail\./);
   assert.ok(!/Journal|caché|Intro|docs\/paiement|aZ9aZ9/.test(suivi.texte), suivi.texte);
   assert.match(suivi.texte, /•••/);
+  assert.match(suivi.texte, /- nouveau/);
+  assert.ok(!suivi.texte.includes('ancien'), 'le barré reste dans le fichier');
   assert.ok(!Number.isNaN(Date.parse(suivi.date)));
   assert.ok(!JSON.stringify(suivi).includes(racine), 'aucun chemin de cet ordinateur');
 });

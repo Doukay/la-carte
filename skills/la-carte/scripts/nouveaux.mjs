@@ -15,6 +15,7 @@ const NOM_MAX = 70;
 const DESCRIPTION_MAX = 260;
 // une suite aussi longue sans espace dans un texte pour un humain : une clé plutôt qu'une phrase
 const RESSEMBLE_A_UNE_CLE = /[A-Za-z0-9+/_=-]{40,}/;
+const FICHIER_SECONDAIRE = /(^|\/)(tests?|__tests__|__mocks__|spec|specs|e2e|fixtures?|scripts?)\/|\.(test|spec|stories)\.[a-z]+$/;
 
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
@@ -26,11 +27,18 @@ const dossierDescriptions = path.join(dossierSortie, 'sources', 'descriptions');
 
 const cleDe = (r) => cleRoute({ method: r.m, path: r.p });
 
-/** Le prochain lot : les fichiers dans l'ordre, chacun avec ses adresses, pour que Claude les voie ensemble. */
+/** Le prochain lot : ce qui compte le plus d'abord, chaque fichier avec ses adresses, pour que Claude les voie ensemble. */
 function prochainLot() {
   const routesAuto = (g.routes || []).filter((r) => r.auto);
-  const chemins = [...new Set([...g.files.filter((f) => f.auto).map((f) => f.p), ...routesAuto.map((r) => r.f)])].sort();
   const parChemin = new Map(g.files.map((f) => [f.p, f]));
+  // un fichier que beaucoup d'autres utilisent, ou qui porte des adresses, se comprend le plus vite utile ; tests et scripts passent après
+  const genres = new Map(g.nodes.map((n) => [n.id, n.kind]));
+  const utilisateurs = new Map();
+  for (const l of g.links) if (l.a.startsWith('f:') && l.b.startsWith('f:')) utilisateurs.set(l.b.slice(2), (utilisateurs.get(l.b.slice(2)) || 0) + 1);
+  const secondaire = (p) => ['test', 'script'].includes(genres.get(parChemin.get(p)?.n)) || FICHIER_SECONDAIRE.test(p);
+  const poids = (p) => (utilisateurs.get(p) || 0) + 3 * routesAuto.filter((r) => r.f === p).length;
+  const chemins = [...new Set([...g.files.filter((f) => f.auto).map((f) => f.p), ...routesAuto.map((r) => r.f)])]
+    .sort((a, b) => secondaire(a) - secondaire(b) || poids(b) - poids(a) || a.localeCompare(b));
   const fichiers = [], routes = [];
   for (const p of chemins) {
     if (fichiers.length + routes.length >= LOT) break;
