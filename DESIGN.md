@@ -42,7 +42,7 @@ colors:
   k-http: "#0066cc"
   k-call: "#8944ab"
   k-rpc: "#3634a3"
-  k-event: "#d30f45"
+  k-event: "#248a3d"
   k-queue: "#b25000"
   k-data: "#0071a4"
   k-config: "#4f5661"

@@ -1,10 +1,10 @@
-# la carte 0.6.3-fr.2: SHA-256 de chaque fichier d'où le plugin tourne.
+# la carte 0.6.3-fr.3: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
-5f19b6122afff210c795a8cb7d00ddc21c97fb670d9cc4232a00d2e4d36bcd49  .claude-plugin/plugin.json
+4a11df660d60a1b4dd05b1058c9176abc4d226371cb92536fb38df9f881b6b5d  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 b1accf26cf1c5d032b4783154d65e6f5a2db8a59c69ec1840926ec2ac078412e  skills/la-carte/SKILL.md
-73061566aba14d1e743a50ed734956839f3a822aa5cdab76d2d3832f09c176d8  skills/la-carte/assets/carte/css/01-jetons.css
+4009e0c5b85677d3fef9f733a7b59296b47ae21924b07e97694da2f213bdee1b  skills/la-carte/assets/carte/css/01-jetons.css
 6c2910ef40cae836fddcc8fcfa6dea9b68622566649d0a31f4552f3301c398eb  skills/la-carte/assets/carte/css/02-barre.css
 06f30d1b5b2b0c69e7ae5fb2a63233337901f5d8102c39701724181876bd0cf3  skills/la-carte/assets/carte/css/03-carte.css
 dee97c61fb9c709da1555a26eb976741cf561dde35d861604fa1bf2e45d53858  skills/la-carte/assets/carte/css/04-blocs.css

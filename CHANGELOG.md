@@ -2,6 +2,10 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.3 (2026-11-05)
+
+- **Liens « événement » en vert** : leur rouge ressemblait à celui des liens coupés, et un lien normal pouvait passer pour une panne. Le rouge sert maintenant aux seuls liens coupés.
+
 ## 0.6.3-fr.2 (2026-11-05)
 
 - **Arrêter le serveur** : la commande affichée à l'ouverture de la carte pointait vers un fichier qui n'existe pas ; elle donne maintenant le bon chemin (`la-carte/.cache/serveur.mjs --stop`).
