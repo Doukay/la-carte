@@ -2,6 +2,10 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.2 (2026-11-05)
+
+- **Arrêter le serveur** : la commande affichée à l'ouverture de la carte pointait vers un fichier qui n'existe pas ; elle donne maintenant le bon chemin (`la-carte/.cache/serveur.mjs --stop`).
+
 ## 0.6.3-fr.1 (2026-11-05)
 
 Cette copie est partie de la version 0.6.3 de l'auteur (marque Git `auteur-0.6.3`). Elle n'est reliée à aucune de ses mises à jour : une correction de l'auteur se reprend à la main (voir [Reprendre une correction de l'auteur](docs/getting-started.md#reprendre-une-correction-de-lauteur)). Rien n'a encore été repris de ses versions suivantes.

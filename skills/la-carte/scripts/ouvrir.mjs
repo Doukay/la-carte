@@ -83,4 +83,4 @@ console.log(`LA_CARTE  ${s.url}  (${affichage})`);
 console.log(controle?.cli
   ? `DEMANDER  fonctionne : les questions passent par la CLI Claude Code${controle.version ? ' (' + controle.version + ')' : ''}`
   : 'DEMANDER  a besoin de la CLI Claude Code, introuvable ; la carte elle-même marche (https://docs.claude.com/en/docs/claude-code)');
-console.log(`SERVEUR  tourne en arrière-plan, met à jour les onglets ouverts quand la carte est reconstruite, et s’arrête ${MINUTES_INACTIF / 60} heures après la fermeture du dernier onglet. Pour l’arrêter maintenant : node ${cheminRelatif}/serveur.mjs --stop`);
+console.log(`SERVEUR  tourne en arrière-plan, met à jour les onglets ouverts quand la carte est reconstruite, et s’arrête ${MINUTES_INACTIF / 60} heures après la fermeture du dernier onglet. Pour l’arrêter maintenant : node ${cheminRelatif}/.cache/serveur.mjs --stop`);
