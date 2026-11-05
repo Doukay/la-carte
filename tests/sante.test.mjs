@@ -9,19 +9,19 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ici = path.dirname(fileURLToPath(import.meta.url));
-const scripts = path.join(ici, '..', 'skills', 'floorplan', 'scripts');
+const scripts = path.join(ici, '..', 'skills', 'la-carte', 'scripts');
 
 /** Copie un projet d’exemple dans un dossier temporaire, le cartographie comme une seule partie, et rend le graphe construit. */
 function construireExemple(nom) {
-  const racine = fs.mkdtempSync(path.join(os.tmpdir(), `floorplan-${nom}-`));
+  const racine = fs.mkdtempSync(path.join(os.tmpdir(), `la-carte-${nom}-`));
   fs.cpSync(path.join(ici, 'fixtures', nom), racine, { recursive: true });
-  fs.mkdirSync(path.join(racine, 'floorplan'));
-  fs.writeFileSync(path.join(racine, 'floorplan', 'architecture.json'), JSON.stringify({
+  fs.mkdirSync(path.join(racine, 'la-carte'));
+  fs.writeFileSync(path.join(racine, 'la-carte', 'architecture.json'), JSON.stringify({
     projet: { name: nom, summary: 'Test fixture.' },
     nodes: [{ id: 'api', label: 'Server', kind: 'service', summary: 'The sample server.', paths: ['**'] }],
   }));
   for (const s of ['analyser.mjs', 'construire.mjs']) execFileSync(process.execPath, [path.join(scripts, s), racine, '--no-claude-md'], { stdio: 'pipe' });
-  const graphe = JSON.parse(fs.readFileSync(path.join(racine, 'floorplan', 'graphe.json'), 'utf8'));
+  const graphe = JSON.parse(fs.readFileSync(path.join(racine, 'la-carte', 'graphe.json'), 'utf8'));
   fs.rmSync(racine, { recursive: true, force: true });
   return graphe;
 }

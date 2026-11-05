@@ -1,7 +1,7 @@
 {
-  "name": "floorplan-fr",
+  "name": "la-carte",
   "private": true,
-  "description": "Floorplan FR, un plugin Claude Code. Aucune dépendance : ce fichier donne seulement une place à `npm test`.",
+  "description": "La carte, un plugin Claude Code. Aucune dépendance : ce fichier donne seulement une place à `npm test`.",
   "license": "MIT",
   "engines": {
     "node": ">=18"

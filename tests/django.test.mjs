@@ -26,7 +26,7 @@ after(() => nettoyer(racine));
 
 test('les urls incluses sous un préfixe le reçoivent, et la ligne include n’est pas elle-même une adresse du serveur', () => {
   executer('analyser.mjs', racine);
-  const analyse = lireJson(path.join(racine, 'floorplan', '.cache', 'analyse.json'));
+  const analyse = lireJson(path.join(racine, 'la-carte', '.cache', 'analyse.json'));
   assert.deepEqual(analyse.routes.map((r) => `${r.file} ${r.path}`).sort(), [
     'orders/urls.py /api/orders',
     'orders/urls.py /api/orders/<int:pk>',

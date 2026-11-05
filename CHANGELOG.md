@@ -17,7 +17,8 @@ Cette copie est partie de la version 0.6.3 de l'auteur (marque Git `auteur-0.6.3
   - un mot de passe écrit dans une adresse est retiré du nom du site ;
   - avec Claude Code, la bulle de questions ne peut plus lire `.env`, `.env.*`, `*.pem`, `*.key` ni aucun fichier dont le nom contient `secret`, `token` ou `credential` (pas de blocage équivalent avec Codex), et elle ne charge pas les serveurs MCP de la machine.
 - **Nouvelle apparence** : style sobre inspiré d'Apple, clair par défaut, sans logo, une couleur par groupe de blocs, petites icônes choisies selon le projet (champ `icon`), informations techniques réservées au mode technique. Sur téléphone, une colonne qui défile remplace le schéma ; sur tablette, le panneau démarre fermé.
-- **Plugin** : nom `floorplan-fr`, source `floorplan-fr`, commande `/floorplan-fr:floorplan`, installé depuis le dossier ou le dépôt de cette copie.
+- **Nouveau nom : La carte.** Floorplan reste le nom de l’œuvre d’origine, citée et liée dans le crédit. Le logo de l’auteur est retiré.
+- **Plugin** : nom `la-carte`, source `la-carte`, commande `/la-carte:la-carte`, dossier `la-carte/` dans chaque projet, installé depuis le dossier ou le dépôt de cette copie.
 - **Dépôt** : `CONTRIBUTING.md` et les modèles de tickets et de demandes de fusion sont supprimés (ils renvoyaient à l'auteur) ; `SECURITY.md` est réécrit ; les tests sur GitHub ne tournent plus qu'à la demande, au quotidien on lance `node --test` sur le PC.
 - **Docs** : `docs/is-it-safe.md` et `docs/privacy-and-security.md` sont réécrits pour dire ce qui est vrai de cette version, avec ses limites ; les commandes de vérification qui renvoyaient au dépôt de l'auteur sont retirées (celle de `elk.bundled.js` contre npm reste) ; `docs/getting-started.md` gagne « Reprendre une correction de l'auteur » et « Revenir en arrière ».
 

@@ -1,4 +1,4 @@
-// Plans : une carte prévue à partir d’un cahier des charges (PRD) avant que le code existe. plan.mjs transforme floorplan/plan.json
+// Plans : une carte prévue à partir d’un cahier des charges (PRD) avant que le code existe. plan.mjs transforme la-carte/plan.json
 // en analyse, et construire.mjs la dessine comme une carte de code, avec une revue du plan à la place des contrôles du code.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,7 +21,7 @@ after(() => nettoyer(racine));
 function avecPlan(changement) {
   const r = creerProjet({});
   fs.cpSync(EXEMPLE, r, { recursive: true });
-  const fichier = path.join(r, 'floorplan', 'plan.json');
+  const fichier = path.join(r, 'la-carte', 'plan.json');
   const plan = lireJson(fichier);
   changement(plan);
   ecrireJson(fichier, plan);
@@ -97,7 +97,7 @@ test('la Santé est une revue du plan', () => {
   assert.deepEqual(problemes[2].items.sort(), ['f:web/app/bookings/page.tsx', `r:${graphe.routes.findIndex((r) => r.p === '/api/bookings/:id/cancel')}`].sort());
   assert.deepEqual(routesDe(problemes[3]), ['DELETE /api/walkers/:id']);
   assert.deepEqual(problemes[4].items, ['f:api/src/lib/geo.ts']);
-  assert.match(problemes[0].fix, /floorplan\/plan\.json/);
+  assert.match(problemes[0].fix, /la-carte\/plan\.json/);
   // chaque élément a aussi une demande pour le régler depuis la carte, que la personne peut compléter ou modifier
   assert.deepEqual(problemes.map((i) => i.change), [
     'Passe en revue qui peut utiliser POST /api/auth/signup : n’importe qui peut actuellement modifier des données par ce biais. ',
@@ -110,10 +110,10 @@ test('la Santé est une revue du plan', () => {
 });
 
 test('la page de la carte la marque comme un plan, et Demander sait qu’il n’y a pas de code à lire', () => {
-  const html = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8');
+  const html = fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8');
   assert.ok(html.includes('/* ui/06-plan.js */'));
   assert.ok(html.includes('"ebauche":{"source":"docs/prd.md"'));
-  const requete = fs.readFileSync(path.join(racine, 'floorplan', 'requete.mjs'), 'utf8');
+  const requete = fs.readFileSync(path.join(racine, 'la-carte', 'requete.mjs'), 'utf8');
   assert.ok(requete.includes('Cette carte est un plan'));
   assert.ok(!fs.existsSync(path.join(racine, 'CLAUDE.local.md')));
 });
@@ -128,10 +128,10 @@ test('une adresse du serveur dit quelles personnes connectées peuvent l’utili
 test('un projet qui ne contient que plan.json peut être planifié avant que architecture.json existe', () => {
   const r = creerProjet({ 'PRD.md': '# A plan' });
   try {
-    fs.mkdirSync(path.join(r, 'floorplan'));
-    fs.copyFileSync(path.join(EXEMPLE, 'floorplan', 'plan.json'), path.join(r, 'floorplan', 'plan.json'));
+    fs.mkdirSync(path.join(r, 'la-carte'));
+    fs.copyFileSync(path.join(EXEMPLE, 'la-carte', 'plan.json'), path.join(r, 'la-carte', 'plan.json'));
     assert.match(executer('etat.mjs', r), /un plan a été commencé \(plan\.json\) mais jamais dessiné/);
-    assert.match(executer('plan.mjs', r), /lance construire\.mjs une fois floorplan\/architecture\.json écrit/);
+    assert.match(executer('plan.mjs', r), /lance construire\.mjs une fois la-carte\/architecture\.json écrit/);
   } finally { nettoyer(r); }
 });
 
@@ -161,12 +161,12 @@ test('construire.mjs repère un service qui n’est pas une partie', () => {
   const r = avecPlan((p) => { p.files.find((f) => f.services).services = ['strpe']; });
   try {
     // plan.mjs le contrôle quand architecture.json existe ; sans lui, c’est la construction qui sert de filet
-    const archi = path.join(r, 'floorplan', 'architecture.json'), sauvegarde = fs.readFileSync(archi);
+    const archi = path.join(r, 'la-carte', 'architecture.json'), sauvegarde = fs.readFileSync(archi);
     fs.rmSync(archi);
     executer('plan.mjs', r);
     fs.writeFileSync(archi, sauvegarde);
     const sortie = echoue(() => executer('construire.mjs', r, '--no-claude-md'));
-    assert.match(sortie, /erreur\(s\) dans floorplan.architecture\.json ou plan\.json/);
+    assert.match(sortie, /erreur\(s\) dans la-carte.architecture\.json ou plan\.json/);
     assert.match(sortie, /nomme "strpe" dans ses services, qui n’est pas un identifiant de partie dans architecture\.json — tu voulais dire "stripe" \?/);
   } finally { nettoyer(r); }
 });
@@ -177,20 +177,20 @@ test('refresh redessine un plan d’après plan.json, et --from-code cartographi
     executer('plan.mjs', r);
     executer('construire.mjs', r, '--no-claude-md');
     assert.match(executer('etat.mjs', r), /un plan \(prévu, pas encore construit, d’après docs\/prd\.md\)/);
-    const plan = lireJson(path.join(r, 'floorplan', 'plan.json'));
+    const plan = lireJson(path.join(r, 'la-carte', 'plan.json'));
     plan.endpoints.push({ method: 'GET', path: '/api/health', file: 'api/src/server.ts', name: 'Health check', access: 'public' });
-    ecrireJson(path.join(r, 'floorplan', 'plan.json'), plan);
-    assert.match(executer('actualiser.mjs', r, '--no-claude-md'), /redessiné d’après floorplan\/plan\.json/);
+    ecrireJson(path.join(r, 'la-carte', 'plan.json'), plan);
+    assert.match(executer('actualiser.mjs', r, '--no-claude-md'), /redessiné d’après la-carte\/plan\.json/);
     assert.ok(clesRoutes(lireGraphe(r)).includes('GET /api/health'));
 
     fs.mkdirSync(path.join(r, 'api', 'src'), { recursive: true });
     fs.writeFileSync(path.join(r, 'api', 'src', 'server.ts'), `import express from 'express';\nconst app = express();\napp.get('/api/health', (req, res) => res.send('ok'));\napp.listen(3000);\n`);
     // les parcours du plan pointent vers des fichiers pas encore écrits : la carte du code a donc les siens
-    ecrireJson(path.join(r, 'floorplan', 'architecture.json'), { projet: { name: 'Pawprint', summary: 'Being built.' }, nodes: [{ id: 'api', label: 'Main server', kind: 'service', summary: 'The server.', paths: ['api/**'] }] });
+    ecrireJson(path.join(r, 'la-carte', 'architecture.json'), { projet: { name: 'Pawprint', summary: 'Being built.' }, nodes: [{ id: 'api', label: 'Main server', kind: 'service', summary: 'The server.', paths: ['api/**'] }] });
     executer('actualiser.mjs', r, '--from-code', '--no-claude-md');
     const g = lireGraphe(r);
     assert.equal(g.meta.ebauche, undefined);
     assert.deepEqual(clesRoutes(g), ['GET /api/health']);
-    assert.ok(fs.existsSync(path.join(r, 'floorplan', 'plan.json')), 'le plan est conservé');
+    assert.ok(fs.existsSync(path.join(r, 'la-carte', 'plan.json')), 'le plan est conservé');
   } finally { nettoyer(r); }
 });

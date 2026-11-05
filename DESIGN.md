@@ -1,5 +1,5 @@
 ---
-name: Floorplan FR
+name: La carte
 description: La carte d'une appli, expliquée en français simple, dans le calme d'une fiche produit.
 colors:
   accent: "#0066cc"
@@ -208,9 +208,9 @@ components:
     height: "44px"
 ---
 
-# Design System: Floorplan FR
+# Design System: La carte
 
-Ce fichier décrit l'apparence de la carte telle qu'elle est construite aujourd'hui (`skills/floorplan/assets/carte.html` et `assets/ui/`). Les titres des huit grandes parties restent en anglais parce que les outils les reconnaissent à ce nom. Le bloc de valeurs en tête de fichier fait foi. Les noms de valeurs viennent du code : `n-ui` est le groupe appli, `k-http` le lien vers le serveur, `-sombre` la version du thème sombre.
+Ce fichier décrit l'apparence de la carte telle qu'elle est construite aujourd'hui (`skills/la-carte/assets/carte.html` et `assets/ui/`). Les titres des huit grandes parties restent en anglais parce que les outils les reconnaissent à ce nom. Le bloc de valeurs en tête de fichier fait foi. Les noms de valeurs viennent du code : `n-ui` est le groupe appli, `k-http` le lien vers le serveur, `-sombre` la version du thème sombre.
 
 ## Overview
 

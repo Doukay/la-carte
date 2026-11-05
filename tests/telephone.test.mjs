@@ -9,7 +9,7 @@ import vm from 'node:vm';
 import { appliBoutique, analyserEtConstruire, nettoyer } from './aides.mjs';
 
 let racine, page;
-before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
+before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8'); });
 after(() => nettoyer(racine));
 
 /** Le CSS de chaque bloc @media de la page ayant exactement cette condition, mis bout à bout (une page peut en avoir plusieurs avec la même condition). */
@@ -174,6 +174,10 @@ test('sur un téléphone, la colonne qui défile remplace le schéma : ni zoom n
 
 test('sur téléphone, les liens en trop restent vraiment cachés tant qu’on n’a pas touché « +N »', () => {
   assert.match(blocMedia('(max-width: 700px)'), /\.col-lien\[hidden\] \{ display: none; \}/); // display: inline-flex écraserait sinon l'attribut hidden
+});
+
+test('estTelephone est défini avant la détection de l’outil d’IA, qui s’en sert dès le chargement', () => {
+  assert.ok(page.indexOf('const estTelephone = ') < page.indexOf('if (!COPIE_EXPORTEE) detecterMoteur();'));
 });
 
 test('rien de nouveau n’apparaît sur un ordinateur : les boutons n’ont pas ajouté d’infobulles', () => {

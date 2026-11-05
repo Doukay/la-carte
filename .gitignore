@@ -2,8 +2,8 @@
 .claude/
 CLAUDE.local.md
 
-# A floorplan made of this repo itself (root only: skills/floorplan/ is the plugin)
-/floorplan/
+# A map made of this repo itself (root only: skills/la-carte/ is the plugin)
+/la-carte/
 
 # OS and editor clutter
 .DS_Store

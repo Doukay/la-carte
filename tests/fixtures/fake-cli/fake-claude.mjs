@@ -17,11 +17,11 @@ process.stdin.on('end', () => {
     const counter = process.env.FAKE_CHANGES + '.n';
     const n = fs.existsSync(counter) ? +fs.readFileSync(counter, 'utf8') : 0;
     fs.writeFileSync(counter, String(n + 1));
-    out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'floorplan/plan.json' } }] } });
+    out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'la-carte/plan.json' } }] } });
     out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: replies[Math.min(n, replies.length - 1)] });
     return;
   }
-  out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command: 'node floorplan/requete.mjs overview' } }] } });
+  out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command: 'node la-carte/requete.mjs overview' } }] } });
   out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'shop-api/routes/orders.js' } }] } });
   out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: {
     title: 'Refunds', answer: 'Refunds go through [[f:shop-api/routes/orders.js]].',

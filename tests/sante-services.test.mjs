@@ -192,10 +192,10 @@ test('une appli entière : chaque erreur devient un problème en langage simple 
     assert.equal(cors.severity, 'medium');
     assert.equal(cors.title, 'N’importe quel site web pourrait agir à la place de tes utilisateurs connectés');
 
-    // les problèmes importants viennent en premier, et aucune valeur de clé n’arrive dans ce que Floorplan écrit
+    // les problèmes importants viennent en premier, et aucune valeur de clé n’arrive dans ce que la carte écrit
     assert.equal(problemes[0].severity, 'high');
-    for (const f of fs.readdirSync(path.join(racine, 'floorplan'), { recursive: true })) {
-      const p = path.join(racine, 'floorplan', f);
+    for (const f of fs.readdirSync(path.join(racine, 'la-carte'), { recursive: true })) {
+      const p = path.join(racine, 'la-carte', f);
       if (fs.statSync(p).isFile()) assert.ok(!fs.readFileSync(p, 'utf8').includes(FAUSSE_CLE_OPENAI.slice(4)), `${f} contient la clé`);
     }
   } finally { nettoyer(racine); }

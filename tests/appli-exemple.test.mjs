@@ -35,13 +35,13 @@ test('la Santé ne signale que l’adresse du serveur sans contrôle de connexio
   assert.deepEqual(secret.locations, [{ file: 'shop-api/config.js', line: 1 }]);
 });
 
-test('la valeur du secret n’est écrite nulle part où Floorplan écrit, ni affichée', () => {
+test('la valeur du secret n’est écrite nulle part où la carte écrit, ni affichée', () => {
   assert.ok(!sortie.includes(FAUX_MOT_DE_PASSE), 'sortie du scan et de la construction');
-  for (const f of tousLesFichiers(path.join(racine, 'floorplan'))) assert.ok(!f.text.includes(FAUX_MOT_DE_PASSE), path.relative(racine, f.path));
+  for (const f of tousLesFichiers(path.join(racine, 'la-carte'))) assert.ok(!f.text.includes(FAUX_MOT_DE_PASSE), path.relative(racine, f.path));
 });
 
 test('la carte ne fait aucun appel extérieur : scripts, styles et polices sont tous dans le fichier', () => {
-  const html = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8');
+  const html = fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8');
   assert.doesNotMatch(html, /<script[^>]*\ssrc\s*=\s*["']?(https?:)?\/\//i);
   assert.doesNotMatch(html, /<link[^>]*\shref\s*=\s*["']?(https?:)?\/\//i);
   assert.doesNotMatch(html, /url\(\s*["']?(https?:)?\/\//i);
@@ -49,18 +49,18 @@ test('la carte ne fait aucun appel extérieur : scripts, styles et polices sont 
   assert.match(html, /@font-face\{font-family:"Inter"/);
 });
 
-test('rien de ce que Floorplan fabrique n’est versé dans git : floorplan/ s’ignore lui-même', () => {
-  assert.equal(fs.readFileSync(path.join(racine, 'floorplan', '.gitignore'), 'utf8').trim().split('\n').pop(), '*');
+test('rien de ce que la carte fabrique n’est versé dans git : la-carte/ s’ignore lui-même', () => {
+  assert.equal(fs.readFileSync(path.join(racine, 'la-carte', '.gitignore'), 'utf8').trim().split('\n').pop(), '*');
 });
 
 test('requete.mjs trouve des éléments de la carte avec des mots simples', () => {
-  const trouve = JSON.parse(execFileSync(process.execPath, [path.join(racine, 'floorplan', 'requete.mjs'), 'find', 'refund'], { encoding: 'utf8' }));
+  const trouve = JSON.parse(execFileSync(process.execPath, [path.join(racine, 'la-carte', 'requete.mjs'), 'find', 'refund'], { encoding: 'utf8' }));
   const ids = JSON.stringify(trouve);
   assert.ok(ids.includes('r:'), `une adresse du serveur est trouvée : ${ids.slice(0, 300)}`);
 });
 
 test('une mise à jour reporte les descriptions sur un fichier renommé', () => {
-  const fichierDescriptions = path.join(racine, 'floorplan', 'descriptions', 'api.json');
+  const fichierDescriptions = path.join(racine, 'la-carte', 'descriptions', 'api.json');
   const description = { name: 'Customer notes', description: 'Saves a note a customer leaves.' };
   ecrireJson(fichierDescriptions, { files: { 'shop-api/routes/notes.js': description } });
   fs.renameSync(path.join(racine, 'shop-api/routes/notes.js'), path.join(racine, 'shop-api/routes/feedback.js'));

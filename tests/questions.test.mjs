@@ -16,24 +16,24 @@ const serveurs = [];
 async function servir(env) {
   const journal = path.join(racine, `fake-${serveurs.length}.log`);
   const port = 20000 + Math.floor(Math.random() * 20000);
-  const serveur = spawn(process.execPath, [path.join(racine, 'floorplan', 'serveur.mjs'), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, FLOORPLAN_NO_PROMPTS: '1', FLOORPLAN_ENGINE: '', FAKE_LOG: journal, ...env }, stdio: ['ignore', 'pipe', 'pipe'],
+  const serveur = spawn(process.execPath, [path.join(racine, 'la-carte', 'serveur.mjs'), '--port', String(port), '--no-open'], {
+    cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', LA_CARTE_ENGINE: '', FAKE_LOG: journal, ...env }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   serveurs.push(serveur);
   const base = await new Promise((resoudre, rejeter) => {
     let sortie = '';
     const minuteur = setTimeout(() => rejeter(new Error(`le serveur n’a pas démarré : ${sortie}`)), 20000);
-    serveur.stdout.on('data', (d) => { sortie += d; const m = /Floorplan: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1]); } });
+    serveur.stdout.on('data', (d) => { sortie += d; const m = /la carte: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1]); } });
     serveur.on('exit', (code) => rejeter(new Error(`le serveur s’est arrêté (${code}) : ${sortie}`)));
   });
   const html = await (await fetch(base + '/')).text();
-  const page = JSON.parse(/window\.FLOORPLAN_SERVER=(\{.*?\});/.exec(html)[1]);
+  const page = JSON.parse(/window\.LA_CARTE_SERVER=(\{.*?\});/.exec(html)[1]);
   return { base, token: page.token, page, calls: () => fs.readFileSync(journal, 'utf8').trim().split('\n').map((l) => JSON.parse(l)) };
 }
 
 /** Pose une question et renvoie ses événements serveur sous la forme [{ event, data }]. */
 async function demander(s, question, session) {
-  const r = await fetch(s.base + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': s.token }, body: JSON.stringify({ question, session }) });
+  const r = await fetch(s.base + '/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', 'x-la-carte-token': s.token }, body: JSON.stringify({ question, session }) });
   return (await r.text()).split('\n\n').filter(Boolean).map((b) => ({ event: /^event: (\w+)/.exec(b)[1], data: JSON.parse(/^data: (.*)$/m.exec(b)[1]) }));
 }
 const choisir = (evenements, nom) => evenements.filter((e) => e.event === nom).map((e) => e.data);
@@ -47,7 +47,7 @@ after(async () => {
 });
 
 test('avec Codex seul installé, les questions passent par Codex, en lecture seule et hors de son historique', async () => {
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(FAUX, 'fake-codex.mjs') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
   assert.equal(s.page.engine, 'codex');
   assert.equal(s.page.cli, true);
 
@@ -66,11 +66,11 @@ test('avec Codex seul installé, les questions passent par Codex, en lecture seu
   // Node lance serveur.mjs depuis son vrai chemin, et sous macOS le dossier temporaire /var/… est en réalité /private/var/…
   assert.equal(fs.realpathSync(option('-C')), fs.realpathSync(racine));
   assert.match(appel.input, /How do refunds work\?/);
-  assert.match(appel.input, /node floorplan\/requete\.mjs/);
+  assert.match(appel.input, /node la-carte\/requete\.mjs/);
 });
 
 test('Codex reçoit un schéma de réponse qu’il accepte : toutes les propriétés obligatoires, rien en plus', async () => {
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(FAUX, 'fake-codex.mjs') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
   await demander(s, 'What is this?');
   const { schema } = s.calls()[0];
   const verifier = (node, endroit) => {
@@ -86,7 +86,7 @@ test('Codex reçoit un schéma de réponse qu’il accepte : toutes les proprié
 });
 
 test('une question de suite à Codex porte la conversation jusque-là', async () => {
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(FAUX, 'fake-codex.mjs') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
   const [premier] = choisir(await demander(s, 'How do refunds work?'), 'answer');
   const [deuxieme] = choisir(await demander(s, 'Who can ask for one?', premier.session), 'answer');
   assert.equal(deuxieme.session, premier.session);
@@ -100,14 +100,14 @@ test('une question de suite à Codex porte la conversation jusque-là', async ()
 });
 
 test('un Codex déconnecté le dit, pour que la carte puisse demander à la personne de se connecter', async () => {
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(FAUX, 'fake-codex.mjs') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
   const [echec] = choisir(await demander(s, 'SIGNED-OUT question'), 'failure');
   assert.equal(echec.code, 'not_logged_in');
   assert.equal(choisir(await demander(s, 'SIGNED-OUT again'), 'answer').length, 0);
 });
 
 test('la CLI de Claude Code passe en premier pour une carte construite par Claude, avec des outils en lecture seule, et les questions de suite reprennent la session', async () => {
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), FLOORPLAN_CODEX: path.join(FAUX, 'fake-codex.mjs') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
   assert.equal(s.page.engine, 'claude');
   const evenements = await demander(s, 'How do refunds work?');
   assert.deepEqual(choisir(evenements, 'progress').map((p) => p.text), ['Lecture de l’aperçu de la carte', 'Lecture de shop-api/routes/orders.js']);
@@ -116,7 +116,7 @@ test('la CLI de Claude Code passe en premier pour une carte construite par Claud
   await demander(s, 'And then?', reponse.session);
   const [premier, deuxieme] = s.calls();
   assert.ok(premier.args.includes('-p'));
-  assert.deepEqual(premier.args.slice(premier.args.indexOf('--allowedTools') + 1, premier.args.indexOf('--disallowedTools')), ['Bash(node floorplan/requete.mjs:*)', 'Read', 'Grep', 'Glob']);
+  assert.deepEqual(premier.args.slice(premier.args.indexOf('--allowedTools') + 1, premier.args.indexOf('--disallowedTools')), ['Bash(node la-carte/requete.mjs:*)', 'Read', 'Grep', 'Glob']);
   assert.ok(premier.args.includes('Read(**/.env)') && premier.args.includes('Read(**/.env.*)'), 'les fichiers secrets restent fermés');
   assert.ok(premier.args.includes('--strict-mcp-config'), "les serveurs MCP de la machine restent hors de la demande");
   assert.equal(premier.input, 'How do refunds work?');
@@ -124,7 +124,7 @@ test('la CLI de Claude Code passe en premier pour une carte construite par Claud
 });
 
 test('--engine choisit une seule CLI et ne se rabat jamais sur l’autre', async () => {
-  const s = await servir({ FLOORPLAN_ENGINE: 'codex', FLOORPLAN_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), FLOORPLAN_CODEX: path.join(racine, 'no-such-cli') });
+  const s = await servir({ LA_CARTE_ENGINE: 'codex', LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli') });
   assert.equal(s.page.cli, false);
   assert.equal(s.page.want, 'codex');
   const [echec] = choisir(await demander(s, 'Anything?'), 'failure');
@@ -142,7 +142,7 @@ test('sous Windows, une installation npm de Claude Code avec seulement bin/claud
   const fauxExe = path.join(paquet, 'claude.exe');
   fs.copyFileSync(process.execPath, fauxExe); // un programme qui répond à --version (une copie, pas un lien : un lien ne peut pas être supprimé ensuite sur certains Windows)
   fs.chmodSync(fauxExe, 0o666); // la copie garde l’attribut lecture seule de Node, ce qui empêche de nettoyer le dossier
-  const s = await servir({ FLOORPLAN_CLAUDE: path.join(npm, 'claude'), FLOORPLAN_CODEX: path.join(racine, 'no-such-cli') });
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(npm, 'claude'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli') });
   assert.equal(s.page.engine, 'claude');
   assert.equal(s.page.version, process.version);
 });

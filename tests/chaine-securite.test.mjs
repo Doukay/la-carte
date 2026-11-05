@@ -122,7 +122,7 @@ test('il lance une liste fixe de programmes, et jamais par un shell', () => {
 
 test('aucun code n’est téléchargé, décodé ni construit à partir de texte pendant l’exécution', () => {
   assert.deepEqual(trouver(/(?<![.\w])eval\(/).map((x) => `${x.file}:${x.line}`), [], `eval. ${MISE_A_JOUR}`);
-  // l’unique exception : serveur.mjs charge le code de recherche de la carte depuis floorplan/requete.mjs, un fichier écrit par la construction
+  // l’unique exception : serveur.mjs charge le code de recherche de la carte depuis la-carte/requete.mjs, un fichier écrit par la construction
   assert.deepEqual(trouver(/new Function\(/).map((x) => x.file), ['assets/serveur.mjs'], `new Function. ${MISE_A_JOUR}`);
   assert.match(lire(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs')), /const sourceNoyau = fs\.readFileSync\(path\.join\(ici, 'requete\.mjs'\), 'utf8'\)/);
   assert.deepEqual(trouver(/\bimport\s*\(/).map((x) => `${x.file}:${x.line}`), [], `import dynamique. ${MISE_A_JOUR}`);
@@ -159,7 +159,7 @@ test('les fichiers embarqués sont inchangés : le moteur de disposition est ide
 test('les sommes de contrôle distinguent la copie exacte d’une version publiée d’une copie modifiée', async () => {
   const { execFileSync } = await import('node:child_process');
   const os = await import('node:os');
-  const temporaire = fs.mkdtempSync(path.join(os.tmpdir(), 'floorplan-checksums-'));
+  const temporaire = fs.mkdtempSync(path.join(os.tmpdir(), 'la-carte-checksums-'));
   // empreintes de cette copie de travail (EMPREINTES.txt est celui de la dernière version publiée, on n’y touche pas)
   const liste = path.join(temporaire, 'list.txt'), copie = path.join(temporaire, 'copy');
   const outil = (...params) => execFileSync(process.execPath, [path.join(DEPOT, 'outils', 'empreintes.mjs'), ...params, '--list', liste], { encoding: 'utf8' });
@@ -172,11 +172,11 @@ test('les sommes de contrôle distinguent la copie exacte d’une version publi�
     const identique = lancer(copie);
     assert.ok(identique.ok, identique.out);
     assert.match(identique.out, /les \d+ fichiers sont identiques/);
-    fs.appendFileSync(path.join(copie, 'skills', 'floorplan', 'scripts', 'construire.mjs'), '\n// changed\n');
-    fs.writeFileSync(path.join(copie, 'skills', 'floorplan', 'scripts', 'extra.mjs'), '');
+    fs.appendFileSync(path.join(copie, 'skills', 'la-carte', 'scripts', 'construire.mjs'), '\n// changed\n');
+    fs.writeFileSync(path.join(copie, 'skills', 'la-carte', 'scripts', 'extra.mjs'), '');
     const difference = lancer(copie);
     assert.equal(difference.ok, false);
-    assert.match(difference.out, /Modifiés :\n {2}skills\/floorplan\/scripts\/construire\.mjs/);
-    assert.match(difference.out, /Absents de la version :\n {2}skills\/floorplan\/scripts\/extra\.mjs/);
+    assert.match(difference.out, /Modifiés :\n {2}skills\/la-carte\/scripts\/construire\.mjs/);
+    assert.match(difference.out, /Absents de la version :\n {2}skills\/la-carte\/scripts\/extra\.mjs/);
   } finally { fs.rmSync(temporaire, { recursive: true, force: true }); }
 });

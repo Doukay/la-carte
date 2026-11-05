@@ -15,10 +15,10 @@ test('Codex est reconnu aux variables qu’il définit pour chaque commande', ()
   assert.equal(detecterAgent({}, { CLAUDECODE: '1' }), 'claude');
 });
 
-test('--agent et FLOORPLAN_AGENT l’emportent sur la devinette, et les valeurs absurdes sont ignorées', () => {
+test('--agent et LA_CARTE_AGENT l’emportent sur la devinette, et les valeurs absurdes sont ignorées', () => {
   assert.equal(detecterAgent({ agent: 'codex' }, {}), 'codex');
   assert.equal(detecterAgent({ agent: 'Claude' }, { CODEX_THREAD_ID: 'abc' }), 'claude');
-  assert.equal(detecterAgent({}, { FLOORPLAN_AGENT: 'codex' }), 'codex');
+  assert.equal(detecterAgent({}, { LA_CARTE_AGENT: 'codex' }), 'codex');
   assert.equal(detecterAgent({ agent: 'gpt' }, { CODEX_THREAD_ID: 'abc' }), 'codex');
 });
 
@@ -51,8 +51,8 @@ test('la copie pour l’appli Claude dit toujours Claude, quel que soit celui qu
   try {
     executer('analyser.mjs', racine);
     executer('construire.mjs', racine, '--agent', 'codex', '--artifact', '--no-claude-md');
-    const html = fs.readFileSync(path.join(racine, 'floorplan', 'artifact.html'), 'utf8');
+    const html = fs.readFileSync(path.join(racine, 'la-carte', 'artifact.html'), 'utf8');
     assert.match(html, /"agent":"claude"/);
-    assert.equal(lireJson(path.join(racine, 'floorplan', 'graphe.json')).meta.agent, 'codex');
+    assert.equal(lireJson(path.join(racine, 'la-carte', 'graphe.json')).meta.agent, 'codex');
   } finally { nettoyer(racine); }
 });

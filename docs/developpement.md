@@ -1,4 +1,4 @@
-# Développer Floorplan (cette copie)
+# Développer la carte (cette copie)
 
 Cette page décrit ce dépôt tel qu'il est : une copie française et non officielle de Floorplan (de Hayden Smith, licence MIT), partie de la version 0.6.3 de l'auteur. Elle n'est reliée à aucun dépôt de l'auteur et ne publie rien vers lui. Les noms de fichiers cités ci-dessous sont ceux du code actuel ; certains seront renommés en français plus tard.
 
@@ -8,13 +8,11 @@ Cette page décrit ce dépôt tel qu'il est : une copie française et non offici
 .claude-plugin/
   plugin.json          le plugin : nom, version, auteur
   marketplace.json     ce dépôt comme sa propre source d'un seul plugin
-  icon.png
 .codex-plugin/
   plugin.json          le même plugin pour Codex (même compétence, même version)
-  icon.png
 .agents/plugins/
   marketplace.json     ce dépôt comme source pour Codex
-skills/floorplan/
+skills/la-carte/
   SKILL.md             le déroulé que suivent Claude et Codex
   agents/openai.yaml   comment Codex présente la compétence
   references/          formats et guides de style que Claude lit en travaillant
@@ -36,8 +34,8 @@ skills/floorplan/
     carte.html    la carte (le gabarit que la construction remplit)
     ui/            extensions de la visionneuse : bouton de thème, plans, glossaire, santé, travail récent, écrans, visite guidée, export
     requetes-graphe.js recherches partagées dans la carte (visionneuse, requete.mjs, consignes de la bulle de questions)
-    serveur.mjs      copié dans le dossier floorplan/ de chaque projet ; répond par Claude Code ou Codex
-    requete-cli.mjs  devient floorplan/requete.mjs
+    serveur.mjs      copié dans le dossier la-carte/ de chaque projet ; répond par Claude Code ou Codex
+    requete-cli.mjs  devient la-carte/requete.mjs
     vendor/        moteur de mise en page (elkjs) et polices intégrés, avec leurs licences
 tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
 outils/empreintes.mjs    écrit EMPREINTES.txt, et compare une copie installée avec lui
@@ -51,23 +49,23 @@ docs/                  ces guides
 Installe depuis ton dossier local :
 
 ```bash
-claude plugin marketplace add /chemin/vers/floorplan-fr
-claude plugin install floorplan-fr@floorplan-fr
+claude plugin marketplace add /chemin/vers/la-carte
+claude plugin install la-carte@la-carte
 ```
 
 Un plugin installé depuis un dossier local tourne directement depuis lui, donc tes modifications s'appliquent à la session suivante, sans étape de mise à jour.
 
-Pour l'essayer dans Codex, voir [Essayer ta copie de travail](codex.md#essayer-ta-copie-de-travail). Codex copie un plugin local quand tu l'ajoutes, donc relance `codex plugin add floorplan-fr@floorplan-fr` après chaque changement. `--agent claude|codex` sur construire.mjs (ou `FLOORPLAN_AGENT`) et `--engine claude|codex` sur serveur.mjs te laissent essayer la carte de l'un ou l'autre agent de n'importe où.
+Pour l'essayer dans Codex, voir [Essayer ta copie de travail](codex.md#essayer-ta-copie-de-travail). Codex copie un plugin local quand tu l'ajoutes, donc relance `codex plugin add la-carte@la-carte` après chaque changement. `--agent claude|codex` sur construire.mjs (ou `LA_CARTE_AGENT`) et `--engine claude|codex` sur serveur.mjs te laissent essayer la carte de l'un ou l'autre agent de n'importe où.
 
 Les scripts se lancent aussi seuls, ce qui est le moyen le plus rapide d'y travailler :
 
 ```bash
-node skills/floorplan/scripts/analyser.mjs /chemin/vers/un/projet
-node skills/floorplan/scripts/construire.mjs /chemin/vers/un/projet
-node skills/floorplan/scripts/ouvrir.mjs /chemin/vers/un/projet
+node skills/la-carte/scripts/analyser.mjs /chemin/vers/un/projet
+node skills/la-carte/scripts/construire.mjs /chemin/vers/un/projet
+node skills/la-carte/scripts/ouvrir.mjs /chemin/vers/un/projet
 ```
 
-`construire.mjs` a besoin d'un `floorplan/architecture.json` dans le projet : lance la compétence une fois d'abord, ou écris-en un petit à la main ([format](../skills/floorplan/references/schema.md)). Dans le fichier, les clés `project`, `flows` et `tour` s'appellent maintenant `projet`, `parcours` et `visite`.
+`construire.mjs` a besoin d'un `la-carte/architecture.json` dans le projet : lance la compétence une fois d'abord, ou écris-en un petit à la main ([format](../skills/la-carte/references/schema.md)). Dans le fichier, les clés `project`, `flows` et `tour` s'appellent maintenant `projet`, `parcours` et `visite`.
 
 ## Tests
 
@@ -106,11 +104,11 @@ Les tests utilisent le lanceur de tests intégré à Node : il n'y a rien à ins
 
 Les projets d'exemple sont écrits dans un dossier temporaire par `aides.mjs` (`shopApp()`) ou copiés depuis `tests/fixtures/`. Tout ce qui ressemble à un secret est assemblé à l'exécution, donc aucune fausse clé crédible n'est jamais enregistrée.
 
-Quand tu corriges un défaut de ce que Floorplan détecte, ajoute un exemple qui le montre, et vérifie que le test échoue sans ta correction.
+Quand tu corriges un défaut de ce que la carte détecte, ajoute un exemple qui le montre, et vérifie que le test échoue sans ta correction.
 
 ## Étendre la visionneuse
 
-Les fichiers de `skills/floorplan/assets/ui/` sont insérés dans chaque carte, dans l'ordre de leur nom. Ils ne parlent à la visionneuse que par `window.Floorplan` (chaque fichier le reprend sous le nom `CARTE`), qui offre :
+Les fichiers de `skills/la-carte/assets/ui/` sont insérés dans chaque carte, dans l'ordre de leur nom. Ils ne parlent à la visionneuse que par `window.LaCarte` (chaque fichier le reprend sous le nom `CARTE`), qui offre :
 - le graphe et les recherches ;
 - la navigation (`aller`, `ouvrir`, `reveler`, `montrerTableau`, `jouerParcours`) ;
 - `ajouterBoutonEntete` et `ajouterSectionPanneau('overview' | 'item', fn)` ;
@@ -133,7 +131,7 @@ Un moteur doit être en lecture seule d'une façon que sa ligne de commande impo
 - **Aucune dépendance.** Les scripts doivent tourner partout où tourne Node 18+, sans rien à installer.
 - **Du langage simple d'abord.** Tout ce que la carte montre doit avoir du sens pour la personne qui possède l'appli, pas seulement pour ses ingénieurs.
 - **Ne jamais enregistrer ni afficher une valeur de secret, ni un seul de ses caractères.** Les constats de la Santé disent où est un secret et sa longueur, jamais la valeur.
-- **Rien vers l'extérieur, rien hors de `floorplan/`.** Pas de requête sortante, pas d'écriture dans `CLAUDE.md`, `CLAUDE.local.md`, `.git/info/exclude` ni dans le dossier personnel. `chaine-securite.test.mjs` vérifie une partie de cela ; le reste, c'est à toi de le tenir.
+- **Rien vers l'extérieur, rien hors de `la-carte/`.** Pas de requête sortante, pas d'écriture dans `CLAUDE.md`, `CLAUDE.local.md`, `.git/info/exclude` ni dans le dossier personnel. `chaine-securite.test.mjs` vérifie une partie de cela ; le reste, c'est à toi de le tenir.
 - **Garde les exemples génériques.** Les commentaires du code, les docs et les demandes ne doivent décrire aucun vrai projet privé, et ne contenir ni nom de personne, ni adresse e-mail, ni chemin d'ordinateur.
 - **Tout en français** : noms, commentaires, textes vus par la personne (tutoiement, langage simple). Les motifs de détection qui lisent le code d'un projet analysé restent en anglais.
 

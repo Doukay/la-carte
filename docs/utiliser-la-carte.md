@@ -75,13 +75,13 @@ Elle laisse aussi de côté ce qui est public exprès, tant que ça ne fait que 
 
 Si un problème est faux, appuie sur **Pas un problème** et ajoute une raison si tu veux. Il descend en bas de la liste et sort du compte, et il reste ainsi quand la carte est reconstruite. Modifier autre chose dans le fichier ne le fait pas revenir, mais il réapparaît si le même contrôle trouve quelque chose de nouveau dans ce fichier ou si le problème change de gravité. **Afficher à nouveau** annule. Les copies exportées gardent le problème à part mais laissent ta raison de côté.
 
-Ce choix reste sur ta machine, dans `floorplan/`. **Rien n'est envoyé à l'auteur de Floorplan ni à personne** : cette version n'a pas de signalement de fausse alerte.
+Ce choix reste sur ta machine, dans `la-carte/`. **Rien n'est envoyé à l'auteur de Floorplan ni à personne** : cette version n'a pas de signalement de fausse alerte.
 
 ### Travail récent
 Apparaît quand Claude ou Codex vient de changer des choses. Il place les blocs modifiés sur un seul tableau, avec ce que tu avais demandé, un résumé de ce qui a été fait, et une note sur chaque bloc. Ailleurs sur la carte, les blocs modifiés ont un anneau vert et une étiquette **Modifié** ou **Nouveau**, et les parties qui les contiennent affichent **N modifiés**, pour que tu puisses suivre le vert depuis le niveau le plus haut.
 
 ### Écrans
-Chaque page de ton appli que Floorplan a détectée. Choisis-en une pour voir tout ce qu'il y a derrière : ses composants, les appels qu'elle fait, le code du serveur qui y répond, les données qu'ils touchent, et les services extérieurs.
+Chaque page de ton appli que la carte a détectée. Choisis-en une pour voir tout ce qu'il y a derrière : ses composants, les appels qu'elle fait, le code du serveur qui y répond, les données qu'ils touchent, et les services extérieurs.
 
 ### Exporter
 Enregistre une copie de la carte à envoyer à n'importe qui, comme un collègue, un client, ou une personne qui n'a ni Claude ni Codex. C'est un seul fichier HTML qui s'ouvre dans n'importe quel navigateur sans rien installer. La copie contient toute la carte, la recherche, les écrans, la visite guidée et les parcours, mais pas de bulle de questions, pas de demandes **Corriger avec Claude** ou **Construire ça**, pas de liens vers l'éditeur, et rien sur ton ordinateur, comme le chemin de ton dossier. Une étiquette **Exporté** à côté du titre montre la date.
@@ -91,7 +91,7 @@ Tu choisis ce qu'on y met :
 - **Travail récent**, décoché par défaut ;
 - **Contrôle de santé** (ou la **revue du plan** sur un plan), décoché par défaut. La Santé liste les adresses du serveur que tout le monde peut utiliser et où se trouvent les secrets dans le code (jamais leurs valeurs) : ne l'inclus que pour des personnes de confiance.
 
-Chaque copie montre comment l'appli tient ensemble (chaque partie, fichier et adresse du serveur, avec leurs noms et descriptions), mais pas ton code source. L'export a besoin du serveur de la carte ; sur une carte ouverte directement depuis son fichier, le bouton montre à la place la commande à lancer. Tu peux aussi demander à Claude ou à Codex d'« exporter le floorplan ».
+Chaque copie montre comment l'appli tient ensemble (chaque partie, fichier et adresse du serveur, avec leurs noms et descriptions), mais pas ton code source. L'export a besoin du serveur de la carte ; sur une carte ouverte directement depuis son fichier, le bouton montre à la place la commande à lancer. Tu peux aussi demander à Claude ou à Codex d'« exporter la carte ».
 
 ### Commencer ici
 Rejoue la visite guidée d'une minute qui se lance la première fois que tu ouvres une carte.

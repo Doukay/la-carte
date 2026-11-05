@@ -8,7 +8,7 @@ import vm from 'node:vm';
 import { appliBoutique, analyserEtConstruire, nettoyer } from './aides.mjs';
 
 let racine, page;
-before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
+before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8'); });
 after(() => nettoyer(racine));
 
 const scriptDemarrage = () => {
@@ -18,7 +18,7 @@ const scriptDemarrage = () => {
 
 /** Lance le script de démarrage avec un faux appareil et rend ce qu’il a fait à la page. */
 function demarrer({ enregistre, appareilClair = false, stockageBloque = false } = {}) {
-  const attributs = {}, classes = new Set(), stockage = new Map(enregistre ? [['floorplan-theme', enregistre]] : []);
+  const attributs = {}, classes = new Set(), stockage = new Map(enregistre ? [['la-carte-theme', enregistre]] : []);
   const ecouteurs = {}, evenements = [];
   const requete = { matches: appareilClair, addEventListener: (_, f) => { requete.change = f; } };
   const fenetre = {
@@ -32,7 +32,7 @@ function demarrer({ enregistre, appareilClair = false, stockageBloque = false } 
   };
   fenetre.window = fenetre;
   vm.runInNewContext(scriptDemarrage(), Object.assign(fenetre, { Event: fenetre.Event }));
-  return { attributs, stockage, requete, evenements, theme: fenetre.floorplanTheme, classes };
+  return { attributs, stockage, requete, evenements, theme: fenetre.laCarteTheme, classes };
 }
 
 test('la page a un jeu de couleurs sombre et un jeu clair, et le clair est celui par défaut', () => {
@@ -74,7 +74,7 @@ test('un choix enregistré l’emporte sur l’appareil, et un nouveau choix est
   assert.equal(demarrer({ enregistre: 'light', appareilClair: false }).attributs['data-theme'], 'light');
   const b = demarrer({ appareilClair: false });
   b.theme.set('light');
-  assert.equal(b.stockage.get('floorplan-theme'), 'light');
+  assert.equal(b.stockage.get('la-carte-theme'), 'light');
   assert.equal(b.attributs['data-theme'], 'light');
   assert.equal(b.theme.get(), 'light');
   assert.ok(b.evenements.length >= 2, 'le bouton est prévenu');

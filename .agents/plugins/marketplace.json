@@ -1,11 +1,11 @@
 {
-  "name": "floorplan-fr",
+  "name": "la-carte",
   "interface": {
-    "displayName": "Floorplan FR"
+    "displayName": "La carte"
   },
   "plugins": [
     {
-      "name": "floorplan-fr",
+      "name": "la-carte",
       "source": {
         "source": "local",
         "path": "./"

@@ -10,9 +10,9 @@ import { appliBoutique, executer, lireJson, ecrireJson, nettoyer, FAUX_MOT_DE_PA
 
 const JETON_DANS_REMOTE = 'ghp-not-a-real-token-1234';
 let racine, serveur, base, jeton;
-const serveurJs = () => path.join(racine, 'floorplan', 'serveur.mjs');
+const serveurJs = () => path.join(racine, 'la-carte', 'serveur.mjs');
 /** Le graphe contenu dans une page exportée. */
-const donneesDe = (html) => JSON.parse(/<script>window\.FLOORPLAN = (.*?);<\/script>/s.exec(html)[1]);
+const donneesDe = (html) => JSON.parse(/<script>window\.LA_CARTE = (.*?);<\/script>/s.exec(html)[1]);
 /** Lance serveur.mjs --export avec ces paramètres ; renvoie la page exportée et ce qui a été affiché. */
 function exporterCli(...parametres) {
   const sortie = execFileSync(process.execPath, [serveurJs(), '--export', ...parametres], { cwd: racine, encoding: 'utf8' });
@@ -23,24 +23,24 @@ function exporterCli(...parametres) {
 before(async () => {
   racine = appliBoutique();
   execFileSync('git', ['-C', path.join(racine, 'shop-api'), 'remote', 'add', 'origin', `https://someone:${JETON_DANS_REMOTE}@example.com/shop-api.git`]);
-  const archi = lireJson(path.join(racine, 'floorplan', 'architecture.json'));
-  ecrireJson(path.join(racine, 'floorplan', 'architecture.json'), {
+  const archi = lireJson(path.join(racine, 'la-carte', 'architecture.json'));
+  ecrireJson(path.join(racine, 'la-carte', 'architecture.json'), {
     ...archi,
     annotations: [{ path: 'shop-api/config.js', note: 'Moving to the secrets manager next sprint.' }],
     parcours: [{ id: 'refund', title: 'Refund', description: 'A customer asks for a refund.', steps: [{ node: 'web', note: 'The website asks.' }, { node: 'api', note: 'The server refunds.' }] }],
   });
-  ecrireJson(path.join(racine, 'floorplan', 'travail-recent.json'), { tasks: [{ title: 'Refunds', summary: 'Added refunds.', items: [{ ref: 'shop-api/routes/orders.js', change: 'changed', note: 'Refund endpoint.' }] }] });
+  ecrireJson(path.join(racine, 'la-carte', 'travail-recent.json'), { tasks: [{ title: 'Refunds', summary: 'Added refunds.', items: [{ ref: 'shop-api/routes/orders.js', change: 'changed', note: 'Refund endpoint.' }] }] });
   executer('analyser.mjs', racine);
   executer('construire.mjs', racine, '--no-claude-md');
 
   const port = 20000 + Math.floor(Math.random() * 20000);
   serveur = spawn(process.execPath, [serveurJs(), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(racine, 'no-such-cli'), FLOORPLAN_NO_PROMPTS: '1' }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli'), LA_CARTE_NO_PROMPTS: '1' }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   base = await new Promise((resoudre, rejeter) => {
     let sortie = '';
     const minuteur = setTimeout(() => rejeter(new Error(`le serveur n’a pas démarré : ${sortie}`)), 20000);
-    serveur.stdout.on('data', (d) => { sortie += d; const m = /Floorplan: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1]); } });
+    serveur.stdout.on('data', (d) => { sortie += d; const m = /la carte: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1]); } });
     serveur.on('exit', (code) => rejeter(new Error(`le serveur s’est arrêté (${code}) : ${sortie}`)));
   });
   jeton = /"token":"([0-9a-f]+)"/.exec(await (await fetch(base + '/')).text())[1];
@@ -51,7 +51,7 @@ after(async () => {
 });
 
 test('la carte a une santé, un travail récent, une note, un parcours et un dépôt distant à laisser de côté', () => {
-  const g = donneesDe(fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'));
+  const g = donneesDe(fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8'));
   assert.ok(g.sante.problemes.length > 0);
   assert.equal(g.recent.items.length, 1);
   assert.ok(g.files.some((f) => f.note));
@@ -62,7 +62,7 @@ test('la carte a une santé, un travail récent, une note, un parcours et un dé
 test('par défaut l’export garde les parcours et les notes, et laisse de côté la santé, le travail récent et cet ordinateur', () => {
   const { html, file: fichier, out: sortie } = exporterCli();
   assert.equal(path.basename(fichier), 'shop-carte.html');
-  assert.equal(path.dirname(fichier), path.join(fs.realpathSync(racine), 'floorplan'));
+  assert.equal(path.dirname(fichier), path.join(fs.realpathSync(racine), 'la-carte'));
   const g = donneesDe(html);
   assert.match(g.meta.exported.at, /^\d{4}-\d\d-\d\dT/);
   assert.deepEqual(g.meta.exported.include, ['flows', 'notes']);
@@ -73,9 +73,9 @@ test('par défaut l’export garde les parcours et les notes, et laisse de côt�
   assert.equal(g.meta.root, null);
   assert.ok(g.meta.repos.every((r) => !('remote' in r)));
   assert.ok(!html.includes(JETON_DANS_REMOTE), 'aucun jeton de connexion venant d’un dépôt distant git');
-  const ici = lireJson(path.join(racine, 'floorplan', 'graphe.json')).meta.root;
+  const ici = lireJson(path.join(racine, 'la-carte', 'graphe.json')).meta.root;
   assert.ok(ici && !html.includes(ici), 'aucun chemin de dossier de cet ordinateur');
-  assert.ok(!html.includes('FLOORPLAN_SERVER='), 'aucun détail du serveur');
+  assert.ok(!html.includes('LA_CARTE_SERVER='), 'aucun détail du serveur');
   assert.match(sortie, /sans bulle de questions/);
   assert.doesNotMatch(sortie, /Ne le partage qu’avec des personnes de confiance/);
 });
@@ -103,7 +103,7 @@ test('les parcours, la visite guidée et les notes peuvent aussi être laissés 
 test('la page exportée est toujours la carte entière, prête à ouvrir', () => {
   const { html } = exporterCli(path.join(racine, 'page.html'));
   const g = donneesDe(html);
-  const construit = lireJson(path.join(racine, 'floorplan', 'graphe.json'));
+  const construit = lireJson(path.join(racine, 'la-carte', 'graphe.json'));
   assert.equal(g.files.length, construit.files.length);
   assert.equal(g.routes.length, construit.routes.length);
   assert.equal(g.links.length, construit.links.length);
@@ -115,12 +115,12 @@ const appelerApi = (corps, entetes = {}) => fetch(base + '/api/export', { method
 
 test('le bouton Exporter demande le jeton de la page de la carte', async () => {
   assert.equal((await appelerApi({ include: ['flows'] })).status, 403);
-  assert.equal((await appelerApi({ include: ['flows'] }, { 'x-floorplan-token': 'wrong' })).status, 403);
+  assert.equal((await appelerApi({ include: ['flows'] }, { 'x-la-carte-token': 'wrong' })).status, 403);
 });
 
 test('le bouton Exporter télécharge la copie, avec les parcours demandés depuis la dernière construction', async () => {
   const supplement = { id: 'custom-1', title: 'Admin deletes a user', description: '', steps: [{ ref: 'web', note: 'First.' }, { ref: 'api', note: 'Then.' }] };
-  const r = await appelerApi({ include: ['flows', 'health'], parcours: [supplement, { id: 'bad', steps: 'nope' }] }, { 'x-floorplan-token': jeton });
+  const r = await appelerApi({ include: ['flows', 'health'], parcours: [supplement, { id: 'bad', steps: 'nope' }] }, { 'x-la-carte-token': jeton });
   assert.equal(r.status, 200);
   assert.match(r.headers.get('content-type'), /text\/html/);
   assert.equal(r.headers.get('content-disposition'), 'attachment; filename="shop-carte.html"');

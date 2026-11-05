@@ -33,28 +33,28 @@ if (indiceControle < 0) {
   const version = JSON.parse(fs.readFileSync(path.join(DEPOT, '.claude-plugin', 'plugin.json'), 'utf8')).version;
   const lignes = lister(DEPOT).map((f) => `${empreinte(DEPOT, f)}  ${f}`);
   fs.writeFileSync(SORTIE, [
-    `# Floorplan ${version}: SHA-256 de chaque fichier d'où le plugin tourne.`,
+    `# la carte ${version}: SHA-256 de chaque fichier d'où le plugin tourne.`,
     `# Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.`,
     ...lignes, '',
   ].join('\n'));
-  console.log(`✓ ${path.basename(SORTIE)} écrit pour Floorplan ${version} (${lignes.length} fichiers)`);
+  console.log(`✓ ${path.basename(SORTIE)} écrit pour la carte ${version} (${lignes.length} fichiers)`);
   process.exit(0);
 }
 
 const dossier = process.argv[indiceControle + 1];
 if (!dossier || !fs.existsSync(dossier)) { console.error('usage : node outils/empreintes.mjs --check <dossier du plugin installé>'); process.exit(1); }
 const texte = fs.readFileSync(SORTIE, 'utf8');
-const version = /^# Floorplan (\S+):/m.exec(texte)?.[1] || '?';
+const version = /^# la carte (\S+):/m.exec(texte)?.[1] || '?';
 const attendus = new Map(texte.split('\n').filter((l) => /^[0-9a-f]{64}  /.test(l)).map((l) => [l.slice(66), l.slice(0, 64)]));
 const presents = lister(dossier);
 const modifies = presents.filter((f) => attendus.has(f) && attendus.get(f) !== empreinte(dossier, f));
 const enTrop = presents.filter((f) => !attendus.has(f));
 const manquants = [...attendus.keys()].filter((f) => !presents.includes(f));
 if (!modifies.length && !enTrop.length && !manquants.length) {
-  console.log(`✓ ${dossier} correspond à Floorplan ${version} : les ${attendus.size} fichiers sont identiques.`);
+  console.log(`✓ ${dossier} correspond à la carte ${version} : les ${attendus.size} fichiers sont identiques.`);
   process.exit(0);
 }
-console.log(`✗ ${dossier} ne correspond pas à Floorplan ${version}.`);
+console.log(`✗ ${dossier} ne correspond pas à la carte ${version}.`);
 for (const [titre, fichiers] of [['Modifiés', modifies], ['Absents de la version', enTrop], ['Manquants', manquants]]) {
   if (fichiers.length) console.log(`${titre} :\n${fichiers.map((f) => `  ${f}`).join('\n')}`);
 }

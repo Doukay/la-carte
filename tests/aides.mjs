@@ -7,21 +7,21 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 export const DEPOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const DOSSIER_SKILL = path.join(DEPOT, 'skills', 'floorplan');
-export const lib = (nom) => import(new URL(`../skills/floorplan/scripts/lib/${nom}`, import.meta.url));
+export const DOSSIER_SKILL = path.join(DEPOT, 'skills', 'la-carte');
+export const lib = (nom) => import(new URL(`../skills/la-carte/scripts/lib/${nom}`, import.meta.url));
 
 /**
  * Écrit `fichiers` ({ 'chemin/relatif': 'contenu' }) dans un nouveau dossier temporaire. Chaque dossier de `repos`
  * devient son propre dépôt git, comme un frontend et un backend côte à côte. Renvoie le dossier.
  */
 export function creerProjet(fichiers, { repos: depots = [], arch: archi } = {}) {
-  const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'floorplan-test-'));
+  const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'la-carte-test-'));
   for (const [p, source] of Object.entries(fichiers)) {
     fs.mkdirSync(path.dirname(path.join(racine, p)), { recursive: true });
     fs.writeFileSync(path.join(racine, p), source);
   }
   for (const r of depots) execFileSync('git', ['init', '-q', path.join(racine, r)]);
-  if (archi) ecrireJson(path.join(racine, 'floorplan', 'architecture.json'), archi);
+  if (archi) ecrireJson(path.join(racine, 'la-carte', 'architecture.json'), archi);
   return racine;
 }
 
@@ -37,7 +37,7 @@ export function analyserEtConstruire(racine) {
 
 export const lireJson = (fichier) => JSON.parse(fs.readFileSync(fichier, 'utf8'));
 export const ecrireJson = (fichier, donnees) => { fs.mkdirSync(path.dirname(fichier), { recursive: true }); fs.writeFileSync(fichier, JSON.stringify(donnees, null, 2)); };
-export const lireGraphe = (racine) => lireJson(path.join(racine, 'floorplan', 'graphe.json'));
+export const lireGraphe = (racine) => lireJson(path.join(racine, 'la-carte', 'graphe.json'));
 export const nettoyer = (racine) => fs.rmSync(racine, { recursive: true, force: true });
 
 /** Chaque fichier d’un dossier, sous la forme { path, text }. */
@@ -60,7 +60,7 @@ export function adressesOuvertes(graphe) {
 }
 
 // Un faux mot de passe pour l’appli d’exemple. Il est assemblé à l’exécution pour qu’aucune chaîne ressemblant à un secret
-// ne soit jamais versée dans ce dépôt, et pour que les tests vérifient qu’il n’atteint rien de ce que Floorplan écrit.
+// ne soit jamais versée dans ce dépôt, et pour que les tests vérifient qu’il n’atteint rien de ce que la carte écrit.
 export const FAUX_MOT_DE_PASSE = ['correct', 'horse', 'battery', 'staple', '42'].join('-');
 
 /**

@@ -12,13 +12,13 @@ Si le défaut vient visiblement du code d'origine (il existe aussi dans la versi
 
 ## Ce que le plugin peut faire
 
-[Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que Floorplan fait sur ton ordinateur, les programmes qu'il lance, ce qu'il ne fait jamais, et ses limites. [`tests/chaine-securite.test.mjs`](tests/chaine-securite.test.mjs) le vérifie (`node --test`).
+[Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que la carte fait sur ton ordinateur, les programmes qu'elle lance, ce qu'elle ne fait jamais, et ses limites. [`tests/chaine-securite.test.mjs`](tests/chaine-securite.test.mjs) le vérifie (`node --test`).
 
 ## Dans le périmètre
 
 - le serveur local de la carte (`serveur.mjs`) ;
 - tout ce qui pourrait faire fuir des secrets ou du code source ;
-- tout ce qui écrirait en dehors du dossier `floorplan/` du projet ou enverrait quelque chose sur Internet.
+- tout ce qui écrirait en dehors du dossier `la-carte/` du projet ou enverrait quelque chose sur Internet.
 
 Hors périmètre : les défauts de Claude Code lui-même, à signaler à [Anthropic](https://www.anthropic.com/responsible-disclosure-policy), et ceux de Codex lui-même, à signaler à [OpenAI](https://help.openai.com/en/articles/6653653-how-to-report-security-vulnerabilities-to-openai).
 

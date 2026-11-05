@@ -1,11 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png">
-  <img src="docs/images/logo-light.png" alt="Logo de Floorplan" height="88">
-</picture>
-
-# Floorplan (traduction française)
+# La carte
 
 **Vois comment ton appli tient vraiment ensemble.**
 
@@ -17,17 +12,17 @@ Licence MIT · Node 18 ou plus · aucune dépendance
 
 </div>
 
-> **Traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur)).
+> **La carte est une traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur)).
 >
 > Floorplan a été créé par **[Hayden Smith](https://github.com/haydenschmitty)**. Dépôt d'origine : <https://github.com/haydenschmitty/floorplan>. Le travail est à lui, cette copie ne fait que le traduire et en retirer quelques fonctions (voir le [journal des changements](CHANGELOG.md#version-française)). Licence MIT conservée, voir [LICENSE](LICENSE).
 >
 > **Les images** de ce dépôt (`docs/images/`) sont des captures d'écran de la version d'origine : leur interface est en anglais. Les noms des boutons dans le texte sont ceux de cette version française.
 
-## Pourquoi Floorplan ?
+## Pourquoi la carte ?
 
 Tu as construit une appli, probablement avec beaucoup d'aide de l'IA, et elle marche. Mais si on te demande « que se passe-t-il quand quelqu'un passe commande ? » ou « qu'est-ce qui casse si je change ça ? », la réponse honnête est *aucune idée*.
 
-Floorplan te donne le schéma que personne n'a dessiné. Demande une carte à Claude Code ou à Codex : quelques minutes plus tard tu as une carte que tu peux explorer, interroger, et garder à jour au fil de ton travail.
+La carte te donne le schéma que personne n'a dessiné. Demande une carte à Claude Code ou à Codex : quelques minutes plus tard tu as une carte que tu peux explorer, interroger, et garder à jour au fil de ton travail.
 
 - **Pour toi qui construis :** comprendre l'appli que tu as faite, avec tes mots, sans lire le code.
 - **Pour une équipe :** accueillir quelqu'un en quelques minutes, de la vue d'ensemble jusqu'au fichier précis.
@@ -99,7 +94,7 @@ Il y a aussi des **parcours** guidés que tu peux demander avec tes mots, une **
 
 ### Les plans, pour une appli pas encore construite
 
-Floorplan est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
+La carte est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
 
 ## Voir en images
 
@@ -140,20 +135,20 @@ Ces captures viennent de la version d'origine : leur interface est en anglais. E
 
 ## Installation
 
-Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code ou Codex. Floorplan marche avec l'abonnement que tu as déjà, sans clé d'API.
+Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code ou Codex. La carte marche avec l'abonnement que tu as déjà, sans clé d'API.
 
-Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `floorplan-fr`.
+Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `la-carte`.
 
 ### Claude Code
 
 Dans l'onglet Code de l'application de bureau ou en ligne de commande, depuis le dossier de cette copie :
 
 ```bash
-claude plugin marketplace add /chemin/vers/floorplan-fr
-claude plugin install floorplan-fr@floorplan-fr
+claude plugin marketplace add /chemin/vers/la-carte
+claude plugin install la-carte@la-carte
 ```
 
-(ou, depuis le dépôt Git de cette copie : `claude plugin marketplace add <compte>/floorplan-fr`, si ton Git a accès au dépôt.)
+(ou, depuis le dépôt Git de cette copie : `claude plugin marketplace add <compte>/la-carte`, si ton Git a accès au dépôt.)
 
 Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/bien-demarrer.md).
 
@@ -163,35 +158,35 @@ Connecté avec ChatGPT. Pas besoin de terminal :
 
 1. Dans l'application Codex, ouvre **Plugins** et choisis **Add a marketplace**.
 2. Pour **Source**, entre le chemin du dossier de cette copie (ou son dépôt Git) et clique sur **Add marketplace**.
-3. Trouve **Floorplan** et clique sur **+** pour l'installer.
+3. Trouve **La carte** et clique sur **+** pour l'installer.
 
 Ou depuis un terminal :
 
 ```bash
-codex plugin marketplace add /chemin/vers/floorplan-fr
-codex plugin add floorplan-fr@floorplan-fr
+codex plugin marketplace add /chemin/vers/la-carte
+codex plugin add la-carte@la-carte
 ```
 
-Ouvre une nouvelle discussion et demande une carte, ou tape `$floorplan`. La bulle de questions de la carte utilise ta propre connexion à Codex, sans clé d'API. La suite est dans [Floorplan dans Codex](docs/codex.md).
+Ouvre une nouvelle discussion et demande une carte, ou tape `$la-carte`. La bulle de questions de la carte utilise ta propre connexion à Codex, sans clé d'API. La suite est dans [la carte dans Codex](docs/codex.md).
 
 ## Démarrage rapide
 
 1. Ouvre ton projet dans Claude Code ou Codex. Si l'interface et le serveur sont dans des dépôts séparés, ouvre le dossier qui contient les deux.
 2. Demande :
-   > Fais-moi un floorplan de cette appli.
+   > Fais-moi une carte de cette appli.
 
-   (Dans Claude Code tu peux aussi taper `/floorplan-fr:floorplan`, et dans Codex `$floorplan`.)
+   (Dans Claude Code tu peux aussi taper `/la-carte:la-carte`, et dans Codex `$la-carte`.)
 3. Explore. La carte s'ouvre toute seule, en commençant par une courte visite guidée.
 
 Quand tu as avancé, demande :
 
-> Mets à jour le floorplan.
+> Mets à jour la carte.
 
 Seul ce qui a changé est relu, et ce sur quoi tu viens de travailler s'allume dans **Travail récent**.
 
-**Pas encore de code ?** Floorplan peut planifier une appli à partir d'un cahier des charges ou d'une spécification. Donne le document et demande :
+**Pas encore de code ?** La carte peut planifier une appli à partir d'un cahier des charges ou d'une spécification. Donne le document et demande :
 
-> Voici mon cahier des charges. Fais-moi un floorplan de ce qu'il faudrait construire.
+> Voici mon cahier des charges. Fais-moi une carte de ce qu'il faudrait construire.
 
 Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du système prévu, clairement marqué comme un plan.
 
@@ -199,12 +194,12 @@ Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du systèm
 
 | Demande à Claude Code ou à Codex | Demande à la carte |
 |---|---|
-| « Fais-moi un floorplan de cette appli » | « Que se passe-t-il quand quelqu'un passe commande ? » |
-| « Mets à jour le floorplan » | « Où parle-t-on à Stripe ? » |
-| « Corrige les problèmes importants du contrôle de santé du floorplan » | « Si je change la table des utilisateurs, qu'est-ce qui casse ? » |
+| « Fais-moi une carte de cette appli » | « Que se passe-t-il quand quelqu'un passe commande ? » |
+| « Mets à jour la carte » | « Où parle-t-on à Stripe ? » |
+| « Corrige les problèmes importants du contrôle de santé de la carte » | « Si je change la table des utilisateurs, qu'est-ce qui casse ? » |
 | « Ajoute un parcours qui montre comment un nouvel utilisateur s'inscrit » | « Quels fichiers gèrent la connexion ? » |
-| « Réécris le floorplan pour des développeurs » | « Qu'avons-nous changé pour les remboursements ? » |
-| « Exporte le floorplan que je l'envoie à l'équipe » | |
+| « Réécris la carte pour des développeurs » | « Qu'avons-nous changé pour les remboursements ? » |
+| « Exporte la carte que je l'envoie à l'équipe » | |
 
 ## Comment ça marche
 
@@ -213,8 +208,8 @@ flowchart LR
     code["Ton code<br/>un dépôt ou plusieurs"] --> scan["Analyse<br/>fichiers, imports, routes, appels"]
     scan --> agent["Claude ou Codex<br/>nomme les parties, décrit chaque fichier"]
     agent --> build["Construction<br/>carte, santé, écrans, travail récent"]
-    build --> map["floorplan/index.html<br/>s'ouvre dans ton navigateur"]
-    map -. "mets à jour le floorplan" .-> scan
+    build --> map["la-carte/index.html<br/>s'ouvre dans ton navigateur"]
+    map -. "mets à jour la carte" .-> scan
 ```
 
 Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude ou Codex fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/comment-ca-marche.md).
@@ -225,32 +220,32 @@ Des scripts font le travail mécanique : trouver les dépôts, lire le code dans
 
 ## Ce que ça ajoute à ton projet
 
-Un dossier `floorplan/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md).
+Un dossier `la-carte/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md).
 
 ## Confidentialité
 
 - L'analyse, la carte et son petit serveur local tournent sur ton ordinateur. Le serveur n'accepte que les connexions venant de ta propre machine (`127.0.0.1`).
-- Floorplan lui-même n'envoie rien sur Internet : pas de statistiques, pas de suivi, pas de liste d'attente. La carte marche hors connexion, son moteur de mise en page et ses polices sont intégrés.
+- La carte elle-même n'envoie rien sur Internet : pas de statistiques, pas de suivi, pas de liste d'attente. La carte marche hors connexion, son moteur de mise en page et ses polices sont intégrés.
 - Pas de dépendances ni de scripts d'installation.
 - **Mais Claude lit ton code pour le décrire, et ce code part chez Anthropic** (ou chez OpenAI avec Codex), sur ton compte, comme n'importe quelle tâche que tu lui donnes.
 - Les questions posées sur la carte passent par la ligne de commande de Claude Code ou par Codex, qui peuvent lire ton code mais pas le modifier. Avec Claude Code, la bulle de questions ne peut pas ouvrir les fichiers de secrets (`.env`, `*.pem`, `*.key`…), mais elle lit le reste de tes fichiers.
 - Le contrôle de santé ne garde aucune partie d'une clé (seulement sa longueur). Il donne des fausses alertes et n'est pas un audit de sécurité.
 
-Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-securite.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que Floorplan fait sur ton ordinateur et ses limites.
+Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-securite.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que la carte fait sur ton ordinateur et ses limites.
 
 ## Documentation
 
 | | |
 |---|---|
 | [Pour commencer](docs/bien-demarrer.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
-| [Floorplan dans Codex](docs/codex.md) | Installer et utiliser Floorplan dans Codex |
+| [la carte dans Codex](docs/codex.md) | Installer et utiliser la carte dans Codex |
 | [Utiliser la carte](docs/utiliser-la-carte.md) | Chaque bouton, vue, raccourci et menu |
 | [Comment ça marche](docs/comment-ca-marche.md) | Le déroulé, la mise en relation des appels, les mises à jour |
-| [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md) | Chaque fichier créé par Floorplan, et comment le modifier |
+| [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md) | Chaque fichier créé par la carte, et comment le modifier |
 | [Confidentialité et sécurité](docs/confidentialite-et-securite.md) | Ce qui tourne où, et ce qui quitte ta machine |
 | [Est-ce sûr à installer ?](docs/est-ce-sur.md) | Ce que fait le plugin, les programmes qu'il lance, ses limites honnêtes |
 | [Dépannage](docs/depannage.md) | Les problèmes courants et leurs solutions |
-| [Développer Floorplan](docs/developpement.md) | Organisation du dépôt, tests, versions marquées |
+| [Développer la carte](docs/developpement.md) | Organisation du dépôt, tests, versions marquées |
 
 ## FAQ
 
@@ -263,7 +258,7 @@ Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne téléch
 <details>
 <summary><b>Mon code quitte-t-il mon ordinateur ?</b></summary>
 
-Oui, de la façon dont Claude Code et Codex fonctionnent toujours : l'IA lit les fichiers dont elle a besoin pour décrire ton appli, et ils partent chez Anthropic (ou OpenAI) sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. Floorplan lui-même n'envoie rien.
+Oui, de la façon dont Claude Code et Codex fonctionnent toujours : l'IA lit les fichiers dont elle a besoin pour décrire ton appli, et ils partent chez Anthropic (ou OpenAI) sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. La carte elle-même n'envoie rien.
 </details>
 
 <details>
@@ -281,25 +276,25 @@ Non, la carte marche sans. La bulle de questions répond grâce à la ligne de c
 <details>
 <summary><b>Va-t-elle modifier ou enregistrer mes fichiers ?</b></summary>
 
-Elle n'écrit que dans son propre dossier `floorplan/`, qui n'est pas enregistré dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
+Elle n'écrit que dans son propre dossier `la-carte/`, qui n'est pas enregistré dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
 </details>
 
 <details>
 <summary><b>Les noms choisis ne sont pas ceux qu'on utilise chez nous. Puis-je les changer ?</b></summary>
 
-Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans le floorplan »), ou modifie toi-même `floorplan/architecture.json` et `floorplan/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
+Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans la carte »), ou modifie toi-même `la-carte/architecture.json` et `la-carte/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
 </details>
 
 <details>
 <summary><b>Est-ce que ça marche avec Codex comme avec Claude Code ?</b></summary>
 
-Oui. C'est le même plugin, la même carte et le même contrôle de santé. Chaque application le fait tourner sur ton propre abonnement : Claude Code sur ton compte Claude, Codex sur ta connexion ChatGPT. Une carte faite avec l'un s'ouvre sans problème avec l'autre. Une limite, honnête : le blocage des fichiers de secrets de la bulle de questions n'existe qu'avec Claude Code. Voir [Floorplan dans Codex](docs/codex.md).
+Oui. C'est le même plugin, la même carte et le même contrôle de santé. Chaque application le fait tourner sur ton propre abonnement : Claude Code sur ton compte Claude, Codex sur ta connexion ChatGPT. Une carte faite avec l'un s'ouvre sans problème avec l'autre. Une limite, honnête : le blocage des fichiers de secrets de la bulle de questions n'existe qu'avec Claude Code. Voir [la carte dans Codex](docs/codex.md).
 </details>
 
 <details>
 <summary><b>Puis-je l'utiliser avant d'avoir écrit du code ?</b></summary>
 
-Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande un floorplan : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
+Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande une carte : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
 </details>
 
 <details>

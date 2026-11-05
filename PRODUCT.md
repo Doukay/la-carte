@@ -12,7 +12,7 @@ Des personnes francophones qui construisent ou font construire leur appli avec u
 
 ## Product Purpose
 
-Floorplan FR dessine une carte interactive du code d'une appli : chaque partie, fichier et appel au serveur a un nom et une description en français simple. Succès : la personne comprend comment son appli est construite sans lire le code, et trouve une réponse sans chercher.
+La carte dessine une carte interactive du code d'une appli : chaque partie, fichier et appel au serveur a un nom et une description en français simple. Succès : la personne comprend comment son appli est construite sans lire le code, et trouve une réponse sans chercher.
 
 ## Positioning
 

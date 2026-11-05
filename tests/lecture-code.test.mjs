@@ -1,4 +1,4 @@
-// Ce que Floorplan lit dans les fichiers source : imports, adresses du serveur, appels au serveur et commentaires de documentation.
+// Ce que la carte lit dans les fichiers source : imports, adresses du serveur, appels au serveur et commentaires de documentation.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lib } from './aides.mjs';

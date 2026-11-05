@@ -1,0 +1,4 @@
+interface:
+  display_name: "La carte"
+  short_description: "Draw an interactive, plain-English map of this codebase"
+  default_prompt: "Use $la-carte to draw a la-carte of this codebase, or update the existing one, and open it."

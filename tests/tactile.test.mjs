@@ -7,7 +7,7 @@ import path from 'node:path';
 import { appliBoutique, analyserEtConstruire, nettoyer } from './aides.mjs';
 
 let racine, page;
-before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'floorplan', 'index.html'), 'utf8'); });
+before(() => { racine = appliBoutique(); analyserEtConstruire(racine); page = fs.readFileSync(path.join(racine, 'la-carte', 'index.html'), 'utf8'); });
 after(() => nettoyer(racine));
 
 test('la carte prend le toucher elle-même, et la page ne rebondit pas dessous (écrans tactiles seulement)', () => {

@@ -1,8 +1,8 @@
 # Ce qu'il y a dans ton projet
 
-Floorplan n'écrit qu'à un seul endroit de ton projet : le dossier `floorplan/`. Il n'est pas enregistré dans Git, et rien d'autre dans ton projet n'est touché. En particulier, cette version n'écrit jamais dans `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.gitignore`, `.git/info/exclude`, ni ailleurs sur ta machine.
+La carte n'écrit qu'à un seul endroit de ton projet : le dossier `la-carte/`. Il n'est pas enregistré dans Git, et rien d'autre dans ton projet n'est touché. En particulier, cette version n'écrit jamais dans `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.gitignore`, `.git/info/exclude`, ni ailleurs sur ta machine.
 
-## Le dossier `floorplan/`
+## Le dossier `la-carte/`
 
 | Fichier | Ce que c'est | À modifier ? |
 |---|---|---|
@@ -30,26 +30,26 @@ Tes modifications de `architecture.json` et de `descriptions/` sont gardées à 
 - épingler une note sur un fichier ;
 - ajouter ou changer des parcours et la visite guidée.
 
-Ou demande simplement à Claude ou à Codex (« renomme "Serveur principal" en "API boutique" dans le floorplan »).
+Ou demande simplement à Claude ou à Codex (« renomme "Serveur principal" en "API boutique" dans la carte »).
 
-Un plan se modifie de la même façon, par `plan.json` et `architecture.json`, ou depuis la carte avec l'interrupteur **Modifier** de la bulle de questions. Le format du plan est dans [`plan.md`](../skills/floorplan/references/plan.md).
+Un plan se modifie de la même façon, par `plan.json` et `architecture.json`, ou depuis la carte avec l'interrupteur **Modifier** de la bulle de questions. Le format du plan est dans [`plan.md`](../skills/la-carte/references/plan.md).
 
-Le format complet est dans [`skills/floorplan/references/schema.md`](../skills/floorplan/references/schema.md), et le guide de style des noms et descriptions est dans [`ecrire-les-descriptions.md`](../skills/floorplan/references/ecrire-les-descriptions.md).
+Le format complet est dans [`skills/la-carte/references/schema.md`](../skills/la-carte/references/schema.md), et le guide de style des noms et descriptions est dans [`ecrire-les-descriptions.md`](../skills/la-carte/references/ecrire-les-descriptions.md).
 
 ## Pas de fichier de notes pour Claude
 
-Les versions d'origine de Floorplan pouvaient, si tu acceptais, ajouter une section à `CLAUDE.local.md` et le faire ignorer par Git (`.git/info/exclude`). **Cette version ne le fait pas** : elle n'écrit que dans `floorplan/`. Si tu veux que tes sessions Claude Code pensent à la carte, écris toi-même une ligne dans ton `CLAUDE.md` ou dans ton `CLAUDE.local.md`, par exemple : « Il y a une carte du projet dans `floorplan/` ; avant de chercher dans le code, essaie `node floorplan/requete.mjs find <mot>`, `show`, `path` ou `overview`. »
+Les versions d'origine de Floorplan pouvaient, si tu acceptais, ajouter une section à `CLAUDE.local.md` et le faire ignorer par Git (`.git/info/exclude`). **Cette version ne le fait pas** : elle n'écrit que dans `la-carte/`. Si tu veux que tes sessions Claude Code pensent à la carte, écris toi-même une ligne dans ton `CLAUDE.md` ou dans ton `CLAUDE.local.md`, par exemple : « Il y a une carte du projet dans `la-carte/` ; avant de chercher dans le code, essaie `node la-carte/requete.mjs find <mot>`, `show`, `path` ou `overview`. »
 
-Si ton projet a un `CLAUDE.local.md` ou des lignes dans `.git/info/exclude` venant d'une version d'origine de Floorplan, ils restent tels quels jusqu'à ce que tu les retires toi-même (la section est entre `<!-- floorplan:start -->` et `<!-- floorplan:end -->`).
+Si ton projet a un `CLAUDE.local.md` ou des lignes dans `.git/info/exclude` venant d'une version d'origine de Floorplan, ils restent tels quels jusqu'à ce que tu les retires toi-même (la section est entre `<!-- la-carte:start -->` et `<!-- la-carte:end -->`).
 
 ## Rester hors de Git
 
-**`floorplan/`** contient son propre `.gitignore` qui ignore tout ce qu'il y a dans le dossier, lui-même compris. Ton `.gitignore` n'est pas modifié, et le dossier n'apparaît jamais dans `git status`.
+**`la-carte/`** contient son propre `.gitignore` qui ignore tout ce qu'il y a dans le dossier, lui-même compris. Ton `.gitignore` n'est pas modifié, et le dossier n'apparaît jamais dans `git status`.
 
-La carte est personnelle à chaque copie du projet. Les collègues qui installent Floorplan font la leur.
+La carte est personnelle à chaque copie du projet. Les collègues qui installent la carte font la leur.
 
-Si tu avais déjà enregistré un dossier `floorplan/` dans Git, l'ignorer ne le retire pas du suivi. La construction te donne la commande qui le fait, en gardant les fichiers sur le disque :
+Si tu avais déjà enregistré un dossier `la-carte/` dans Git, l'ignorer ne le retire pas du suivi. La construction te donne la commande qui le fait, en gardant les fichiers sur le disque :
 
 ```bash
-git rm -r --cached floorplan
+git rm -r --cached la-carte
 ```

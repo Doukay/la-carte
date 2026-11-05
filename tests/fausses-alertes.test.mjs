@@ -120,17 +120,17 @@ test('le résumé laisse de côté les problèmes rejetés, mais ils restent lis
 });
 
 test('la page applique la même règle que la construction', () => {
-  const ui = fs.readFileSync(new URL('../skills/floorplan/assets/ui/20-sante.js', import.meta.url), 'utf8');
+  const ui = fs.readFileSync(new URL('../skills/la-carte/assets/ui/20-sante.js', import.meta.url), 'utf8');
   for (const morceau of [`d.severity && d.severity !== issue.severity`, `String(loc).replace(/:[^:]*$/, '')`, `left.get(l.file) || 0`]) assert.ok(ui.includes(morceau), morceau);
 });
 
 // ---------- par la construction et par le serveur ----------
 let racine, serveur, base, jeton;
 const NOTE = 'cette valeur n’est qu’un exemple, voir le wiki';
-const donneesDe = (html) => JSON.parse(/<script>window\.FLOORPLAN = (.*?);<\/script>/s.exec(html)[1]);
-const fichierCarte = (nom) => path.join(racine, 'floorplan', nom);
-const appeler = (method, corps, headers = { 'x-floorplan-token': jeton }) => fetch(base + '/api/health/dismissed', { method, headers: { 'content-type': 'application/json', ...headers }, ...(corps ? { body: JSON.stringify(corps) } : {}) });
-const exporterPage = async (include) => (await fetch(base + '/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-floorplan-token': jeton }, body: JSON.stringify({ include }) })).text();
+const donneesDe = (html) => JSON.parse(/<script>window\.LA_CARTE = (.*?);<\/script>/s.exec(html)[1]);
+const fichierCarte = (nom) => path.join(racine, 'la-carte', nom);
+const appeler = (method, corps, headers = { 'x-la-carte-token': jeton }) => fetch(base + '/api/health/dismissed', { method, headers: { 'content-type': 'application/json', ...headers }, ...(corps ? { body: JSON.stringify(corps) } : {}) });
+const exporterPage = async (include) => (await fetch(base + '/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-la-carte-token': jeton }, body: JSON.stringify({ include }) })).text();
 
 before(async () => {
   racine = appliBoutique();
@@ -138,12 +138,12 @@ before(async () => {
   executer('construire.mjs', racine, '--no-claude-md');
   const port = 20000 + Math.floor(Math.random() * 20000);
   serveur = spawn(process.execPath, [fichierCarte('serveur.mjs'), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, FLOORPLAN_CLAUDE: path.join(racine, 'no-such-cli'), FLOORPLAN_CODEX: path.join(racine, 'no-such-codex') },
+    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(racine, 'no-such-codex') },
   });
   base = await new Promise((resoudre, rejeter) => {
     let sortie = '';
     const minuteur = setTimeout(() => rejeter(new Error(`le serveur n’a pas démarré : ${sortie}`)), 20000);
-    serveur.stdout.on('data', (d) => { sortie += d; const m = /Floorplan: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1].replace(/\/$/, '')); } });
+    serveur.stdout.on('data', (d) => { sortie += d; const m = /la carte: (http:\/\/\S+)/.exec(sortie); if (m) { clearTimeout(minuteur); resoudre(m[1].replace(/\/$/, '')); } });
     serveur.on('exit', (code) => rejeter(new Error(`le serveur s’est arrêté (${code}) : ${sortie}`)));
   });
   jeton = /"token":"([0-9a-f]+)"/.exec(await (await fetch(base + '/')).text())[1];
@@ -154,7 +154,7 @@ after(async () => {
 });
 
 test('enregistrer un rejet demande le jeton', async () => {
-  assert.equal((await appeler('POST', { id: 'x', locations: [] }, { 'x-floorplan-token': 'wrong' })).status, 403);
+  assert.equal((await appeler('POST', { id: 'x', locations: [] }, { 'x-la-carte-token': 'wrong' })).status, 403);
   assert.ok(!fs.existsSync(fichierCarte('rejets-sante.json')));
   assert.equal((await appeler('POST', { locations: [] })).status, 400);
 });

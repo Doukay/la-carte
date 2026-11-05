@@ -1,6 +1,6 @@
 # Comment ça marche
 
-Floorplan partage le travail entre des scripts et l'IA dans laquelle tu le lances, Claude Code ou Codex. Les scripts font tout le travail mécanique : trouver les fichiers, lire le code, relier les appels aux adresses du serveur, disposer la carte. Ce sont des scripts Node.js sans dépendance, et ils ne coûtent aucun jeton. L'IA fait ce que seul un lecteur du code peut faire : décider ce que les parties de ton appli *sont*, et les expliquer simplement.
+La carte partage le travail entre des scripts et l'IA dans laquelle tu le lances, Claude Code ou Codex. Les scripts font tout le travail mécanique : trouver les fichiers, lire le code, relier les appels aux adresses du serveur, disposer la carte. Ce sont des scripts Node.js sans dépendance, et ils ne coûtent aucun jeton. L'IA fait ce que seul un lecteur du code peut faire : décider ce que les parties de ton appli *sont*, et les expliquer simplement.
 
 ```mermaid
 flowchart TD
@@ -28,7 +28,7 @@ Langages pris en charge : TypeScript et JavaScript (y compris les fichiers Vue, 
 
 ## 2. Relier les appels aux adresses du serveur
 
-Les lignes les plus utiles de la carte relient les appels au serveur d'un écran au code du serveur qui y répond, souvent entre dépôts. Floorplan :
+Les lignes les plus utiles de la carte relient les appels au serveur d'un écran au code du serveur qui y répond, souvent entre dépôts. La carte :
 
 - **Trouve les adresses du serveur** dans Express, Fastify (préfixes de plugins compris), Koa, Hono, Next.js (fichiers de routes et routes d'API), Firebase Cloud Functions, Flask, FastAPI, Django, Go (net/http, Gin, Echo, chi, Fiber), Actix, Axum et Spring, et dans les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.
 - **Résout les préfixes** : les blueprints Flask enregistrés avec un `url_prefix`, et les routeurs Express montés avec `app.use('/api/users', usersRouter)`, y compris les routeurs montés dans d'autres routeurs et les montages précédés d'un intergiciel.
@@ -37,9 +37,9 @@ Les lignes les plus utiles de la carte relient les appels au serveur d'un écran
   - les gabarits de texte avec des parties imbriquées ;
   - les petites fonctions d'aide du même fichier qui ajoutent un préfixe, comme `call('/definitions')`.
 - **Gère les Firebase Cloud Functions**, qui s'appellent par leur nom et non par une adresse. Une fonction appelable (`onCall`) apparaît comme `CALL /approveItem`, sous le nom que le fichier d'entrée de tes fonctions lui donne en l'exportant, et les `httpsCallable(functions, 'approveItem')` du site l'atteignent, même à travers une fonction d'aide à toi qui enveloppe `httpsCallable`. Une fonction `onRequest` est une adresse du serveur ordinaire à `/<nom>`, et une appli Express qu'on lui passe garde ses propres routes sous ce nom. Les fonctions planifiées et les autres tâches de fond (Firestore, Storage, Pub/Sub) sont listées pour que l'IA les place sur la carte.
-- **Associe** les deux. Quand un appel n'écrit qu'une partie de l'adresse, parce que l'adresse de base est dans les réglages, Floorplan apprend le chemin de base de chaque client et préfère les associations qui y correspondent.
+- **Associe** les deux. Quand un appel n'écrit qu'une partie de l'adresse, parce que l'adresse de base est dans les réglages, la carte apprend le chemin de base de chaque client et préfère les associations qui y correspondent.
 
-C'est de la reconnaissance de motifs, pas un compilateur : elle trouve la plupart des liens, pas tous. Si un lien important manque, demande qu'on l'ajoute au floorplan, et il sera enregistré comme un lien explicite.
+C'est de la reconnaissance de motifs, pas un compilateur : elle trouve la plupart des liens, pas tous. Si un lien important manque, demande qu'on l'ajoute à la carte, et il sera enregistré comme un lien explicite.
 
 ## 3. L'IA décrit le système
 
@@ -91,7 +91,7 @@ Puis il reconstruit. L'IA n'a plus qu'à décrire ce qui est nouveau ou signalé
 
 ## Les plans
 
-Tout ce qui précède décrit comment Floorplan cartographie du code existant, son travail principal. Un plan est l'autre entrée : une carte de quelque chose qui n'est pas encore construit. L'IA lit un cahier des charges ou une description et écrit `floorplan/plan.json` : chaque fichier et chaque adresse du serveur dont le système aurait besoin, quel écran appelle quelle adresse, quelles parties utilisent des services extérieurs et la base de données, et qui peut utiliser chaque adresse. Il liste aussi la technologie choisie, les hypothèses et les questions que le cahier des charges laisse ouvertes.
+Tout ce qui précède décrit comment la carte cartographie du code existant, son travail principal. Un plan est l'autre entrée : une carte de quelque chose qui n'est pas encore construit. L'IA lit un cahier des charges ou une description et écrit `la-carte/plan.json` : chaque fichier et chaque adresse du serveur dont le système aurait besoin, quel écran appelle quelle adresse, quelles parties utilisent des services extérieurs et la base de données, et qui peut utiliser chaque adresse. Il liste aussi la technologie choisie, les hypothèses et les questions que le cahier des charges laisse ouvertes.
 
 `plan.mjs` transforme le plan en la même analyse que `analyser.mjs` fait à partir du code, donc la construction, les Écrans, les parcours, la visite et les questions marchent tous de la même façon. Les différences :
 
@@ -107,11 +107,11 @@ Mettre à jour un plan le redessine à partir de `plan.json`. Quand le code exis
 
 Le serveur de la carte répond à chaque question avec l'IA qui est sur ton ordinateur, dans ton projet :
 
-- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `floorplan/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
+- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `la-carte/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
 - **Codex :** il lance `codex exec` dans le bac à sable en lecture seule de Codex, avec les mêmes recherches. Ces exécutions ne sont pas gardées dans ton historique Codex, donc une question de suite emmène avec elle les dernières questions et réponses. Le blocage des fichiers de secrets ci-dessus n'existe pas côté Codex.
 
 Il utilise celui qui a fait la carte, et l'autre si celui-là n'est pas installé. Dans les deux cas il répond par du texte plus les blocs à montrer, donc les réponses peuvent citer du vrai code.
 
 Dans l'application Claude, la carte interroge Claude par l'application, avec les mêmes recherches mais sans accès à ton code source.
 
-Ces mêmes recherches (`node floorplan/requete.mjs` avec `find`, `show`, `path` ou `overview`) peuvent servir à une session ordinaire de Claude Code : cette copie n'écrit rien dans tes fichiers de notes pour le lui dire, mais tu peux lui demander de consulter la carte avant de chercher dans le code.
+Ces mêmes recherches (`node la-carte/requete.mjs` avec `find`, `show`, `path` ou `overview`) peuvent servir à une session ordinaire de Claude Code : cette copie n'écrit rien dans tes fichiers de notes pour le lui dire, mais tu peux lui demander de consulter la carte avant de chercher dans le code.

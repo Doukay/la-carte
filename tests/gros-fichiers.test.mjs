@@ -21,7 +21,7 @@ before(() => {
 after(() => nettoyer(racine));
 
 test('un fichier au-dessus de la limite reste sur la carte avec son nombre de lignes', () => {
-  const analyse = lireJson(path.join(racine, 'floorplan', '.cache', 'analyse.json'));
+  const analyse = lireJson(path.join(racine, 'la-carte', '.cache', 'analyse.json'));
   const f = analyse.files.find((x) => x.path === 'app/rules.py');
   assert.equal(f.tooLarge, true);
   assert.equal(f.loc, NB_LIGNES);
@@ -40,7 +40,7 @@ test('l’analyse dit quels fichiers elle n’a pas lus et comment les inclure',
 test('la Santé le liste comme gros fichier et dit qu’il n’a pas été vérifié', () => {
   const gros = graphe.sante.problemes.find((i) => i.id === 'large-files');
   assert.ok(gros, 'un élément large-files était attendu');
-  assert.match(gros.notes['f:app/rules.py'], /^1\s500 lignes : trop gros pour que Floorplan le lise/);
+  assert.match(gros.notes['f:app/rules.py'], /^1\s500 lignes : trop gros pour que la carte le lise/);
 });
 
 test('la limite par défaut lit un fichier au-dessus de l’ancienne limite de 512 Ko', () => {
@@ -48,7 +48,7 @@ test('la limite par défaut lit un fichier au-dessus de l’ancienne limite de 5
   try {
     assert.ok(fs.statSync(path.join(r, 'app', 'main.py')).size > 512 * 1024);
     executer('analyser.mjs', r);
-    const f = lireJson(path.join(r, 'floorplan', '.cache', 'analyse.json')).files.find((x) => x.path === 'app/main.py');
+    const f = lireJson(path.join(r, 'la-carte', '.cache', 'analyse.json')).files.find((x) => x.path === 'app/main.py');
     assert.equal(f.tooLarge, undefined);
     assert.equal(f.loc, 110000);
   } finally { nettoyer(r); }
