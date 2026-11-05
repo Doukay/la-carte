@@ -1,5 +1,5 @@
 // Requêtes sur le graphe de la carte, partagées par le visualiseur (comme outils de page pour l'appli Claude) et par
-// la-carte/requete.mjs (comme ligne de commande appelée par Claude Code ou Codex). Script simple : ni import ni export.
+// la-carte/.cache/requete.mjs (comme ligne de commande appelée par Claude Code ou Codex). Script simple : ni import ni export.
 // Ids des éléments : n:<id du nœud>  f:<chemin du fichier>  r:<numéro de route>  s:<chemin du fichier>#<numéro d'export>
 
 function creerRequetesGraphe(G) {
@@ -209,8 +209,8 @@ const LA_CARTE_SCHEMA_CHANGEMENT = {
   properties: {
     title: { type: 'string', description: 'Ce qui a changé, 2 à 6 mots, en français, par exemple « Paiements prévus ».' },
     summary: { type: 'string', description: 'En Markdown, ~150 mots au maximum, en français et en tutoyant, avec des mots simples : ce que tu as ajouté, changé ou retiré et pourquoi, plus les nouvelles hypothèses ou questions ouvertes.' },
-    plan: { type: 'string', description: 'Le la-carte/plan.json complet et à jour, sous forme de texte JSON.' },
-    architecture: { type: 'string', description: 'Le la-carte/architecture.json complet et à jour, sous forme de texte JSON.' },
+    plan: { type: 'string', description: 'Le la-carte/sources/plan.json complet et à jour, sous forme de texte JSON.' },
+    architecture: { type: 'string', description: 'Le la-carte/sources/architecture.json complet et à jour, sous forme de texte JSON.' },
     changes: { type: 'array', description: 'Chaque bloc nouveau ou modifié : un chemin de fichier, un id de nœud ou "MÉTHODE /chemin".', items: { type: 'object', properties: { ref: { type: 'string' }, change: { type: 'string', enum: ['new', 'changed'] }, note: { type: 'string', description: 'En quoi ce bloc répond à la demande, en une phrase simple et en français.' } }, required: ['ref', 'change', 'note'] } },
     followups: { type: 'array', description: '2 ou 3 changements courts que la personne pourrait demander ensuite, en français.', items: { type: 'string' } },
   },
@@ -221,7 +221,7 @@ function laCarteConsignesChangement(G) {
   const source = G.meta?.ebauche?.source;
   return [
     `Tu modifies un plan : une carte interactive de « ${G.projet.name} », un système qui est prévu mais pas encore construit. La personne qui la regarde demande un changement, un ajout ou un retrait (« prévois aussi les paiements », « enlève la page d’administration », « l’équipe doit se connecter avec Google »), et tu mets le plan à jour.`,
-    `Lis d’abord la-carte/plan.json et la-carte/architecture.json${source ? `, et ${source} (le PRD, le cahier des charges dont il est tiré) quand la demande touche à ce qu’il dit` : ''}. Tu peux chercher dans la carte avec \`node la-carte/requete.mjs find "<mots>"\` et \`show <id>\`.`,
+    `Lis d’abord la-carte/sources/plan.json et la-carte/sources/architecture.json${source ? `, et ${source} (le PRD, le cahier des charges dont il est tiré) quand la demande touche à ce qu’il dit` : ''}. Tu peux chercher dans la carte avec \`node la-carte/.cache/requete.mjs find "<mots>"\` et \`show <id>\`.`,
     'Format de plan.json : { source, stack[], assumptions[], questions[{question, about[]}], files[{path, name, description, screen?, uses[], calls["MÉTHODE /chemin"], services[ids de nœuds], data[ids de nœuds]}], endpoints[{method, path, file, name, description, access: public|signed-in|team|webhook|internal, who?, publicBecause?}] }. Le fichier de chaque adresse du serveur (endpoint) est un fichier prévu, chaque appel correspond exactement à une adresse du serveur prévue, et services/data désignent des nœuds de architecture.json.',
     'architecture.json : { project, nodes[{id, label, kind, parent?, summary, paths[globs]}], edges[], flows[{id, title, steps[{node, note}]}], tour[] }. Types (kind) : ui service worker library feature data config test script infra external. Les nœuds de type external (services extérieurs, base de données) ne possèdent aucun fichier. Chaque fichier prévu doit entrer dans les paths d’un nœud, donc ajoute ou élargis des globs pour les nouveaux dossiers. Les étapes de flows et de tour désignent des ids de nœuds ou des chemins de fichiers prévus.',
     'Change seulement ce que la demande exige, dans le style du reste du plan : même pile technique et mêmes conventions, des mots simples pour tout le monde, de vrais chemins de fichiers, le tout écrit en français. Garde tous les autres fichiers, adresses du serveur, ids et descriptions exactement comme ils sont. Si le PRD ou le plan a déjà décidé quelque chose, suis-le ; note un nouveau choix dans assumptions et une vraie décision encore ouverte dans questions. Si la demande retire quelque chose, retire tout ce qui ne servait qu’à cela. Si elle répond à l’une des questions de plan.json, supprime cette question, intègre la réponse au plan et note-la dans assumptions ; si elle décide qui peut utiliser une adresse du serveur, renseigne access (et who ou publicBecause). Beaucoup de demandes viennent de la revue du plan de la carte : règle exactement ce qu’elle nomme.',
@@ -234,7 +234,7 @@ function laCarteConsignesParcours(G, moteur) {
   return [
     `Tu construis des parcours guidés pour la carte d’architecture interactive du code « ${G.projet.name} ». Un parcours est un déroulé dans l’ordre : chaque étape est un élément de la carte (partie n:..., fichier f:..., adresse du serveur r:... ou export s:...) et une note sur ce qui s’y passe. Écris les titres et les notes en français, en langage simple, en tutoyant la personne si tu t’adresses à elle.`,
     moteur === 'cli'
-      ? 'Trouve les éléments avec `node la-carte/requete.mjs find "<mots>"`, `show <id>` et `path <idDepart> <idArrivee>` ; lis les fichiers source quand tu dois confirmer l’ordre des événements.'
+      ? 'Trouve les éléments avec `node la-carte/.cache/requete.mjs find "<mots>"`, `show <id>` et `path <idDepart> <idArrivee>` ; lis les fichiers source quand tu dois confirmer l’ordre des événements.'
       : 'Trouve les éléments avec les outils find_items, get_item et dependency_path.',
     'Suis ce que la personne demande depuis son déclencheur (une action de l’utilisateur, un webhook, une tâche planifiée) jusqu’à son effet final (écriture dans la base de données, appel à un service extérieur, réponse).',
     'Utilise de 3 à 9 étapes. Préfère l’élément le plus précis qui raconte l’histoire (une adresse du serveur plutôt que son fichier, un fichier plutôt que sa partie), et choisis des étapes consécutives qui s’appellent ou s’importent vraiment les unes les autres.',
@@ -244,14 +244,14 @@ function laCarteConsignesParcours(G, moteur) {
 
 function laCarteConsignesQuestion(G, moteur) {
   const outils = moteur === 'cli'
-    ? `Interroge la carte depuis le terminal : \`node la-carte/requete.mjs overview\`, \`node la-carte/requete.mjs find "<mots>" [--kind module|file|endpoint|symbol]\`, \`node la-carte/requete.mjs show <id>\`, \`node la-carte/requete.mjs path <idDepart> <idArrivee>\`. Chaque résultat est du JSON avec des ids. Commence par la carte ; lis les fichiers source ou cherche dedans quand il te faut des précisions que la carte n’a pas.`
+    ? `Interroge la carte depuis le terminal : \`node la-carte/.cache/requete.mjs overview\`, \`node la-carte/.cache/requete.mjs find "<mots>" [--kind module|file|endpoint|symbol]\`, \`node la-carte/.cache/requete.mjs show <id>\`, \`node la-carte/.cache/requete.mjs path <idDepart> <idArrivee>\`. Chaque résultat est du JSON avec des ids. Commence par la carte ; lis les fichiers source ou cherche dedans quand il te faut des précisions que la carte n’a pas.`
     : `Utilise les outils find_items, get_item et dependency_path pour explorer la carte. Tu ne peux pas lire les fichiers source : réponds à partir des noms, des descriptions, des adresses du serveur et des connexions de la carte, et dis-le quand une question demande le code lui-même.`;
   const ebauche = G.meta?.ebauche;
   return [
     `Tu réponds à des questions sur le code « ${G.projet.name} » pour quelqu’un qui explore sa carte d’architecture interactive. Réponds toujours en français, en tutoyant la personne, avec des mots simples : elle n’est pas forcément développeuse.`,
     `La carte a des blocs pour les parties (ids n:...), les fichiers (f:<chemin>), les adresses du serveur (r:<numéro>) et les éléments exportés (s:<chemin>#<numéro>), chacun avec un nom et une description lisibles, reliés par des imports et des appels au serveur.`,
     outils,
-    ebauche ? `Cette carte est un plan : celui d’un système qui n’est pas encore construit, donc ses fichiers n’existent pas.${moteur === 'cli' ? ` Au lieu des fichiers source, lis la-carte/plan.json${ebauche.source ? ` et ${ebauche.source} (le document dont il est tiré)` : ''} quand tu as besoin de plus que la carte.` : ''} Réponds sur ce qui serait construit et pourquoi, et dis clairement quand le plan ne couvre pas un point.` : '',
+    ebauche ? `Cette carte est un plan : celui d’un système qui n’est pas encore construit, donc ses fichiers n’existent pas.${moteur === 'cli' ? ` Au lieu des fichiers source, lis la-carte/sources/plan.json${ebauche.source ? ` et ${ebauche.source} (le document dont il est tiré)` : ''} quand tu as besoin de plus que la carte.` : ''} Réponds sur ce qui serait construit et pourquoi, et dis clairement quand le plan ne couvre pas un point.` : '',
     'Fais quelques recherches, pas des dizaines. Réponds ensuite uniquement en JSON : {"title", "answer", "items", "steps", "followups"} (les clés restent en anglais).',
     '- answer : en Markdown, ~180 mots au maximum, simple et précis, en français et en tutoyant. Cite les éléments de la carte dans le texte sous la forme [[id]] (ils deviennent cliquables).',
     '- items : les 3 à 14 blocs qui montrent le mieux la réponse, le plus important d’abord, chacun avec une note (15 mots au maximum, en français) sur son rôle.',

@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { decouvrir, fichiersGit, infosGit, classer, versPosix, lireArguments, formaterNombre, DOSSIERS_TOUJOURS_IGNORES, DOSSIER_CARTE, ANCIEN_DOSSIER_CARTE, estDossierCarte, dossierCarte, garderHorsGit } from './lib/commun.mjs';
+import { decouvrir, fichiersGit, infosGit, classer, versPosix, lireArguments, formaterNombre, DOSSIERS_TOUJOURS_IGNORES, DOSSIER_CARTE, ANCIEN_DOSSIER_CARTE, estDossierCarte, dossierCarte, garderGeneresHorsGit } from './lib/commun.mjs';
 import { extraire, appelsAppelablesVia } from './lib/extraction.mjs';
 import { trouverProblemes } from './lib/sante.mjs';
 import { trouverEcrans } from './lib/ecrans.mjs';
@@ -186,7 +186,7 @@ const analyse = {
 };
 fs.mkdirSync(path.dirname(fichierSortie), { recursive: true });
 fs.writeFileSync(fichierSortie, JSON.stringify(analyse));
-if (!parametres.out) garderHorsGit(dossierSortie);
+if (!parametres.out) garderGeneresHorsGit(dossierSortie);
 
 function dedupliquerExternes(liste) {
   const m = new Map();
@@ -312,5 +312,5 @@ if (nonLus.length) {
   if (nonLus.length > 15) ligne(`  … ${nonLus.length - 15} de plus`);
   ligne();
 }
-ligne('Ensuite : lis references/schema.md, explore les points d\'entrée, puis écris la-carte/architecture.json et lance construire.mjs.');
+ligne('Ensuite : lis references/schema.md, explore les points d\'entrée, puis écris la-carte/sources/architecture.json et lance construire.mjs.');
 console.log(sortie.join('\n'));

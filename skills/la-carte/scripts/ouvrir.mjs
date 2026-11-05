@@ -12,7 +12,7 @@ import { lireArguments, dossierCarte } from './lib/commun.mjs';
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossier = dossierCarte(racine);
-const fichierServe = path.join(dossier, 'serveur.mjs');
+const fichierServe = path.join(dossier, '.cache', 'serveur.mjs');
 const fichierEtat = path.join(dossier, '.cache', 'server.json');
 const cheminRelatif = path.relative(process.cwd(), dossier).replace(/\\/g, '/') || '.';
 const MINUTES_INACTIF = 120;

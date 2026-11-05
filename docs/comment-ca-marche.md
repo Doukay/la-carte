@@ -6,7 +6,7 @@ La carte partage le travail entre des scripts et l'IA dans laquelle tu le lances
 flowchart TD
     status["status : y a-t-il déjà une carte ?"] -->|non| scan
     status -->|oui| refresh["refresh : nouvelle analyse, on garde ce qui n'a pas changé"]
-    scan["scan : dépôts, fichiers, imports, adresses du serveur, appels"] --> arch["L'IA écrit architecture.json<br/>les parties de l'appli, les services extérieurs, les parcours, la visite guidée"]
+    scan["scan : dépôts, fichiers, imports, adresses du serveur, appels"] --> arch["L'IA écrit sources/architecture.json<br/>les parties de l'appli, les services extérieurs, les parcours, la visite guidée"]
     arch --> build["build : affecter les fichiers, tout relier,<br/>santé, écrans, la carte"]
     build --> describe["L'IA nomme et décrit chaque fichier et chaque adresse du serveur"]
     describe --> recent["L'IA marque le travail récent"]
@@ -43,7 +43,7 @@ C'est de la reconnaissance de motifs, pas un compilateur : elle trouve la plupar
 
 ## 3. L'IA décrit le système
 
-Claude ou Codex lit le résumé de l'analyse, les README, les fichiers de réglages et les points d'entrée, puis écrit `architecture.json` :
+Claude ou Codex lit le résumé de l'analyse, les README, les fichiers de réglages et les points d'entrée, puis écrit `sources/architecture.json` :
 
 - les grandes parties de ton appli, chacune avec un résumé en langage simple ;
 - les services extérieurs avec lesquels elle parle vraiment (bases de données, paiement, e-mail) ;
@@ -63,13 +63,13 @@ Par défaut, tout est écrit pour la personne qui possède l'appli, pas pour un 
 - relie les parties, grâce aux imports, aux appels associés et aux liens explicites de l'IA ;
 - lance le **contrôle de santé** ;
 - détecte les **écrans** : Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack ;
-- écrit `graphe.json` et le fichier autonome `index.html`, en notant si c'est Claude Code ou Codex qui l'a fait, pour que la bulle de questions de la carte et les demandes de correction nomment le bon.
+- écrit `.cache/graphe.json` et le fichier autonome `index.html`, en notant si c'est Claude Code ou Codex qui l'a fait, pour que la bulle de questions de la carte et les demandes de correction nomment le bon.
 
 La carte se dispose toute seule dans ton navigateur avec [ELK](https://eclipse.dev/elk/), donc la construction elle-même est rapide.
 
 ## 5. Le travail récent
 
-Après chaque création ou mise à jour, l'IA note ce sur quoi elle vient de travailler dans `travail-recent.json`. `recents.mjs` liste les faits : ce qui a changé depuis la dernière carte, les modifications pas encore enregistrées, et les commits récents, chacun rattaché à son bloc. L'IA ajoute le *pourquoi* : ce que tu avais demandé, et en quoi chaque changement y répond. Les mises en avant précédentes sont remplacées à chaque fois.
+Après chaque création ou mise à jour, l'IA note ce sur quoi elle vient de travailler dans `.cache/travail-recent.json`. `recents.mjs` liste les faits : ce qui a changé depuis la dernière carte, les modifications pas encore enregistrées, et les commits récents, chacun rattaché à son bloc. L'IA ajoute le *pourquoi* : ce que tu avais demandé, et en quoi chaque changement y répond. Les mises en avant précédentes sont remplacées à chaque fois.
 
 ## 6. L'afficher
 
@@ -91,7 +91,7 @@ Puis il reconstruit. L'IA n'a plus qu'à décrire ce qui est nouveau ou signalé
 
 ## Les plans
 
-Tout ce qui précède décrit comment la carte cartographie du code existant, son travail principal. Un plan est l'autre entrée : une carte de quelque chose qui n'est pas encore construit. L'IA lit un cahier des charges ou une description et écrit `la-carte/plan.json` : chaque fichier et chaque adresse du serveur dont le système aurait besoin, quel écran appelle quelle adresse, quelles parties utilisent des services extérieurs et la base de données, et qui peut utiliser chaque adresse. Il liste aussi la technologie choisie, les hypothèses et les questions que le cahier des charges laisse ouvertes.
+Tout ce qui précède décrit comment la carte cartographie du code existant, son travail principal. Un plan est l'autre entrée : une carte de quelque chose qui n'est pas encore construit. L'IA lit un cahier des charges ou une description et écrit `la-carte/sources/plan.json` : chaque fichier et chaque adresse du serveur dont le système aurait besoin, quel écran appelle quelle adresse, quelles parties utilisent des services extérieurs et la base de données, et qui peut utiliser chaque adresse. Il liste aussi la technologie choisie, les hypothèses et les questions que le cahier des charges laisse ouvertes.
 
 `plan.mjs` transforme le plan en la même analyse que `analyser.mjs` fait à partir du code, donc la construction, les Écrans, les parcours, la visite et les questions marchent tous de la même façon. Les différences :
 
@@ -99,19 +99,19 @@ Tout ce qui précède décrit comment la carte cartographie du code existant, so
 - la Santé devient une **revue du plan** : adresses du serveur que tout le monde pourrait utiliser pour changer des données, adresses sans décision sur qui peut les utiliser, questions ouvertes, et éléments reliés à rien ;
 - chaque partie a **Construire ça avec Claude** (ou Codex) : une demande pour construire cette partie comme prévu, qui liste ses fichiers, ses adresses du serveur et ce dont elle dépend ;
 - la bulle de questions répond à partir du plan et du cahier des charges, puisqu'il n'y a pas de code à lire ;
-- l'interrupteur **Modifier** de la bulle de questions prend des demandes comme « prévois aussi les remboursements » : l'agent renvoie le plan mis à jour, le serveur de la carte le vérifie avec `plan.mjs` et `construire.mjs` (en renvoyant une fois les problèmes), l'enregistre et redessine la carte en mettant les changements en avant, et **Annuler** remet le plan précédent. Le bouton **Résoudre sur la carte** de chaque point de la revue du plan remplit cette demande à ta place : une question ouverte n'attend que ta réponse. L'agent reste en lecture seule : seul le serveur écrit, et seulement `plan.json`, `architecture.json` et `travail-recent.json`.
+- l'interrupteur **Modifier** de la bulle de questions prend des demandes comme « prévois aussi les remboursements » : l'agent renvoie le plan mis à jour, le serveur de la carte le vérifie avec `plan.mjs` et `construire.mjs` (en renvoyant une fois les problèmes), l'enregistre et redessine la carte en mettant les changements en avant, et **Annuler** remet le plan précédent. Le bouton **Résoudre sur la carte** de chaque point de la revue du plan remplit cette demande à ta place : une question ouverte n'attend que ta réponse. L'agent reste en lecture seule : seul le serveur écrit, et seulement `sources/plan.json`, `sources/architecture.json` et `.cache/travail-recent.json`.
 
-Mettre à jour un plan le redessine à partir de `plan.json`. Quand le code existe, `actualiser.mjs --from-code` cartographie le vrai code à la place, et `plan.json` reste.
+Mettre à jour un plan le redessine à partir de `sources/plan.json`. Quand le code existe, `actualiser.mjs --from-code` cartographie le vrai code à la place, et `sources/plan.json` reste.
 
 ## Poser des questions
 
 Le serveur de la carte répond à chaque question avec l'IA qui est sur ton ordinateur, dans ton projet :
 
-- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `la-carte/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
+- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `la-carte/.cache/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
 - **Codex :** il lance `codex exec` dans le bac à sable en lecture seule de Codex, avec les mêmes recherches. Ces exécutions ne sont pas gardées dans ton historique Codex, donc une question de suite emmène avec elle les dernières questions et réponses. Le blocage des fichiers de secrets ci-dessus n'existe pas côté Codex.
 
 Il utilise celui qui a fait la carte, et l'autre si celui-là n'est pas installé. Dans les deux cas il répond par du texte plus les blocs à montrer, donc les réponses peuvent citer du vrai code.
 
 Dans l'application Claude, la carte interroge Claude par l'application, avec les mêmes recherches mais sans accès à ton code source.
 
-Ces mêmes recherches (`node la-carte/requete.mjs` avec `find`, `show`, `path` ou `overview`) peuvent servir à une session ordinaire de Claude Code : cette copie n'écrit rien dans tes fichiers de notes pour le lui dire, mais tu peux lui demander de consulter la carte avant de chercher dans le code.
+Ces mêmes recherches (`node la-carte/.cache/requete.mjs` avec `find`, `show`, `path` ou `overview`) peuvent servir à une session ordinaire de Claude Code : cette copie n'écrit rien dans tes fichiers de notes pour le lui dire, mais tu peux lui demander de consulter la carte avant de chercher dans le code.

@@ -21,7 +21,7 @@ export function creerProjet(fichiers, { repos: depots = [], arch: archi } = {}) 
     fs.writeFileSync(path.join(racine, p), source);
   }
   for (const r of depots) execFileSync('git', ['init', '-q', path.join(racine, r)]);
-  if (archi) ecrireJson(path.join(racine, 'la-carte', 'architecture.json'), archi);
+  if (archi) ecrireJson(path.join(racine, 'la-carte', 'sources', 'architecture.json'), archi);
   return racine;
 }
 
@@ -37,7 +37,7 @@ export function analyserEtConstruire(racine) {
 
 export const lireJson = (fichier) => JSON.parse(fs.readFileSync(fichier, 'utf8'));
 export const ecrireJson = (fichier, donnees) => { fs.mkdirSync(path.dirname(fichier), { recursive: true }); fs.writeFileSync(fichier, JSON.stringify(donnees, null, 2)); };
-export const lireGraphe = (racine) => lireJson(path.join(racine, 'la-carte', 'graphe.json'));
+export const lireGraphe = (racine) => lireJson(path.join(racine, 'la-carte', '.cache', 'graphe.json'));
 export const nettoyer = (racine) => fs.rmSync(racine, { recursive: true, force: true });
 
 /** Chaque fichier d’un dossier, sous la forme { path, text }. */

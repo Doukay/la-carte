@@ -61,7 +61,7 @@
     const dedans = (x) => x === id || chemins.has(x) || (x.startsWith('r:') && chemins.has('f:' + CARTE.routes[+x.slice(2)]?.f)) || (CARTE.existe(x) && CARTE.chaine(x).includes(id));
     const questions = (G.sante?.problemes || []).filter((q) => q.kind === 'question' && (q.items || []).some(dedans)).map((q) => q.title);
     return [
-      `Construis « ${i.name} » à partir du plan de ${G.projet.name} : la-carte/plan.json et la-carte/architecture.json${EBAUCHE.source ? `, prévu à partir de ${EBAUCHE.source}` : ''}.`,
+      `Construis « ${i.name} » à partir du plan de ${G.projet.name} : la-carte/sources/plan.json et la-carte/sources/architecture.json${EBAUCHE.source ? `, prévu à partir de ${EBAUCHE.source}` : ''}.`,
       i.desc ? `\nÀ quoi ça sert : ${i.desc}` : '',
       EBAUCHE.stack?.length ? `\nTechnologies utilisées : ${EBAUCHE.stack.join('; ')}.` : '',
       `\nFichiers à créer :`,

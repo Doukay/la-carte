@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // la-carte refresh : remet à jour une carte existante sans tout refaire.
-// Ré-analyse, compare avec la dernière construction (graphe.json), met en accord descriptions/*.json
+// Ré-analyse, compare avec la dernière construction (.cache/graphe.json), met en accord sources/descriptions/*.json
 // (renommages reportés, entrées supprimées retirées, entrées dont les exports ou les routes ont changé
 // marquées "review"), reconstruit, puis dit précisément ce qu’il reste à regarder pour Claude.
 //
@@ -16,23 +16,23 @@ const ICI = path.dirname(fileURLToPath(import.meta.url));
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = dossierCarte(racine);
-const fichierGraphe = path.join(dossierSortie, 'graphe.json');
-const fichierArchi = path.join(dossierSortie, 'architecture.json');
+const fichierGraphe = path.join(dossierSortie, '.cache', 'graphe.json');
+const fichierArchi = path.join(dossierSortie, 'sources', 'architecture.json');
 if (!fs.existsSync(fichierGraphe) || !fs.existsSync(fichierArchi)) {
-  console.log('Il n’y a pas encore de carte ici (la-carte/graphe.json + architecture.json). Fais plutôt une première construction complète.');
+  console.log('Il n’y a pas encore de carte ici (la-carte/.cache/graphe.json + sources/architecture.json). Fais plutôt une première construction complète.');
   process.exit(0);
 }
 const ancien = JSON.parse(fs.readFileSync(fichierGraphe, 'utf8'));
 const archi = JSON.parse(fs.readFileSync(fichierArchi, 'utf8'));
 
-// Un plan est redessiné d’après plan.json, pas d’après le code. --from-code cartographie à la place le vrai code
-// (plan.json est conservé : le plan peut être redessiné avec plan.mjs + construire.mjs).
+// Un plan est redessiné d’après sources/plan.json, pas d’après le code. --from-code cartographie à la place le vrai code
+// (sources/plan.json est conservé : le plan peut être redessiné avec plan.mjs + construire.mjs).
 if (ancien.meta?.ebauche && !params['from-code']) {
   const lancer = (script, ...reste) => execFileSync(process.execPath, [path.join(ICI, script), racine, ...reste], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
   try {
     process.stdout.write(lancer('plan.mjs') + '\n' + lancer('construire.mjs', ...process.argv.slice(2).filter((a) => a.startsWith('--'))));
   } catch (e) { process.stdout.write(String(e.stdout || '')); process.exit(1); }
-  console.log('\nENSUITE  Cette carte est un plan, redessiné d’après la-carte/plan.json. Modifie plan.json et architecture.json pour changer le plan. Quand le code existera, lance actualiser.mjs --from-code pour obtenir une carte du vrai code ; plan.json reste en place.');
+  console.log('\nENSUITE  Cette carte est un plan, redessiné d’après la-carte/sources/plan.json. Modifie sources/plan.json et sources/architecture.json pour changer le plan. Quand le code existera, lance actualiser.mjs --from-code pour obtenir une carte du vrai code ; sources/plan.json reste en place.');
   process.exit(0);
 }
 
@@ -101,7 +101,7 @@ for (const k of routesDisparues) {
 }
 
 // ---------- 4. remettre les descriptions en accord ----------
-const dossierDescriptions = path.join(dossierSortie, 'descriptions');
+const dossierDescriptions = path.join(dossierSortie, 'sources', 'descriptions');
 let reportees = 0, retirees = 0, signalees = 0, routesReportees = 0, routesRetirees = 0;
 const ensembleEmpreinte = new Set(empreinteChangee);
 if (fs.existsSync(dossierDescriptions)) {
@@ -166,11 +166,11 @@ L.push('CONSTRUCTION');
 L.push(sortieConstruction.split('\n').filter((l) => /^(✗|!|  - |AFFECTATION|  non affectés|    |DESCRIPTIONS|  Lancer describe|✓)/.test(l)).slice(0, 40).join('\n'));
 L.push('');
 const aFaire = [];
-if (!constructionOk) aFaire.push('Corrige dans architecture.json les erreurs de construction ci-dessus (en général une étape de parcours ou une annotation qui pointe vers un fichier supprimé), puis lance construire.mjs.');
-if (/non affectés, par dossier/.test(sortieConstruction)) aFaire.push('Des nouveaux fichiers sont hors de toute partie : ajoute des motifs (ou une partie) dans architecture.json pour les dossiers listés sous « non affectés ».');
+if (!constructionOk) aFaire.push('Corrige dans sources/architecture.json les erreurs de construction ci-dessus (en général une étape de parcours ou une annotation qui pointe vers un fichier supprimé), puis lance construire.mjs.');
+if (/non affectés, par dossier/.test(sortieConstruction)) aFaire.push('Des nouveaux fichiers sont hors de toute partie : ajoute des motifs (ou une partie) dans sources/architecture.json pour les dossiers listés sous « non affectés ».');
 if (/Lancer describe/.test(sortieConstruction)) aFaire.push('Lance decrire.mjs : il écrit des fiches de travail pour les seuls éléments nouveaux ou signalés. Remplis-les (retire chaque champ "review" une fois l’entrée exacte), puis lance construire.mjs.');
 if (crees.length + supprimes.length > Math.max(20, avant.size * 0.15)) aFaire.push('Le changement est important : relis les résumés des parties qui ont gagné ou perdu beaucoup de fichiers, et vérifie que les parcours tiennent toujours.');
-aFaire.push('Marque le travail récent : lance recents.mjs, réécris travail-recent.json pour ce qui vient d’être travaillé (une liste "tasks" vide s’il n’y a rien), puis lance construire.mjs.');
+aFaire.push('Marque le travail récent : lance recents.mjs, réécris .cache/travail-recent.json pour ce qui vient d’être travaillé (une liste "tasks" vide s’il n’y a rien), puis lance construire.mjs.');
 L.push('ENSUITE');
 aFaire.forEach((t, i) => L.push(`  ${i + 1}. ${t}`));
 console.log(L.join('\n'));

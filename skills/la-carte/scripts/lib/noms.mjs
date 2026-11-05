@@ -1,4 +1,4 @@
-// Noms lisibles de repli, utilisés tant que Claude n’a pas écrit les vrais dans la-carte/descriptions/.
+// Noms lisibles de repli, utilisés tant que Claude n’a pas écrit les vrais dans la-carte/sources/descriptions/.
 import path from 'node:path';
 
 const P = path.posix;

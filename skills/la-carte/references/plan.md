@@ -2,15 +2,15 @@
 
 Un plan est la même carte, dessinée à partir d'un projet au lieu du code. Quelqu'un a un cahier des charges, une spécification ou simplement une longue description de ce qu'il veut construire, et la carte montre chaque pièce nécessaire, comment elles se relient, ce sur quoi s'appuie chaque écran, et ce qu'il reste à décider.
 
-**Langue.** Tout ce que la personne verra (noms, descriptions, hypothèses, questions, résumés, parcours, visite, rapport) s'écrit **en français, en langage simple, en tutoyant**, même si le cahier des charges est en anglais. Les chemins, les méthodes et les URL restent tels quels, et les clés JSON ne se traduisent pas (sauf `projet`, `parcours` et `visite` dans architecture.json).
+**Langue.** Tout ce que la personne verra (noms, descriptions, hypothèses, questions, résumés, parcours, visite, rapport) s'écrit **en français, en langage simple, en tutoyant**, même si le cahier des charges est en anglais. Les chemins, les méthodes et les URL restent tels quels, et les clés JSON ne se traduisent pas (sauf `projet`, `parcours` et `visite` dans sources/architecture.json).
 
 Tu écris deux fichiers dans `la-carte/` :
-- `plan.json` : les fichiers, les adresses du serveur et les liens que le système aurait (ce fichier).
-- `architecture.json` : les parties, les services extérieurs, les parcours et la visite, exactement comme pour une carte de code ([schema.md](schema.md)).
+- `sources/plan.json` : les fichiers, les adresses du serveur et les liens que le système aurait (ce fichier).
+- `sources/architecture.json` : les parties, les services extérieurs, les parcours et la visite, exactement comme pour une carte de code ([schema.md](schema.md)).
 
-`plan.mjs` transforme `plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire ça avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans graphe.json, le plan est rangé sous la clé `ebauche` (graphe.json est généré : n'y touche pas).
+`plan.mjs` transforme `sources/plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire ça avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans .cache/graphe.json, le plan est rangé sous la clé `ebauche` (.cache/graphe.json est généré : n'y touche pas).
 
-Sommaire : [Bien planifier](#bien-planifier) · [plan.json](#planjson) · [Contrôles](#ce-que-la-revue-du-plan-contrôle)
+Sommaire : [Bien planifier](#bien-planifier) · [sources/plan.json](#planjson) · [Contrôles](#ce-que-la-revue-du-plan-contrôle)
 
 ## Bien planifier
 
@@ -19,10 +19,10 @@ Sommaire : [Bien planifier](#bien-planifier) · [plan.json](#planjson) · [Contr
 - **Chaque écran décrit par le cahier des charges est un fichier avec une URL `screen`.** Donne à chaque écran des `calls` pour les adresses du serveur qu'il utilise et des `uses` pour les parties dont il est fait.
 - **Chaque adresse du serveur a un `access`**, et un `who` quand seules certaines personnes connectées peuvent l'utiliser (« les responsables de ce site », « le propriétaire du compte »). Décide-le d'après le cahier des charges. S'il n'en dit rien et que ça compte, laisse-le de côté (la revue le signalera) ou ajoute une question. Une adresse qui doit être ouverte à tous et qui modifie des données (codes de connexion, inscription, commande sans compte) reçoit un `publicBecause` : pourquoi, et ce qui empêche les abus.
 - **N'invente pas d'exigences.** Quand le cahier des charges ne dit rien et que tu as dû choisir, écris ton choix dans `assumptions`. Quand la réponse change ce qui sera construit et que tu ne peux pas raisonnablement choisir, ajoute-la à `questions` avec les parties concernées. Reporte dans `questions` chaque question ouverte que le cahier des charges liste, sauf s'il la tranche ailleurs ; si tu as planifié autour de la réponse probable, dis-le aussi dans `assumptions`. Ne pose à la personne 2 ou 3 questions au départ que si le cahier des charges laisse ouvert quelque chose de fondamental (qui s'en sert, web ou mobile, est-ce que quelqu'un se connecte, est-ce que de l'argent change de mains).
-- **Les services extérieurs et les lieux de stockage des données sont des nœuds `external`** dans architecture.json (Stripe, la base de données, un service d'e-mails). Les fichiers les atteignent par `services` et `data` dans plan.json. Mets `data` sur les fichiers qui parlent directement à la base (un utilitaire de base de données, ou chaque fichier d'accès aux données), pas sur tous ceux qui s'en servent : les Écrans suivent `uses` jusqu'à eux.
+- **Les services extérieurs et les lieux de stockage des données sont des nœuds `external`** dans sources/architecture.json (Stripe, la base de données, un service d'e-mails). Les fichiers les atteignent par `services` et `data` dans sources/plan.json. Mets `data` sur les fichiers qui parlent directement à la base (un utilitaire de base de données, ou chaque fichier d'accès aux données), pas sur tous ceux qui s'en servent : les Écrans suivent `uses` jusqu'à eux.
 - **Les tâches de fond** (e-mails planifiés, tâches de nuit, travailleurs de file d'attente) reçoivent leurs propres fichiers et un nœud `worker`.
 
-## plan.json
+## sources/plan.json
 
 ```json
 {
@@ -75,7 +75,7 @@ Les « appels à des adresses prévues » de plan.mjs comptent chaque appel ; le
 
 ## Changements depuis la carte
 
-Quand la carte est ouverte par son serveur (ouvrir.mjs), la bulle de questions a un sélecteur **Demander / Modifier**. Une demande de changement (« prévois aussi les remboursements », « enlève la page d'administration ») va au même agent, en lecture seule. Il répond avec le plan.json et l'architecture.json complets et mis à jour, et le serveur les vérifie avec plan.mjs et construire.mjs. Si les contrôles échouent, ou si de nouveaux fichiers ne tombent sous aucune partie, il renvoie les problèmes une fois. Ensuite il enregistre les fichiers, redessine la carte (les onglets ouverts se rechargent) et met en avant les blocs nouveaux et modifiés comme travail récent, avec **Annuler**. Les fichiers remplacés sont gardés dans `la-carte/.cache/history/`. Chaque élément de la revue du plan a **Résoudre sur la carte**, qui place une demande toute prête en mode Modifier : la demande d'une question ouverte se termine par « Ma réponse : » que la personne complète, et l'agent retire alors la question et intègre la réponse au plan. Les changements que tu fais à la main ou par ce skill marchent de la même façon : modifie les fichiers et lance actualiser.mjs.
+Quand la carte est ouverte par son serveur (ouvrir.mjs), la bulle de questions a un sélecteur **Demander / Modifier**. Une demande de changement (« prévois aussi les remboursements », « enlève la page d'administration ») va au même agent, en lecture seule. Il répond avec le sources/plan.json et l'architecture.json complets et mis à jour, et le serveur les vérifie avec plan.mjs et construire.mjs. Si les contrôles échouent, ou si de nouveaux fichiers ne tombent sous aucune partie, il renvoie les problèmes une fois. Ensuite il enregistre les fichiers, redessine la carte (les onglets ouverts se rechargent) et met en avant les blocs nouveaux et modifiés comme travail récent, avec **Annuler**. Les fichiers remplacés sont gardés dans `la-carte/.cache/history/`. Chaque élément de la revue du plan a **Résoudre sur la carte**, qui place une demande toute prête en mode Modifier : la demande d'une question ouverte se termine par « Ma réponse : » que la personne complète, et l'agent retire alors la question et intègre la réponse au plan. Les changements que tu fais à la main ou par ce skill marchent de la même façon : modifie les fichiers et lance actualiser.mjs.
 
 ## Ce que la revue du plan contrôle
 

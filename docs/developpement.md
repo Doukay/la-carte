@@ -16,15 +16,15 @@ skills/la-carte/
   SKILL.md             le déroulé que suivent Claude et Codex
   agents/openai.yaml   comment Codex présente la compétence
   references/          formats et guides de style que Claude lit en travaillant
-    schema.md                architecture.json et travail-recent.json
+    schema.md                sources/architecture.json et .cache/travail-recent.json
     choisir-les-parties.md   comment découper un projet en une bonne carte
     ecrire-les-descriptions.md  noms et descriptions en langage simple
-    plan.md             plan.json, pour une carte prévue à partir d'un cahier des charges
+    plan.md             sources/plan.json, pour une carte prévue à partir d'un cahier des charges
   scripts/             Node.js, sans dépendance ; Claude les lance
     etat.mjs     y a-t-il une carte, et depuis quand n'est-elle plus à jour (se lance au chargement de la compétence)
     analyser.mjs       dépôts, fichiers, imports, adresses du serveur, appels → .cache/analyse.json
-    plan.mjs       le plan.json d'un plan → le même .cache/analyse.json
-    construire.mjs      vérifier, affecter les fichiers, relier, santé, écrans → graphe.json + index.html
+    plan.mjs       le sources/plan.json d'un plan → le même .cache/analyse.json
+    construire.mjs      vérifier, affecter les fichiers, relier, santé, écrans → .cache/graphe.json + index.html
     decrire.mjs   feuilles de travail pour que Claude nomme et décrive les fichiers et adresses du serveur
     actualiser.mjs    mise à jour incrémentale : nouvelle analyse, report, signalement des changements, reconstruction
     recents.mjs     les faits pour marquer le travail récent
@@ -35,7 +35,7 @@ skills/la-carte/
     ui/            extensions de la visionneuse : bouton de thème, plans, glossaire, santé, travail récent, écrans, visite guidée, export
     requetes-graphe.js recherches partagées dans la carte (visionneuse, requete.mjs, consignes de la bulle de questions)
     serveur.mjs      copié dans le dossier la-carte/ de chaque projet ; répond par Claude Code ou Codex
-    requete-cli.mjs  devient la-carte/requete.mjs
+    requete-cli.mjs  devient la-carte/.cache/requete.mjs
     vendor/        moteur de mise en page (elkjs) et polices intégrés, avec leurs licences
 tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
 outils/empreintes.mjs    écrit EMPREINTES.txt, et compare une copie installée avec lui
@@ -65,7 +65,7 @@ node skills/la-carte/scripts/construire.mjs /chemin/vers/un/projet
 node skills/la-carte/scripts/ouvrir.mjs /chemin/vers/un/projet
 ```
 
-`construire.mjs` a besoin d'un `la-carte/architecture.json` dans le projet : lance la compétence une fois d'abord, ou écris-en un petit à la main ([format](../skills/la-carte/references/schema.md)). Dans le fichier, les clés `project`, `flows` et `tour` s'appellent maintenant `projet`, `parcours` et `visite`.
+`construire.mjs` a besoin d'un `la-carte/sources/architecture.json` dans le projet : lance la compétence une fois d'abord, ou écris-en un petit à la main ([format](../skills/la-carte/references/schema.md)). Dans le fichier, les clés `project`, `flows` et `tour` s'appellent maintenant `projet`, `parcours` et `visite`.
 
 ## Tests
 
@@ -88,7 +88,7 @@ Les tests utilisent le lanceur de tests intégré à Node : il n'y a rien à ins
 | `fastify.test.mjs` | Fastify : plugins enregistrés avec un préfixe, enregistrements imbriqués, et les appels du site qui atteignent le bon plugin (exemple dans `fixtures/`) |
 | `cles-tables-routes.test.mjs` | tables de routes indexées par `"MÉTHODE /chemin"` en JavaScript et en Python : quelles tables comptent, le gestionnaire de chaque entrée, les appels du site qui les atteignent, et la Santé qui ne dit rien de leur connexion (exemple dans `fixtures/`) |
 | `firebase.test.mjs` | Firebase Cloud Functions : fonctions appelables et `onRequest` comme adresses du serveur, les appels du site vers elles, Écrans, Santé, tâches de fond (exemple React + Firebase dans `fixtures/`) |
-| `plan.test.mjs` | une carte prévue à partir d'un cahier des charges avant tout code : erreurs de plan.json, adresses et appels, Écrans, revue du plan, mise à jour et passage au vrai code (cahier des charges d'exemple dans `fixtures/`) |
+| `plan.test.mjs` | une carte prévue à partir d'un cahier des charges avant tout code : erreurs de sources/plan.json, adresses et appels, Écrans, revue du plan, mise à jour et passage au vrai code (cahier des charges d'exemple dans `fixtures/`) |
 | `plan-modification.test.mjs` | modifier un plan depuis la carte : le plan mis à jour de l'agent est vérifié, enregistré et mis en avant, retenté une fois s'il échoue aux contrôles, et annulé (ligne de commande de remplacement dans `fixtures/fake-cli/`) |
 | `gros-fichiers.test.mjs` | les fichiers au-dessus de la limite de taille de l'analyse restent sur la carte avec leur nombre de lignes, et l'analyse, la Santé et la carte disent qu'ils n'ont pas été lus |
 | `appli-exemple.test.mjs` | une carte complète d'une boutique en deux dépôts : adresses du serveur, appels entre dépôts, Santé, carte hors connexion, aucune valeur de secret écrite, mises à jour |

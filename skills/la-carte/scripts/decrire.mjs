@@ -6,7 +6,7 @@
 //        node decrire.mjs [racine] --all            inclut aussi les entrées qui ont déjà une description
 //        node decrire.mjs [racine] --max-files 40   nombre de fichiers par fiche avant de la découper en morceaux
 //
-// Lance d’abord construire.mjs : les fiches de travail sont générées à partir de la-carte/graphe.json.
+// Lance d’abord construire.mjs : les fiches de travail sont générées à partir de la-carte/.cache/graphe.json.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,12 +16,12 @@ import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/noms.mjs
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = dossierCarte(racine);
-const fichierGraphe = path.join(dossierSortie, 'graphe.json');
-if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de la-carte/graphe.json. Lance d’abord construire.mjs.'); process.exit(1); }
+const fichierGraphe = path.join(dossierSortie, '.cache', 'graphe.json');
+if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de la-carte/.cache/graphe.json. Lance d’abord construire.mjs.'); process.exit(1); }
 const g = JSON.parse(fs.readFileSync(fichierGraphe, 'utf8'));
 const maxFichiers = Number(params['max-files']) || 40;
 const dossierFiches = path.join(dossierSortie, '.cache', 'worksheets');
-const dossierDescriptions = path.join(dossierSortie, 'descriptions');
+const dossierDescriptions = path.join(dossierSortie, 'sources', 'descriptions');
 fs.mkdirSync(dossierFiches, { recursive: true });
 fs.mkdirSync(dossierDescriptions, { recursive: true });
 for (const f of fs.readdirSync(dossierFiches)) fs.unlinkSync(path.join(dossierFiches, f));
@@ -29,7 +29,7 @@ for (const f of fs.readdirSync(dossierFiches)) fs.unlinkSync(path.join(dossierFi
 const partiesParId = new Map(g.nodes.map((n) => [n.id, n]));
 const fichierParChemin = new Map(g.files.map((f) => [f.p, f]));
 const etiquette = (id) => partiesParId.get(id)?.label || id;
-// Pour qui la carte est écrite (le "audience" de architecture.json, copié dans graph.meta par construire.mjs).
+// Pour qui la carte est écrite (le "audience" de sources/architecture.json, copié dans graph.meta par construire.mjs).
 const publicCible = g.meta?.audience === 'developers' ? 'developers' : 'everyone';
 const STYLE = publicCible === 'developers'
   ? 'un style technique pour des ingénieurs : nomme les frameworks, les patterns et les mécanismes quand ça aide.'
@@ -82,7 +82,7 @@ for (const [idPartie, liste] of parPartie) {
     sortie.push(`# Fiche de travail ${cle} : ${n?.label || idPartie}${nbMorceaux > 1 ? ` (morceau ${i + 1}/${nbMorceaux})` : ''}`);
     sortie.push(`Public : ${publicCible}. Écris en français, avec ${STYLE}`);
     if (n?.summary) sortie.push(`Module : ${n.summary}`);
-    sortie.push(`À écrire dans : la-carte/descriptions/${cle}.json (un squelette y est déjà ; remplis chaque "description", améliore chaque "name").`);
+    sortie.push(`À écrire dans : la-carte/sources/descriptions/${cle}.json (un squelette y est déjà ; remplis chaque "description", améliore chaque "name").`);
     sortie.push('Les entrées marquées À REVOIR ont déjà une description mais leur code a changé : mets à jour name et description si le changement compte, puis supprime le champ "review". Les entrées absentes de cette fiche sont bonnes : n’y touche pas.');
     sortie.push('');
     let nbRoutesFiche = 0;
@@ -127,7 +127,7 @@ changement : ${f.review}`);
 if (!index.length) { console.log('✓ Chaque fichier et chaque route a déjà une description. Utilise --all pour régénérer les fiches de travail de tout.'); process.exit(0); }
 const totaux = index.reduce((s, w) => ({ files: s.files + w.files, routes: s.routes + w.routes }), { files: 0, routes: 0 });
 console.log(`${index.length} fiche(s) de travail dans la-carte/.cache/worksheets/, pour ${totaux.files} fichiers et ${totaux.routes} routes encore à décrire.`);
-console.log('Chacune a un squelette correspondant dans la-carte/descriptions/<clé>.json. Remplis-les, puis lance construire.mjs.');
+console.log('Chacune a un squelette correspondant dans la-carte/sources/descriptions/<clé>.json. Remplis-les, puis lance construire.mjs.');
 console.log(`Public : ${publicCible}. Écris en français, avec ${STYLE}\n`);
 console.log('clé'.padEnd(34) + 'fichiers'.padStart(9) + 'routes'.padStart(8) + 'lignes'.padStart(8) + '  module');
 for (const w of index.sort((a, b) => b.files - a.files)) console.log(w.key.padEnd(34) + String(w.files).padStart(9) + String(w.routes).padStart(8) + formaterNombre(w.loc).padStart(8) + '  ' + w.node);

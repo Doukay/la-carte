@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Faits pour marquer le « travail récent » sur la carte : ce qui a changé depuis la dernière carte (d’après actualiser.mjs),
 // les changements non commités et les commits récents, chacun relié au bloc qu’il devient. Claude ajoute le pourquoi
-// (ce que la personne avait demandé) et écrit la-carte/travail-recent.json. Lecture seule.
+// (ce que la personne avait demandé) et écrit la-carte/.cache/travail-recent.json. Lecture seule.
 // usage : node recents.mjs [racine] [--days 7]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,12 +10,12 @@ import { git, lireArguments, dossierCarte } from './lib/commun.mjs';
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossier = dossierCarte(racine);
-const fichierGraphe = path.join(dossier, 'graphe.json');
-if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de la-carte/graphe.json. Lance d’abord construire.mjs.'); process.exit(1); }
+const fichierGraphe = path.join(dossier, '.cache', 'graphe.json');
+if (!fs.existsSync(fichierGraphe)) { console.error('✗ Pas de la-carte/.cache/graphe.json. Lance d’abord construire.mjs.'); process.exit(1); }
 const G = JSON.parse(fs.readFileSync(fichierGraphe, 'utf8'));
 const lireJson = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
 const changements = lireJson(path.join(dossier, '.cache', 'changes.json'));
-const actuel = lireJson(path.join(dossier, 'travail-recent.json'));
+const actuel = lireJson(path.join(dossier, '.cache', 'travail-recent.json'));
 
 const fichiers = new Map(G.files.map((f) => [f.p, f]));
 const etiquettes = new Map(G.nodes.map((n) => [n.id, n.label]));
@@ -33,8 +33,8 @@ const liste = (lignes) => { lignes.slice(0, MAXIMUM).forEach((r) => L.push('  ' 
 
 L.push(`TRAVAIL RÉCENT  éléments pour ${G.projet.name}  (carte construite le ${G.meta.generatedAt})`);
 L.push(actuel?.tasks
-  ? `travail-recent.json actuel : ${actuel.tasks.length} tâche(s), mis à jour le ${actuel.updatedAt || 'date inconnue'}. Réécris-le : il remplace les blocs mis en avant précédemment.`
-  : 'Pas encore de travail-recent.json.');
+  ? `.cache/travail-recent.json actuel : ${actuel.tasks.length} tâche(s), mis à jour le ${actuel.updatedAt || 'date inconnue'}. Réécris-le : il remplace les blocs mis en avant précédemment.`
+  : 'Pas encore de .cache/travail-recent.json.');
 
 if (changements) {
   L.push('', `CHANGÉ DEPUIS LA CARTE PRÉCÉDENTE (${changements.since} → ${changements.at})`);
@@ -54,7 +54,7 @@ const depuis = changements?.since || actuel?.updatedAt || new Date(Date.now() - 
 for (const r of G.meta.repos || []) {
   const absolu = path.join(racine, r.path);
   const prefixe = r.path === '.' ? '' : r.path + '/';
-  const statut = (git(absolu, ['status', '--porcelain=v1', '-uall']) || '').split('\n').filter(Boolean);
+  const statut = (git(absolu, ['status', '--porcelain=v1', '-uall']) || '').split('\n').filter(Boolean).filter((s) => !/(^|\/|\s)la-carte\//.test(s));
   const journal = (git(absolu, ['log', `--since=${depuis}`, '--max-count=20', '--no-merges', '--name-only', '--date=short', '--format=@@%h %ad %s']) || '').trim();
   if (!statut.length && !journal) continue;
   L.push('', `DÉPÔT ${r.path === '.' ? G.meta.rootName : r.path}`);
@@ -65,7 +65,8 @@ for (const r of G.meta.repos || []) {
   if (journal) {
     L.push(`  commits depuis le ${depuis.slice(0, 10)} :`);
     for (const bloc of journal.split('@@').filter(Boolean)) {
-      const [entete, ...chemins] = bloc.trim().split('\n').filter(Boolean);
+      const [entete, ...tousChemins] = bloc.trim().split('\n').filter(Boolean);
+      const chemins = tousChemins.filter((p) => !/(^|\/)la-carte\//.test(p));
       L.push(`    ${entete}`);
       chemins.slice(0, 8).forEach((p) => L.push(`        ${prefixe + p}  → ${blocDe(prefixe + p)}`));
       if (chemins.length > 8) L.push(`        … +${chemins.length - 8} fichiers de plus`);
@@ -73,7 +74,7 @@ for (const r of G.meta.repos || []) {
   }
 }
 
-L.push('', 'Écris la-carte/travail-recent.json (refs : un chemin de fichier, un id de partie, ou "METHODE /chemin" ; voir references/schema.md#travail-récent) :',
+L.push('', 'Écris la-carte/.cache/travail-recent.json (refs : un chemin de fichier, un id de partie, ou "METHODE /chemin" ; voir references/schema.md#travail-récent) :',
   '  { "tasks": [ { "title": "…", "request": "ce que la personne a demandé", "summary": "ce qui a été fait pour y répondre, et où ça en est",',
   '      "items": [ { "ref": "<chemin du fichier>", "change": "changed|new", "note": "ce qui a changé ici, et en quoi ça sert la demande" } ] } ] }',
   'Puis lance construire.mjs. Utilise { "tasks": [] } quand rien n’a été travaillé.');

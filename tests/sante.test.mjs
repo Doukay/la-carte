@@ -15,13 +15,13 @@ const scripts = path.join(ici, '..', 'skills', 'la-carte', 'scripts');
 function construireExemple(nom) {
   const racine = fs.mkdtempSync(path.join(os.tmpdir(), `la-carte-${nom}-`));
   fs.cpSync(path.join(ici, 'fixtures', nom), racine, { recursive: true });
-  fs.mkdirSync(path.join(racine, 'la-carte'));
-  fs.writeFileSync(path.join(racine, 'la-carte', 'architecture.json'), JSON.stringify({
+  fs.mkdirSync(path.join(racine, 'la-carte', 'sources'), { recursive: true });
+  fs.writeFileSync(path.join(racine, 'la-carte', 'sources', 'architecture.json'), JSON.stringify({
     projet: { name: nom, summary: 'Test fixture.' },
     nodes: [{ id: 'api', label: 'Server', kind: 'service', summary: 'The sample server.', paths: ['**'] }],
   }));
   for (const s of ['analyser.mjs', 'construire.mjs']) execFileSync(process.execPath, [path.join(scripts, s), racine, '--no-claude-md'], { stdio: 'pipe' });
-  const graphe = JSON.parse(fs.readFileSync(path.join(racine, 'la-carte', 'graphe.json'), 'utf8'));
+  const graphe = JSON.parse(fs.readFileSync(path.join(racine, 'la-carte', '.cache', 'graphe.json'), 'utf8'));
   fs.rmSync(racine, { recursive: true, force: true });
   return graphe;
 }

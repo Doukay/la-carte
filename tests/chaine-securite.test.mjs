@@ -124,9 +124,9 @@ test('il lance une liste fixe de programmes, et jamais par un shell', () => {
 
 test('aucun code n’est téléchargé, décodé ni construit à partir de texte pendant l’exécution', () => {
   assert.deepEqual(trouver(/(?<![.\w])eval\(/).map((x) => `${x.file}:${x.line}`), [], `eval. ${MISE_A_JOUR}`);
-  // l’unique exception : serveur.mjs charge le code de recherche de la carte depuis la-carte/requete.mjs, un fichier écrit par la construction
+  // l’unique exception : serveur.mjs charge le code de recherche de la carte depuis la-carte/.cache/requete.mjs, un fichier écrit par la construction
   assert.deepEqual(trouver(/new Function\(/).map((x) => x.file), ['assets/serveur.mjs'], `new Function. ${MISE_A_JOUR}`);
-  assert.match(lire(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs')), /const sourceNoyau = fs\.readFileSync\(path\.join\(ici, 'requete\.mjs'\), 'utf8'\)/);
+  assert.match(lire(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs')), /const sourceNoyau = fs\.readFileSync\(path\.join\(ici, '\.cache', 'requete\.mjs'\), 'utf8'\)/);
   assert.deepEqual(trouver(/\bimport\s*\(/).map((x) => `${x.file}:${x.line}`), [], `import dynamique. ${MISE_A_JOUR}`);
   assert.deepEqual(trouver(/from\s+['"](?:node:)?(vm|worker_threads|inspector|wasi)['"]|new Worker\(|WebAssembly\./).map((x) => `${x.file}: ${x.text}`), [], `autres moyens d’exécuter du code. ${MISE_A_JOUR}`);
   // décodage base64 : seulement Santé qui lit le milieu d’un jeton trouvé, pour savoir de quel genre de jeton il s’agit

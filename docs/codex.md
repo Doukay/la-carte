@@ -38,7 +38,7 @@ Pour appeler la compétence par son nom, tape `$la-carte`. Ensuite, tout est com
 Quand Codex ouvre la carte, il demande à lancer le serveur de la carte hors de son bac à sable. Le serveur doit continuer à tourner après la fin de la commande, et la bulle de questions doit pouvoir joindre Codex. Si tu préfères ne pas l'autoriser, lance le serveur toi-même depuis le dossier du projet :
 
 ```bash
-node la-carte/serveur.mjs
+node la-carte/.cache/serveur.mjs
 ```
 
 ## Poser des questions sur la carte
@@ -50,7 +50,7 @@ La bulle de questions de la carte lance ton propre Codex sur ton ordinateur : `c
 Le serveur utilise l'agent qui a fait la carte, et passe à l'autre si celui-là n'est pas installé. Pour choisir :
 
 ```bash
-node la-carte/serveur.mjs --engine codex
+node la-carte/.cache/serveur.mjs --engine codex
 ```
 
 Il trouve `codex` dans ton PATH, et sous Windows la ligne de commande qui vient avec l'application de bureau Codex. Si la tienne est ailleurs, passe `--codex /chemin/vers/codex`. `--model <nom>` choisit le modèle ; sinon tes réglages Codex décident.

@@ -1320,7 +1320,7 @@ export function construireSante({ graph: graphe, scan: analyse, arch: archi, roo
 }
 
 // ---------- « pas un problème » : problèmes que des personnes ont écartés du panneau Santé ----------
-// serveur.mjs les enregistre dans la-carte/rejets-sante.json sous la forme { dismissed: [{ id, locations: ['fichier:ligne'], reason, at }] }.
+// serveur.mjs les enregistre dans la-carte/sources/rejets-sante.json sous la forme { dismissed: [{ id, locations: ['fichier:ligne'], reason, at }] }.
 // Un rejet couvre le problème tel qu’il était : il réapparaît s’il devient plus ou moins grave, ou s’il trouve quelque chose de nouveau
 // dans un fichier. Il compte par fichier, pas par ligne : une modification plus haut dans le fichier ne le fait pas revenir.
 // (assets/ui/20-sante.js a la même règle pour la page.)

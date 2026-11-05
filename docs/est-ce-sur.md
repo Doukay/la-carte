@@ -17,7 +17,7 @@ Cette page dit ce qui est vrai pour **cette copie française**, y compris ce qu'
 
 ### Le réseau
 
-- **Le serveur de la carte** (`la-carte/serveur.mjs`) écoute sur `127.0.0.1` seulement, donc les autres machines ne peuvent pas l'atteindre. Il ne répond qu'à `127.0.0.1` et à `localhost` sur son propre port, et son API demande un jeton que seule la page de la carte reçoit.
+- **Le serveur de la carte** (`la-carte/.cache/serveur.mjs`) écoute sur `127.0.0.1` seulement, donc les autres machines ne peuvent pas l'atteindre. Il ne répond qu'à `127.0.0.1` et à `localhost` sur son propre port, et son API demande un jeton que seule la page de la carte reçoit.
 - **Aucune requête sortante.** Les seules requêtes de la carte vont à son propre serveur local. Un test le vérifie.
 - **La page de la carte ne charge rien depuis Internet.** Son moteur de mise en page et ses polices sont intégrés au fichier. Elle contient seulement des liens vers de la documentation, qui s'ouvrent quand tu cliques.
 - **Le bouton « Pas un problème »** du contrôle de santé reste sur ta machine : il écrit seulement dans `la-carte/`. Il n'envoie plus rien à l'auteur.
@@ -48,7 +48,7 @@ Dans Claude Code, quand la compétence est utilisée, elle autorise d'avance une
   tar -xzf elkjs-0.9.3.tgz package/lib/elk.bundled.js
   ```
   Compare ensuite `package/lib/elk.bundled.js` avec la copie de la carte, par exemple avec `sha256sum` (macOS : `shasum -a 256` ; PowerShell sous Windows : `Get-FileHash`).
-- **Un seul `new Function`** dans `serveur.mjs` charge le code de recherche de la carte depuis `la-carte/requete.mjs`, un fichier que la construction de la carte a écrit dans ton projet. Il n'exécute jamais rien venu du réseau.
+- **Un seul `new Function`** dans `serveur.mjs` charge le code de recherche de la carte depuis `la-carte/.cache/requete.mjs`, un fichier que la construction de la carte a écrit dans ton projet. Il n'exécute jamais rien venu du réseau.
 - **Le contrôle de santé lit le milieu des jetons qu'il trouve** (il les décode depuis le base64) pour savoir de quel genre est chaque jeton, afin d'ignorer ceux qui sont publics par conception. Il n'enregistre ni n'affiche jamais le jeton lui-même, ni même un seul de ses caractères : seulement sa longueur.
 
 ## Vérifié à chaque changement

@@ -16,7 +16,7 @@ const serveurs = [];
 async function servir(env) {
   const journal = path.join(racine, `fake-${serveurs.length}.log`);
   const port = 20000 + Math.floor(Math.random() * 20000);
-  const serveur = spawn(process.execPath, [path.join(racine, 'la-carte', 'serveur.mjs'), '--port', String(port), '--no-open'], {
+  const serveur = spawn(process.execPath, [path.join(racine, 'la-carte', '.cache', 'serveur.mjs'), '--port', String(port), '--no-open'], {
     cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', LA_CARTE_ENGINE: '', FAKE_LOG: journal, ...env }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   serveurs.push(serveur);
@@ -66,7 +66,7 @@ test('avec Codex seul installé, les questions passent par Codex, en lecture seu
   // Node lance serveur.mjs depuis son vrai chemin, et sous macOS le dossier temporaire /var/… est en réalité /private/var/…
   assert.equal(fs.realpathSync(option('-C')), fs.realpathSync(racine));
   assert.match(appel.input, /How do refunds work\?/);
-  assert.match(appel.input, /node la-carte\/requete\.mjs/);
+  assert.match(appel.input, /node la-carte\/\.cache\/requete\.mjs/);
 });
 
 test('Codex reçoit un schéma de réponse qu’il accepte : toutes les propriétés obligatoires, rien en plus', async () => {
@@ -116,7 +116,7 @@ test('la CLI de Claude Code passe en premier pour une carte construite par Claud
   await demander(s, 'And then?', reponse.session);
   const [premier, deuxieme] = s.calls();
   assert.ok(premier.args.includes('-p'));
-  assert.deepEqual(premier.args.slice(premier.args.indexOf('--allowedTools') + 1, premier.args.indexOf('--disallowedTools')), ['Bash(node la-carte/requete.mjs:*)', 'Read', 'Grep', 'Glob']);
+  assert.deepEqual(premier.args.slice(premier.args.indexOf('--allowedTools') + 1, premier.args.indexOf('--disallowedTools')), ['Bash(node la-carte/.cache/requete.mjs:*)', 'Read', 'Grep', 'Glob']);
   assert.ok(premier.args.includes('Read(**/.env)') && premier.args.includes('Read(**/.env.*)'), 'les fichiers secrets restent fermés');
   assert.ok(premier.args.includes('--strict-mcp-config'), "les serveurs MCP de la machine restent hors de la demande");
   assert.equal(premier.input, 'How do refunds work?');

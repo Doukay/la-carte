@@ -18,7 +18,7 @@ process.stdin.on('end', () => {
     out({ type: 'turn.failed', error: { message: 'You are not logged in. Run codex login.' } });
     return;
   }
-  out({ type: 'item.started', item: { id: 'item_0', type: 'command_execution', command: `/bin/bash -lc 'node la-carte/requete.mjs find "refund"'`, status: 'in_progress' } });
+  out({ type: 'item.started', item: { id: 'item_0', type: 'command_execution', command: `/bin/bash -lc 'node la-carte/.cache/requete.mjs find "refund"'`, status: 'in_progress' } });
   out({ type: 'item.started', item: { id: 'item_1', type: 'command_execution', command: `"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe" -Command "Get-Content shop-api/routes/orders.js"`, status: 'in_progress' } });
   out({ type: 'item.completed', item: { id: 'item_2', type: 'agent_message', text: 'Let me check the refund route.' } });
   out({ type: 'item.completed', item: { id: 'item_3', type: 'agent_message', text: JSON.stringify({

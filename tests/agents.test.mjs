@@ -53,6 +53,6 @@ test('la copie pour l’appli Claude dit toujours Claude, quel que soit celui qu
     executer('construire.mjs', racine, '--agent', 'codex', '--artifact', '--no-claude-md');
     const html = fs.readFileSync(path.join(racine, 'la-carte', 'artifact.html'), 'utf8');
     assert.match(html, /"agent":"claude"/);
-    assert.equal(lireJson(path.join(racine, 'la-carte', 'graphe.json')).meta.agent, 'codex');
+    assert.equal(lireJson(path.join(racine, 'la-carte', '.cache', 'graphe.json')).meta.agent, 'codex');
   } finally { nettoyer(racine); }
 });

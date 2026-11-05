@@ -128,7 +128,7 @@ test('la page applique la même règle que la construction', () => {
 let racine, serveur, base, jeton;
 const NOTE = 'cette valeur n’est qu’un exemple, voir le wiki';
 const donneesDe = (html) => JSON.parse(/<script>window\.LA_CARTE = (.*?);<\/script>/s.exec(html)[1]);
-const fichierCarte = (nom) => path.join(racine, 'la-carte', nom);
+const fichierCarte = (nom) => path.join(racine, 'la-carte', ...(['index.html', 'artifact.html'].includes(nom) ? [] : [nom === 'rejets-sante.json' ? 'sources' : '.cache']), nom);
 const appeler = (method, corps, headers = { 'x-la-carte-token': jeton }) => fetch(base + '/api/health/dismissed', { method, headers: { 'content-type': 'application/json', ...headers }, ...(corps ? { body: JSON.stringify(corps) } : {}) });
 const exporterPage = async (include) => (await fetch(base + '/api/export', { method: 'POST', headers: { 'content-type': 'application/json', 'x-la-carte-token': jeton }, body: JSON.stringify({ include }) })).text();
 

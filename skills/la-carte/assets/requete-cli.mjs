@@ -1,10 +1,10 @@
-// la-carte/requete.mjs : cherche dans le graphe.json de ce dossier. Généré par construire.mjs ; la CLI Claude
-// Code l’appelle quand tu poses des questions depuis la carte (node la-carte/serveur.mjs).
+// la-carte/.cache/requete.mjs : cherche dans le graphe.json de ce dossier. Généré par construire.mjs ; la CLI Claude
+// Code l’appelle quand tu poses des questions depuis la carte (node la-carte/.cache/serveur.mjs).
 //
-// usage : node la-carte/requete.mjs overview
-//        node la-carte/requete.mjs find "<mots>" [--kind module|file|endpoint|symbol] [--limit 15]
-//        node la-carte/requete.mjs show <id>
-//        node la-carte/requete.mjs path <idDepart> <idArrivee>
+// usage : node la-carte/.cache/requete.mjs overview
+//        node la-carte/.cache/requete.mjs find "<mots>" [--kind module|file|endpoint|symbol] [--limit 15]
+//        node la-carte/.cache/requete.mjs show <id>
+//        node la-carte/.cache/requete.mjs path <idDepart> <idArrivee>
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

@@ -220,7 +220,7 @@ Des scripts font le travail mécanique : trouver les dépôts, lire le code dans
 
 ## Ce que ça ajoute à ton projet
 
-Un dossier `la-carte/` qui contient la carte, et rien d'autre. **Il n'est pas enregistré dans Git :** le dossier s'ignore lui-même. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md).
+Un dossier `la-carte/` qui contient la carte, et rien d'autre. **Seul `la-carte/sources/` est à garder dans Git :** ce sont les noms et descriptions. Le reste s'ignore tout seul. Ton `.gitignore`, tes fichiers de notes pour Claude (`CLAUDE.md`, `CLAUDE.local.md`) et tes autres fichiers ne sont jamais touchés. Voir [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md).
 
 ## Confidentialité
 
@@ -276,13 +276,13 @@ Non, la carte marche sans. La bulle de questions répond grâce à la ligne de c
 <details>
 <summary><b>Va-t-elle modifier ou enregistrer mes fichiers ?</b></summary>
 
-Elle n'écrit que dans son propre dossier `la-carte/`, qui n'est pas enregistré dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
+Elle n'écrit que dans son propre dossier `la-carte/`, dont seul `sources/` est à garder dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
 </details>
 
 <details>
 <summary><b>Les noms choisis ne sont pas ceux qu'on utilise chez nous. Puis-je les changer ?</b></summary>
 
-Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans la carte »), ou modifie toi-même `la-carte/architecture.json` et `la-carte/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
+Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans la carte »), ou modifie toi-même `la-carte/sources/architecture.json` et `la-carte/sources/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
 </details>
 
 <details>

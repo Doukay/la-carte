@@ -81,7 +81,7 @@ Quand le code existe, demande à Claude ou à Codex de « cartographier le vrai 
 La carte est un dossier dans ton projet. Soit :
 
 ```bash
-node la-carte/serveur.mjs
+node la-carte/.cache/serveur.mjs
 ```
 
 la sert à l'adresse http://127.0.0.1:4378 avec une bulle de questions qui marche, soit tu double-cliques sur `la-carte/index.html`, où tout marche sauf poser des questions.
@@ -89,7 +89,7 @@ la sert à l'adresse http://127.0.0.1:4378 avec une bulle de questions qui march
 Quand la carte est ouverte pour toi, le serveur tourne en arrière-plan et s'arrête tout seul deux heures après que tu as fermé le dernier onglet. Pour l'arrêter plus tôt :
 
 ```bash
-node la-carte/serveur.mjs --stop
+node la-carte/.cache/serveur.mjs --stop
 ```
 
 ## Mettre le plugin à jour

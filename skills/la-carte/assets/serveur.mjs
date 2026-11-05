@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// la-carte/serveur.mjs : sert cette carte en local et répond aux questions sur le code par la
+// la-carte/.cache/serveur.mjs : sert cette carte en local et répond aux questions sur le code par la
 // CLI Claude Code ou par Codex. Généré par construire.mjs ; n’a besoin que de Node 18+ et d’un `claude` ou d’un `codex` connecté.
 //
-// usage : node la-carte/serveur.mjs [--port 4378] [--engine claude|codex] [--model <modèle>] [--claude <chemin>] [--codex <chemin>]
+// usage : node la-carte/.cache/serveur.mjs [--port 4378] [--engine claude|codex] [--model <modèle>] [--claude <chemin>] [--codex <chemin>]
 //                                 [--no-open] [--idle-exit <minutes>]
-//        node la-carte/serveur.mjs --stop
-//        node la-carte/serveur.mjs --export [<fichier>] [--include flows,notes,recent,health]   (une copie à partager ; par défaut flows,notes)
+//        node la-carte/.cache/serveur.mjs --stop
+//        node la-carte/.cache/serveur.mjs --export [<fichier>] [--include flows,notes,recent,health]   (une copie à partager ; par défaut flows,notes)
 //
 // Le serveur n’écoute que sur 127.0.0.1. Chaque question s’exécute à la racine du code, avec ton propre compte :
-// `claude -p` avec des outils en lecture seule (Read, Grep, Glob, et Bash limité à la-carte/requete.mjs), ou
+// `claude -p` avec des outils en lecture seule (Read, Grep, Glob, et Bash limité à la-carte/.cache/requete.mjs), ou
 // `codex exec` dans son bac à sable en lecture seule. Il utilise celui qui a construit la carte, sinon celui qui est installé.
 // Quand la carte est reconstruite, les onglets ouverts se rechargent sur place. Le serveur en cours est noté dans .cache/server.json.
 import http from 'node:http';
@@ -18,7 +18,8 @@ import crypto from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const ici = path.dirname(fileURLToPath(import.meta.url));
+// ce fichier vit dans la-carte/.cache/ ; « ici » est le dossier de la carte
+const ici = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const racine = path.resolve(ici, '..');
 const argv = process.argv.slice(2);
 const option = (nom, parDefaut) => { const i = argv.indexOf('--' + nom); return i < 0 ? parDefaut : argv[i + 1]; };
@@ -35,7 +36,7 @@ if (aOption('stop')) {
 }
 
 // Problèmes de santé marqués « Pas un problème » sur la carte ; construire.mjs les range dans graphe.json
-const fichierRejets = path.join(ici, 'rejets-sante.json');
+const fichierRejets = path.join(ici, 'sources', 'rejets-sante.json');
 const lireRejets = () => { try { const { dismissed: rejetes } = JSON.parse(fs.readFileSync(fichierRejets, 'utf8')); return Array.isArray(rejetes) ? rejetes : []; } catch { return []; } };
 const nettoyerRejet = (d) => ({
   id: String(d.id).slice(0, 2000),
@@ -163,7 +164,7 @@ const MOTEURS = {
   },
 };
 // --engine (ou LA_CARTE_ENGINE) décide ; sinon l’agent qui a construit la carte, puis les autres dans l’ordre
-const construitPar = (() => { try { return JSON.parse(fs.readFileSync(path.join(ici, 'graphe.json'), 'utf8')).meta?.agent; } catch { return null; } })();
+const construitPar = (() => { try { return JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'graphe.json'), 'utf8')).meta?.agent; } catch { return null; } })();
 const moteurDemande = option('engine', process.env.LA_CARTE_ENGINE);
 const estMoteur = (k) => typeof k === 'string' && Object.hasOwn(MOTEURS, k);
 const souhaite = estMoteur(moteurDemande) ? moteurDemande : estMoteur(construitPar) ? construitPar : 'claude';
@@ -185,8 +186,8 @@ const injection = `<script>window.LA_CARTE_SERVER=${JSON.stringify({ token: jeto
 let page, G, noyau, MODES;
 function charger() {
   const html = fs.readFileSync(path.join(ici, 'index.html'), 'utf8');
-  const g = JSON.parse(fs.readFileSync(path.join(ici, 'graphe.json'), 'utf8'));
-  const sourceNoyau = fs.readFileSync(path.join(ici, 'requete.mjs'), 'utf8').split('// ---- cli ----')[0];
+  const g = JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'graphe.json'), 'utf8'));
+  const sourceNoyau = fs.readFileSync(path.join(ici, '.cache', 'requete.mjs'), 'utf8').split('// ---- cli ----')[0];
   const c = new Function(`${sourceNoyau.replace(/^import .*$/gm, '')}; return { LA_CARTE_SCHEMA_REPONSE, LA_CARTE_SCHEMA_PARCOURS, LA_CARTE_SCHEMA_CHANGEMENT, laCarteConsignesQuestion, laCarteConsignesParcours, laCarteConsignesChangement, creerRequetesGraphe };`)();
   c.q = c.creerRequetesGraphe(g);
   page = html.replace('</head>', injection + '</head>');
@@ -223,7 +224,7 @@ fs.watchFile(path.join(ici, 'index.html'), { interval: 1000 }, (actuel, preceden
   minuteurRechargement = setTimeout(() => { try { charger(); diffuser('reload'); console.log('carte reconstruite : onglets ouverts rechargés'); } catch {} }, 800);
 });
 if (delaiInactivite) setInterval(() => { if (!onglets.size && !enCours.size && Date.now() - dernierOnglet > delaiInactivite) process.exit(0); }, 60000).unref();
-const fichierParcours = path.join(ici, 'parcours-perso.json');
+const fichierParcours = path.join(ici, 'sources', 'parcours-perso.json');
 const lireParcours = () => { try { return JSON.parse(fs.readFileSync(fichierParcours, 'utf8')).parcours || []; } catch { return []; } };
 
 // ---------- poser des questions ----------
@@ -281,7 +282,7 @@ const FICHIERS_SECRETS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '**/*.
 function lancerClaude(corps, mode) {
   const params = [...cli.args, '-p', '--output-format', 'stream-json', '--verbose',
     '--json-schema', JSON.stringify(mode.schema), '--append-system-prompt', mode.instructions,
-    '--tools', 'Read,Grep,Glob,Bash', '--allowedTools', 'Bash(node la-carte/requete.mjs:*)', 'Read', 'Grep', 'Glob',
+    '--tools', 'Read,Grep,Glob,Bash', '--allowedTools', 'Bash(node la-carte/.cache/requete.mjs:*)', 'Read', 'Grep', 'Glob',
     '--disallowedTools', ...FICHIERS_SECRETS.map((f) => `Read(${f})`),
     // sans les serveurs MCP de l’ordinateur : leurs listes d’outils suffisent à faire déborder la demande
     '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}'];
@@ -384,16 +385,17 @@ function demander(requete, reponse, corps) {
 // redessine la carte, ce qui recharge tous les onglets ouverts. Chaque modification garde les fichiers qu’elle a remplacés, pour Annuler.
 const dossierHistorique = path.join(ici, '.cache', 'history');
 const FICHIERS_PLAN = ['plan.json', 'architecture.json', 'travail-recent.json'];
+const cheminPlan = (f) => path.join(ici, f === 'travail-recent.json' ? '.cache' : 'sources', f);
 let changementEnCours = false;
 function prendreInstantane() {
   const dossier = path.join(dossierHistorique, Date.now().toString(36));
   fs.mkdirSync(dossier, { recursive: true });
-  for (const f of FICHIERS_PLAN) if (fs.existsSync(path.join(ici, f))) fs.copyFileSync(path.join(ici, f), path.join(dossier, f));
+  for (const f of FICHIERS_PLAN) if (fs.existsSync(cheminPlan(f))) fs.copyFileSync(cheminPlan(f), path.join(dossier, f));
   for (const ancien of fs.readdirSync(dossierHistorique).sort().slice(0, -20)) fs.rmSync(path.join(dossierHistorique, ancien), { recursive: true, force: true });
   return dossier;
 }
 function restaurer(dossier) {
-  for (const f of FICHIERS_PLAN) { const origine = path.join(dossier, f), vers = path.join(ici, f); if (fs.existsSync(origine)) fs.copyFileSync(origine, vers); else fs.rmSync(vers, { force: true }); }
+  for (const f of FICHIERS_PLAN) { const origine = path.join(dossier, f), vers = cheminPlan(f); if (fs.existsSync(origine)) fs.copyFileSync(origine, vers); else fs.rmSync(vers, { force: true }); }
 }
 /** Lance un des scripts du skill sur ce projet ; lève une erreur avec sa sortie s’il échoue. */
 function scriptSkill(nom, ...params) {
@@ -420,7 +422,7 @@ function appliquerChangement(donnees, demande, dernierEssai) {
   const plan = lireObjet('plan', donnees.plan), archi = lireObjet('architecture', donnees.architecture);
   if (!plan || !archi) return { errors: [`${!plan ? 'plan' : 'architecture'} n’est pas un objet JSON complet`] };
   const instantane = prendreInstantane();
-  const ecrire = (f, v) => fs.writeFileSync(path.join(ici, f), JSON.stringify(v, null, 2) + '\n');
+  const ecrire = (f, v) => fs.writeFileSync(cheminPlan(f), JSON.stringify(v, null, 2) + '\n');
   try {
     ecrire('plan.json', plan);
     ecrire('architecture.json', archi);

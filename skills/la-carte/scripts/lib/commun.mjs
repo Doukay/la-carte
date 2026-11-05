@@ -100,21 +100,31 @@ export const DOSSIERS_TOUJOURS_IGNORES = new Set([
 export const DOSSIER_CARTE = 'la-carte';
 export const ANCIEN_DOSSIER_CARTE = 'show-code';
 /** Vrai pour un dossier qui contient une carte, pour qu'un dossier du projet qui s'appelle par hasard « la-carte » ne soit pas pris pour une carte. */
-export const estDossierCarte = (d) => ['architecture.json', 'plan.json', 'graphe.json', '.cache'].some((f) => fs.existsSync(path.join(d, f)));
+export const estDossierCarte = (d) => ['sources', '.cache', 'index.html'].some((f) => fs.existsSync(path.join(d, f)));
 /**
- * Garde le dossier de la carte hors de git : son propre .gitignore ignore tout ce qu'il contient, lui compris,
- * donc rien ne change dans les fichiers suivis du projet. Renvoie un avertissement quand git suit déjà des
- * fichiers dedans (les ignorer ne les retire pas du suivi), sinon null.
+ * Garde hors de git ce qui se refabrique. Seul sources/ reste à enregistrer avec le projet : les noms et descriptions
+ * coûtent des jetons, et ils doivent suivre le projet dans un worktree ou sur un autre ordinateur. Renvoie un
+ * avertissement quand git suit déjà des fichiers refabriqués, sinon null.
  */
-export function garderHorsGit(dossier) {
+export function garderGeneresHorsGit(dossier) {
   const gi = path.join(dossier, '.gitignore');
-  const attendu = '# Ce dossier reste hors de git : ceci ignore tout ce qui est dans ce dossier, ce fichier compris.\n*\n';
-  fs.mkdirSync(dossier, { recursive: true });
+  const attendu = '# Seul sources/ reste à enregistrer dans git : le reste se refabrique.\n*\n!.gitignore\n!sources/\n!sources/**\n';
+  fs.mkdirSync(path.join(dossier, 'sources'), { recursive: true });
+  fs.mkdirSync(path.join(dossier, '.cache'), { recursive: true });
   try { if (!fs.existsSync(gi) || fs.readFileSync(gi, 'utf8') !== attendu) fs.writeFileSync(gi, attendu); } catch {}
-  const suivis = (git(dossier, ['ls-files', '--', '.']) || '').split('\n').filter(Boolean);
+  const suivis = (git(dossier, ['ls-files', '--', '.']) || '').split('\n').filter(Boolean).filter((f) => f !== '.gitignore' && !f.startsWith('sources/'));
   if (!suivis.length) return null;
-  const nomDossier = path.basename(dossier);
-  return `${suivis.length} fichier(s) de ${nomDossier}/ étaient déjà enregistrés dans git ; ils restent suivis tant que tu ne lances pas : git rm -r --cached ${nomDossier}  (les fichiers restent sur ton disque)`;
+  return `${suivis.length} fichier(s) refabriqué(s) de la-carte/ sont enregistrés dans git ; ils restent suivis tant que tu ne les retires pas : git rm -r --cached ${suivis.slice(0, 3).join(' ')}${suivis.length > 3 ? ' …' : ''}`;
+}
+
+/** Docker ne lit pas .gitignore : avec COPY . . sans exclusion, la carte partirait dans l'image. Renvoie un avertissement ou null. On n'écrit rien hors de la-carte/. */
+export function avertissementDocker(racine) {
+  const noms = fs.existsSync(racine) ? fs.readdirSync(racine) : [];
+  if (!noms.some((n) => /^(Dockerfile|Containerfile)/i.test(n))) return null;
+  const fichier = path.join(racine, '.dockerignore');
+  const lignes = fs.existsSync(fichier) ? fs.readFileSync(fichier, 'utf8').split(/\r?\n/).map((l) => l.trim().replace(/^\.?\/?/, '').replace(/\/$/, '')) : [];
+  if (lignes.includes(DOSSIER_CARTE)) return null;
+  return `ce projet a un Dockerfile : ajoute la ligne « ${DOSSIER_CARTE}/ » à .dockerignore pour que la carte ne parte pas dans l'image`;
 }
 
 /** Le dossier de la carte pour une racine de code. */

@@ -4,12 +4,12 @@ const etatQuestion = { engine: null, sample: null, busy: false, ctl: null, sessi
 const champQuestion = $('#ask-input'), boutonEnvoyer = $('#ask-send'), feuille = $('#ask-sheet'), alerte = $('#ask-warn');
 const DOC_INSTALLATION = 'https://docs.claude.com/en/docs/claude-code/overview'; // le conseil de l'application Claude : installer la ligne de commande
 const AVERTISSEMENTS = {
-  no_engine: `Pour poser une question, il faut <b>${AGENT.cli}</b>. Depuis la racine du projet, lance <code>node la-carte/serveur.mjs</code>${AGENT.id === 'claude' ? ', ou ouvre cette carte dans l\'application Claude' : ''}.`,
+  no_engine: `Pour poser une question, il faut <b>${AGENT.cli}</b>. Depuis la racine du projet, lance <code>node la-carte/.cache/serveur.mjs</code>${AGENT.id === 'claude' ? ', ou ouvre cette carte dans l\'application Claude' : ''}.`,
   cli_missing: `Il faut que <b>${AGENT.cli}</b> soit installé pour que ça marche. <a href="${AGENT.docs}" target="_blank" rel="noopener">Installe-le</a>, puis relance <code>serveur.mjs</code>.`,
   not_logged_in: `${Maj(AGENT.cli)} n'est pas connecté. ${AGENT.signIn}`,
   app_unavailable: `Claude n'est pas disponible pour cette carte dans cette vue.`,
   not_granted: `L'accès de Claude à cette carte a été refusé. Recharge la page pour qu'on te le redemande.`,
-  cli_tip: `Installe <b>Claude Code en ligne de commande</b> pour une meilleure expérience : il peut lire ton code source, pas seulement cette carte. <a href="${DOC_INSTALLATION}" target="_blank" rel="noopener">Installe-le</a>, puis lance <code>node la-carte/serveur.mjs</code> dans le projet.`,
+  cli_tip: `Installe <b>Claude Code en ligne de commande</b> pour une meilleure expérience : il peut lire ton code source, pas seulement cette carte. <a href="${DOC_INSTALLATION}" target="_blank" rel="noopener">Installe-le</a>, puis lance <code>node la-carte/.cache/serveur.mjs</code> dans le projet.`,
 };
 function reglerAvertissement(code) {
   alerte.hidden = !code;
@@ -17,7 +17,7 @@ function reglerAvertissement(code) {
   if (!code) return;
   alerte.innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>${AVERTISSEMENTS[code] || h(code)}</span>${code === 'no_engine' ? '<button type="button" data-copycmd>Copier la commande</button>' : code === 'cli_tip' ? '<button type="button" data-dismiss>Compris</button>' : ''}`;
   alerte.querySelector('[data-dismiss]')?.addEventListener('click', () => reglerAvertissement(null));
-  alerte.querySelector('[data-copycmd]')?.addEventListener('click', (e) => { navigator.clipboard?.writeText('node la-carte/serveur.mjs'); e.target.textContent = 'Copié'; });
+  alerte.querySelector('[data-copycmd]')?.addEventListener('click', (e) => { navigator.clipboard?.writeText('node la-carte/.cache/serveur.mjs'); e.target.textContent = 'Copié'; });
 }
 function reglerMoteur(moteur, libelle, avertissement) {
   etatQuestion.engine = moteur;

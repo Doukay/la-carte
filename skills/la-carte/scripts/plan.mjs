@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// la-carte plan : transforme la-carte/plan.json (les fichiers, les adresses du serveur et les liens qu’aurait un système,
+// la-carte plan : transforme la-carte/sources/plan.json (les fichiers, les adresses du serveur et les liens qu’aurait un système,
 // prévus à partir d’un cahier des charges ou d’une description) en la-carte/.cache/analyse.json, de la même forme que
 // ce que analyser.mjs écrit pour du vrai code. construire.mjs le dessine ensuite comme un plan : la même carte, marquée « prévu ».
 //
@@ -7,29 +7,29 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { lireArguments, versPosix, dossierCarte, garderHorsGit } from './lib/commun.mjs';
+import { lireArguments, versPosix, dossierCarte, garderGeneresHorsGit } from './lib/commun.mjs';
 import { planVersAnalyse } from './lib/ebauche.mjs';
 
 const params = lireArguments(process.argv.slice(2));
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = dossierCarte(racine);
-const fichierPlan = path.resolve(params.plan || path.join(dossierSortie, 'plan.json'));
+const fichierPlan = path.resolve(params.plan || path.join(dossierSortie, 'sources', 'plan.json'));
 const fichierSortie = path.join(dossierSortie, '.cache', 'analyse.json');
 
 const echouer = (message) => { console.error(`✗ ${message}`); process.exit(1); };
 if (!fs.existsSync(fichierPlan)) echouer(`Aucun plan à ${fichierPlan}. Écris-le d’abord (voir references/plan.md).`);
 let plan;
-try { plan = JSON.parse(fs.readFileSync(fichierPlan, 'utf8')); } catch (e) { echouer(`plan.json n’est pas un JSON valide : ${e.message}`); }
+try { plan = JSON.parse(fs.readFileSync(fichierPlan, 'utf8')); } catch (e) { echouer(`sources/plan.json n’est pas un JSON valide : ${e.message}`); }
 
 const { scan: analyse, errors: erreurs, warnings: avertissements } = planVersAnalyse(plan, racine);
-// "services" et "data" désignent des parties de architecture.json : les vérifier dès maintenant si le fichier est écrit
-const fichierArchi = path.join(dossierSortie, 'architecture.json');
+// "services" et "data" désignent des parties de sources/architecture.json : les vérifier dès maintenant si le fichier est écrit
+const fichierArchi = path.join(dossierSortie, 'sources', 'architecture.json');
 if (analyse && fs.existsSync(fichierArchi)) {
   let ids = null;
   try { ids = (JSON.parse(fs.readFileSync(fichierArchi, 'utf8')).nodes || []).map((n) => n?.id).filter(Boolean); } catch {}
   if (ids) for (const l of analyse.nodeLinks) if (!ids.includes(l.to)) {
     const proche = ids.find((id) => id.toLowerCase().startsWith(l.to.toLowerCase().slice(0, 3)));
-    erreurs.push(`files "${l.from}".${l.kind === 'data' ? 'data' : 'services'} "${l.to}" n’est pas un identifiant de partie dans architecture.json${proche ? ` (tu voulais dire "${proche}" ?)` : ''}`);
+    erreurs.push(`files "${l.from}".${l.kind === 'data' ? 'data' : 'services'} "${l.to}" n’est pas un identifiant de partie dans sources/architecture.json${proche ? ` (tu voulais dire "${proche}" ?)` : ''}`);
   }
 }
 const sortie = [];
@@ -39,7 +39,7 @@ if (erreurs.length) { console.log(sortie.join('\n')); console.log('\nCorrige les
 
 fs.mkdirSync(path.dirname(fichierSortie), { recursive: true });
 fs.writeFileSync(fichierSortie, JSON.stringify(analyse));
-garderHorsGit(dossierSortie);
+garderGeneresHorsGit(dossierSortie);
 
 const infosPlan = analyse.ebauche;
 const parDossier = new Map();
@@ -51,5 +51,5 @@ const nbEcrans = analyse.files.filter((f) => f.ecrans).length;
 if (nbEcrans) sortie.push(`ÉCRANS  ${nbEcrans} prévu(s)`);
 if (infosPlan.questions.length) sortie.push(`QUESTIONS OUVERTES  ${infosPlan.questions.length} (affichées dans Santé tant qu’elles n’ont pas de réponse)`);
 sortie.push('');
-sortie.push(`✓ écrit ${versPosix(path.relative(racine, fichierSortie))}. Ensuite : lance construire.mjs${fs.existsSync(fichierArchi) ? '' : ' une fois la-carte/architecture.json écrit'}.`);
+sortie.push(`✓ écrit ${versPosix(path.relative(racine, fichierSortie))}. Ensuite : lance construire.mjs${fs.existsSync(fichierArchi) ? '' : ' une fois la-carte/sources/architecture.json écrit'}.`);
 console.log(sortie.join('\n'));

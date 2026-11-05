@@ -14,7 +14,7 @@
   const CONTROLE = PLAN ? 'la revue du plan' : 'le contrôle de santé';
 
   // ---------- « pas un problème » ----------
-  // Enregistré par serveur.mjs dans la-carte/rejets-sante.json (build le range dans graphe.sante.dismissed) ;
+  // Enregistré par serveur.mjs dans la-carte/sources/rejets-sante.json (build le range dans graphe.sante.dismissed) ;
   // une carte ouverte sans le serveur les garde dans ce navigateur. Un rejet couvre le problème tel qu'il était : il
   // réapparaît s'il devient plus ou moins grave ou s'il trouve quelque chose de nouveau dans un fichier (compté par fichier, donc une
   // modification plus haut ne le fait pas revenir ; c'est la même règle que rejetPour dans lib/sante.mjs).

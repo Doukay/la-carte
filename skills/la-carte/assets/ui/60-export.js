@@ -11,7 +11,7 @@
   const { h } = CARTE;
   const GRAPHE = CARTE.graphe;
   const EST_UN_PLAN = !!GRAPHE.meta.ebauche;
-  const COMMANDE = 'node la-carte/serveur.mjs --export';
+  const COMMANDE = 'node la-carte/.cache/serveur.mjs --export';
 
   const style = document.createElement('style');
   style.textContent = `

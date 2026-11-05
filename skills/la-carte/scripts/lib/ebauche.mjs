@@ -1,6 +1,6 @@
 // Plans : une carte (la-carte) d’un système pas encore construit, prévue à partir d’un cahier des charges (PRD) ou d’une description.
 //
-// planVersAnalyse(plan, root) — transforme la-carte/plan.json (les fichiers, adresses du serveur et appels prévus,
+// planVersAnalyse(plan, root) — transforme la-carte/sources/plan.json (les fichiers, adresses du serveur et appels prévus,
 //                          écrits par l’agent) en la même forme de analyse.json que analyser.mjs écrit pour du vrai code, de sorte que
 //                          construire.mjs et le visualiseur marchent sans changement. Renvoie { scan, errors, warnings }.
 // construireSantePlan(ctx) — appelée par construire.mjs à la place de construireSante pour un plan : une revue du plan
@@ -163,7 +163,7 @@ export function construireSantePlan({ graph: graphe, scan }) {
     items: ecrituresOuvertes.slice(0, 24).map(({ i }) => 'r:' + i),
     notes: Object.fromEntries(ecrituresOuvertes.slice(0, 24).map(({ i }) => ['r:' + i, 'Prévue ouverte à tout le monde, et elle modifie des données'])),
     locations: [],
-    fix: [`Revue du plan de la-carte/plan.json : ces adresses du serveur prévues modifient des données et sont marquées "access": "public" :`, ...ecrituresOuvertes.map(({ r }) => ligne(r)), ``, `Pour chacune, dis-moi en mots simples si un inconnu doit vraiment pouvoir l’utiliser. Quand ce n’est pas le cas, passe son accès à "signed-in" (avec "who" si seuls certains utilisateurs y ont droit) dans plan.json. Quand elle doit rester publique (connexion, inscription, commande en invité), renseigne "publicBecause" avec la raison, y compris ce qui limite les abus (limitation du nombre d’essais, CAPTCHA, confirmation par e-mail). Demande-moi si tu hésites.`, reconstruire].join('\n'),
+    fix: [`Revue du plan de la-carte/sources/plan.json : ces adresses du serveur prévues modifient des données et sont marquées "access": "public" :`, ...ecrituresOuvertes.map(({ r }) => ligne(r)), ``, `Pour chacune, dis-moi en mots simples si un inconnu doit vraiment pouvoir l’utiliser. Quand ce n’est pas le cas, passe son accès à "signed-in" (avec "who" si seuls certains utilisateurs y ont droit) dans sources/plan.json. Quand elle doit rester publique (connexion, inscription, commande en invité), renseigne "publicBecause" avec la raison, y compris ce qui limite les abus (limitation du nombre d’essais, CAPTCHA, confirmation par e-mail). Demande-moi si tu hésites.`, reconstruire].join('\n'),
   });
   const inconnus = routes.map((r, i) => ({ r, i })).filter(({ r }) => !accesDe(r));
   if (inconnus.length) problemes.push({
@@ -174,7 +174,7 @@ export function construireSantePlan({ graph: graphe, scan }) {
     items: inconnus.slice(0, 24).map(({ i }) => 'r:' + i),
     notes: Object.fromEntries(inconnus.slice(0, 24).map(({ i }) => ['r:' + i, 'Qui peut l’utiliser n’est pas décidé'])),
     locations: [],
-    fix: [`Revue du plan de la-carte/plan.json : ces adresses du serveur prévues n’ont pas de "access" défini :`, ...inconnus.map(({ r }) => ligne(r)), ``, `Pour chacune, choisis qui peut l’utiliser : "public" (tout le monde), "signed-in" (avec "who" quand seuls certains utilisateurs y ont droit, par exemple "les responsables de ce site"), "team" (seulement les personnes qui font tourner le service), "webhook" (le service d’une autre entreprise, qui doit prouver que c’est bien lui) ou "internal" (seulement nos propres services). Appuie-toi sur le PRD ; demande-moi quand le PRD ne le dit pas.`, reconstruire].join('\n'),
+    fix: [`Revue du plan de la-carte/sources/plan.json : ces adresses du serveur prévues n’ont pas de "access" défini :`, ...inconnus.map(({ r }) => ligne(r)), ``, `Pour chacune, choisis qui peut l’utiliser : "public" (tout le monde), "signed-in" (avec "who" quand seuls certains utilisateurs y ont droit, par exemple "les responsables de ce site"), "team" (seulement les personnes qui font tourner le service), "webhook" (le service d’une autre entreprise, qui doit prouver que c’est bien lui) ou "internal" (seulement nos propres services). Appuie-toi sur le PRD ; demande-moi quand le PRD ne le dit pas.`, reconstruire].join('\n'),
   });
 
   // ---------- questions ouvertes du PRD ----------
@@ -187,7 +187,7 @@ export function construireSantePlan({ graph: graphe, scan }) {
       detail: 'Le PRD ne répond pas à cette question, et la réponse change ce qui sera construit. Tranche avant de construire les parties concernées.',
       items: elements, notes: Object.fromEntries(elements.map((id) => [id, 'Dépend d’une question ouverte'])),
       locations: [],
-      fix: [`Question ouverte dans le plan (la-carte/plan.json) : ${q.question}`, ``, `Explique-moi les options en mots simples, avec ce que chacune changerait pour les parties concernées${q.about.length ? ` (${q.about.join(', ')})` : ''}, et recommande-m’en une. Une fois que j’ai décidé, mets à jour plan.json et architecture.json en conséquence et retire la question de la liste questions de plan.json.`, reconstruire].join('\n'),
+      fix: [`Question ouverte dans le plan (la-carte/sources/plan.json) : ${q.question}`, ``, `Explique-moi les options en mots simples, avec ce que chacune changerait pour les parties concernées${q.about.length ? ` (${q.about.join(', ')})` : ''}, et recommande-m’en une. Une fois que j’ai décidé, mets à jour sources/plan.json et sources/architecture.json en conséquence et retire la question de la liste questions de sources/plan.json.`, reconstruire].join('\n'),
     });
   });
 
@@ -202,7 +202,7 @@ export function construireSantePlan({ graph: graphe, scan }) {
     items: routesInutilisees.slice(0, 24).map(({ i }) => 'r:' + i),
     notes: Object.fromEntries(routesInutilisees.slice(0, 24).map(({ i }) => ['r:' + i, 'Aucun appelant prévu'])),
     locations: [],
-    fix: [`Revue du plan de la-carte/plan.json : rien dans le plan n’appelle ces adresses du serveur :`, ...routesInutilisees.map(({ r }) => ligne(r)), ``, `Pour chacune, trouve quel écran ou service prévu doit l’appeler et ajoute-la aux "calls" de ce fichier, ou dis-moi qu’elle est inutile et retire-la.`, reconstruire].join('\n'),
+    fix: [`Revue du plan de la-carte/sources/plan.json : rien dans le plan n’appelle ces adresses du serveur :`, ...routesInutilisees.map(({ r }) => ligne(r)), ``, `Pour chacune, trouve quel écran ou service prévu doit l’appeler et ajoute-la aux "calls" de ce fichier, ou dis-moi qu’elle est inutile et retire-la.`, reconstruire].join('\n'),
   });
   const relies = new Set();
   for (const l of graphe.links) { relies.add(l.a); relies.add(l.b); }
@@ -217,7 +217,7 @@ export function construireSantePlan({ graph: graphe, scan }) {
     items: isoles.slice(0, 24).map((f) => 'f:' + f.p),
     notes: Object.fromEntries(isoles.slice(0, 24).map((f) => ['f:' + f.p, 'N’est relié à rien dans le plan'])),
     locations: [],
-    fix: [`Revue du plan de la-carte/plan.json : ces fichiers prévus ne sont reliés à rien :`, ...isoles.map((f) => `- ${f.p}`), ``, `Ajoute les entrées "uses", "calls", "services" ou "data" qui manquent, ou retire les fichiers inutiles.`, reconstruire].join('\n'),
+    fix: [`Revue du plan de la-carte/sources/plan.json : ces fichiers prévus ne sont reliés à rien :`, ...isoles.map((f) => `- ${f.p}`), ``, `Ajoute les entrées "uses", "calls", "services" ou "data" qui manquent, ou retire les fichiers inutiles.`, reconstruire].join('\n'),
   });
 
   const ORDRE = { high: 0, medium: 1, low: 2 };

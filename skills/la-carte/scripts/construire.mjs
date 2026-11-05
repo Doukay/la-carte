@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// constructeur la carte : vérifie la-carte/architecture.json par rapport à l’analyse, affecte chaque fichier à une
-// partie, rattache les liens d’import, d’appel au serveur et vers l’extérieur, puis écrit la-carte/graphe.json + la-carte/index.html.
+// constructeur la carte : vérifie la-carte/sources/architecture.json par rapport à l’analyse, affecte chaque fichier à une
+// partie, rattache les liens d’import, d’appel au serveur et vers l’extérieur, puis écrit la-carte/.cache/graphe.json + la-carte/index.html.
 //
 // usage : node construire.mjs [racine] [--arch <fichier>] [--scan <fichier>] [--out <dossier>] [--check]
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderHorsGit, ICONES } from './lib/commun.mjs';
+import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderGeneresHorsGit, avertissementDocker, ICONES } from './lib/commun.mjs';
 import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/noms.mjs';
 import { assemblerPage } from './lib/page.mjs';
 import { construireSante, avecRejets, rejetPour } from './lib/sante.mjs';
@@ -21,7 +21,7 @@ const params = lireArguments(process.argv.slice(2));
 const agent = detecterAgent(params);
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = path.resolve(params.out || dossierCarte(racine));
-const fichierArchi = path.resolve(params.arch || path.join(dossierSortie, 'architecture.json'));
+const fichierArchi = path.resolve(params.arch || path.join(dossierSortie, 'sources', 'architecture.json'));
 const fichierAnalyse = path.resolve(params.scan || path.join(dossierSortie, '.cache', 'analyse.json'));
 
 export const TYPES_NOEUDS = ['ui', 'service', 'worker', 'library', 'feature', 'data', 'config', 'test', 'script', 'infra', 'external'];
@@ -37,7 +37,7 @@ if (!fs.existsSync(fichierAnalyse)) echouer(`Aucune analyse à ${fichierAnalyse}
 if (!fs.existsSync(fichierArchi)) echouer(`Aucun fichier d’architecture à ${fichierArchi}. Écris-le d’abord (voir references/schema.md).`);
 const analyse = JSON.parse(fs.readFileSync(fichierAnalyse, 'utf8'));
 let archi;
-try { archi = JSON.parse(fs.readFileSync(fichierArchi, 'utf8')); } catch (e) { echouer(`architecture.json n’est pas un JSON valide : ${e.message}`); }
+try { archi = JSON.parse(fs.readFileSync(fichierArchi, 'utf8')); } catch (e) { echouer(`sources/architecture.json n’est pas un JSON valide : ${e.message}`); }
 
 // ---------- vérifier la forme ----------
 const estTexte = (v) => typeof v === 'string' && v.length > 0;
@@ -194,10 +194,10 @@ for (const h of analyse.hosts) {
 for (const assocPaquet of assocPaquets) if (!assocPaquet.hits) signalerAvertissement(`partie "${assocPaquet.id}" : ses packages ne correspondent à rien d’importé. Connus : ${idsExterieurs.slice(0, 8).join(', ')}…`);
 for (const assocHote of assocHotes) if (!assocHote.hits) signalerAvertissement(`partie "${assocHote.id}" : ses hosts ne correspondent à aucun hôte appelé par le code`);
 
-// liens prévus par un plan, des fichiers vers les services extérieurs et les stockages de données (« services » et « data » de plan.json)
+// liens prévus par un plan, des fichiers vers les services extérieurs et les stockages de données (« services » et « data » de sources/plan.json)
 for (const e of analyse.nodeLinks || []) {
   if (!ensembleInclus.has(e.from)) continue;
-  if (!parId.has(e.to)) { signalerErreur(`plan.json : "${e.from}" nomme "${e.to}" dans ses ${e.kind === 'data' ? 'data' : 'services'}, qui n’est pas un identifiant de partie dans architecture.json${voulaisTuDire(e.to, ids)}`); continue; }
+  if (!parId.has(e.to)) { signalerErreur(`sources/plan.json : "${e.from}" nomme "${e.to}" dans ses ${e.kind === 'data' ? 'data' : 'services'}, qui n’est pas un identifiant de partie dans sources/architecture.json${voulaisTuDire(e.to, ids)}`); continue; }
   ajouterLien(`f:${e.from}`, `n:${e.to}`, TYPES_LIENS.includes(e.kind) ? e.kind : 'call', { label: e.label });
 }
 
@@ -220,10 +220,10 @@ parcoursArchi.forEach((parc, i) => {
 });
 // Parcours demandés depuis la carte (enregistrés par serveur.mjs). Les étapes utilisent des références stables —
 // "route:METHOD /path" et "sym:<fichier>#<nom>" — pour survivre aux reconstructions ; les étapes périmées sont retirées.
-const fichierPerso = path.join(dossierSortie, 'parcours-perso.json');
+const fichierPerso = path.join(dossierSortie, 'sources', 'parcours-perso.json');
 if (fs.existsSync(fichierPerso)) {
   let perso = [];
-  try { perso = JSON.parse(fs.readFileSync(fichierPerso, 'utf8')).parcours || []; } catch (e) { signalerAvertissement(`parcours-perso.json n’est pas un JSON valide : ${e.message}`); }
+  try { perso = JSON.parse(fs.readFileSync(fichierPerso, 'utf8')).parcours || []; } catch (e) { signalerAvertissement(`sources/parcours-perso.json n’est pas un JSON valide : ${e.message}`); }
   const routeParCle = new Map(routesRetenues.map((r, i) => [cleRoute(r), i]));
   const resoudreEtape = (reference) => {
     if (typeof reference !== 'string') return null;
@@ -243,9 +243,9 @@ if (fs.existsSync(fichierPerso)) {
     retirees += (parc.steps || []).length - etapes.length;
     if (etapes.length >= 2 && estTexte(parc.id) && !parcoursSortie.some((x) => x.id === parc.id)) parcoursSortie.push({ id: parc.id, title: parc.title || 'Parcours', description: parc.description || '', steps: etapes, custom: true });
   }
-  if (retirees) signalerAvertissement(`${retirees} étape(s) de parcours-perso.json pointent vers du code qui n’existe plus et ont été retirées.`);
+  if (retirees) signalerAvertissement(`${retirees} étape(s) de sources/parcours-perso.json pointent vers du code qui n’existe plus et ont été retirées.`);
 }
-// Visite guidée « Commencer ici » : 3 à 8 étapes commentées (identifiant de partie ou chemin de fichier), écrites par Claude dans architecture.json
+// Visite guidée « Commencer ici » : 3 à 8 étapes commentées (identifiant de partie ou chemin de fichier), écrites par Claude dans sources/architecture.json
 const visiteSortie = [];
 if (archi.visite !== undefined) {
   if (!Array.isArray(archi.visite)) signalerErreur('visite doit être une liste de { node, title, note }');
@@ -255,12 +255,12 @@ if (archi.visite !== undefined) {
   });
 }
 // « Travail récent » : ce que Claude vient de changer, tâche par tâche, en regard de ce que la personne avait demandé
-// (la-carte/travail-recent.json, réécrit à chaque création ou mise à jour). Une référence périmée donne un avertissement, jamais une erreur.
+// (la-carte/.cache/travail-recent.json, réécrit à chaque création ou mise à jour). Une référence périmée donne un avertissement, jamais une erreur.
 let recentSortie = null;
-const fichierRecent = path.join(dossierSortie, 'travail-recent.json');
+const fichierRecent = path.join(dossierSortie, '.cache', 'travail-recent.json');
 if (fs.existsSync(fichierRecent)) {
   let travailRecent = null;
-  try { travailRecent = JSON.parse(fs.readFileSync(fichierRecent, 'utf8')); } catch (e) { signalerAvertissement(`travail-recent.json n’est pas un JSON valide : ${e.message}`); }
+  try { travailRecent = JSON.parse(fs.readFileSync(fichierRecent, 'utf8')); } catch (e) { signalerAvertissement(`.cache/travail-recent.json n’est pas un JSON valide : ${e.message}`); }
   const indexRoutes = new Map(routesRetenues.map((r, i) => [cleRoute(r), i]));
   const resoudreRecent = (reference) => {
     if (!estTexte(reference)) return null;
@@ -277,7 +277,7 @@ if (fs.existsSync(fichierRecent)) {
   else if (travailRecent) {
     const taches = [], elements = [], manquants = [];
     travailRecent.tasks.forEach((t, indexTache) => {
-      if (!estTexte(t?.title)) return signalerAvertissement(`travail-recent.json tasks[${indexTache}] a besoin d’un title`);
+      if (!estTexte(t?.title)) return signalerAvertissement(`.cache/travail-recent.json tasks[${indexTache}] a besoin d’un title`);
       taches.push({ title: t.title, request: estTexte(t.request) ? t.request : '', summary: estTexte(t.summary) ? t.summary : '', ...(estTexte(t.status) ? { status: t.status } : {}) });
       for (const element of Array.isArray(t.items) ? t.items : []) {
         const id = resoudreRecent(element?.ref);
@@ -285,7 +285,7 @@ if (fs.existsSync(fichierRecent)) {
         elements.push({ id, task: taches.length - 1, change: element.change === 'new' ? 'new' : 'changed', note: estTexte(element.note) ? element.note : '' });
       }
     });
-    if (manquants.length) signalerAvertissement(`travail-recent.json : ${manquants.length} référence(s) ne sont pas sur la carte et ont été retirées (utilise un chemin de fichier, un identifiant de partie ou "METHODE /chemin") : ${manquants.slice(0, 5).map(String).join(', ')}${manquants.length > 5 ? '…' : ''}`);
+    if (manquants.length) signalerAvertissement(`.cache/travail-recent.json : ${manquants.length} référence(s) ne sont pas sur la carte et ont été retirées (utilise un chemin de fichier, un identifiant de partie ou "METHODE /chemin") : ${manquants.slice(0, 5).map(String).join(', ')}${manquants.length > 5 ? '…' : ''}`);
     recentSortie = { updatedAt: estTexte(travailRecent.updatedAt) ? travailRecent.updatedAt : fs.statSync(fichierRecent).mtime.toISOString(), tasks: taches, items: elements };
   }
 }
@@ -297,8 +297,8 @@ annotations.forEach((a, i) => {
 });
 for (const pointEntree of archi.projet?.entrypoints || []) if (!ensembleInclus.has(pointEntree)) signalerAvertissement(`projet.entrypoints "${pointEntree}" n’est pas un fichier inclus`);
 
-// ---------- noms et descriptions (la-carte/descriptions/*.json) ----------
-const dossierDescriptions = path.join(dossierSortie, 'descriptions');
+// ---------- noms et descriptions (la-carte/sources/descriptions/*.json) ----------
+const dossierDescriptions = path.join(dossierSortie, 'sources', 'descriptions');
 const descFichiers = new Map(), descRoutes = new Map();
 const clesRoutes = new Set(routesRetenues.map(cleRoute));
 let fichiersPerimes = 0, routesPerimees = 0;
@@ -306,20 +306,20 @@ const exemplesPerimes = [];
 if (fs.existsSync(dossierDescriptions)) {
   for (const nom of fs.readdirSync(dossierDescriptions).filter((n) => n.endsWith('.json')).sort()) {
     let d;
-    try { d = JSON.parse(fs.readFileSync(path.join(dossierDescriptions, nom), 'utf8')); } catch (e) { signalerErreur(`descriptions/${nom} n’est pas un JSON valide : ${e.message}`); continue; }
+    try { d = JSON.parse(fs.readFileSync(path.join(dossierDescriptions, nom), 'utf8')); } catch (e) { signalerErreur(`sources/descriptions/${nom} n’est pas un JSON valide : ${e.message}`); continue; }
     for (const [p, v] of Object.entries(d.files || {})) {
-      if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: files["${p}"] doit être { name, description }`); continue; }
+      if (!v || typeof v !== 'object') { signalerErreur(`sources/descriptions/${nom}: files["${p}"] doit être { name, description }`); continue; }
       if (!ensembleInclus.has(p)) { fichiersPerimes++; if (exemplesPerimes.length < 3) exemplesPerimes.push(p); continue; }
       descFichiers.set(p, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, icon: ICONES.includes(v.icon) ? v.icon : null, iconBrute: v.icon, review: estTexte(v.review) ? v.review : null });
     }
     for (const [k, v] of Object.entries(d.routes || {})) {
-      if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: routes["${k}"] doit être { name, description }`); continue; }
+      if (!v || typeof v !== 'object') { signalerErreur(`sources/descriptions/${nom}: routes["${k}"] doit être { name, description }`); continue; }
       if (!clesRoutes.has(k)) { routesPerimees++; continue; }
       descRoutes.set(k, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, review: estTexte(v.review) ? v.review : null });
     }
   }
 }
-if (fichiersPerimes) signalerAvertissement(`${fichiersPerimes} fichier(s) décrit(s) n’existent plus ou ne sont pas inclus (par exemple ${exemplesPerimes.join(', ')}). Retire-les de descriptions/.`);
+if (fichiersPerimes) signalerAvertissement(`${fichiersPerimes} fichier(s) décrit(s) n’existent plus ou ne sont pas inclus (par exemple ${exemplesPerimes.join(', ')}). Retire-les de sources/descriptions/.`);
 if (routesPerimees) signalerAvertissement(`${routesPerimees} route(s) décrite(s) ne correspondent plus à une route de l’analyse ; retire-les ou change leur clé.`);
 
 // ---------- statistiques ----------
@@ -339,7 +339,7 @@ for (const f of fichiersInclus) {
 const pourcent = fichiersInclus.length ? (nonAffectes.length / fichiersInclus.length) * 100 : 0;
 const rapport = [];
 if (erreurs.length) {
-  rapport.push(`✗ ${erreurs.length} erreur(s) dans ${path.relative(racine, fichierArchi)}${analyse.ebauche ? ' ou plan.json' : ''} :`);
+  rapport.push(`✗ ${erreurs.length} erreur(s) dans ${path.relative(racine, fichierArchi)}${analyse.ebauche ? ' ou sources/plan.json' : ''} :`);
   for (const e of erreurs) rapport.push(`  - ${e}`);
 }
 const iconesInconnues = [...noeuds.map((n) => n?.icon), ...[...descFichiers.values()].map((d) => d.iconBrute)].filter((x) => x && !ICONES.includes(x));
@@ -374,7 +374,7 @@ if (fichiersDecrits < fichiersInclus.length || routesDecrites < routesRetenues.l
 if (erreurs.length) { console.log(rapport.join('\n')); console.log('\nCorrige les erreurs ci-dessus et relance build.'); process.exit(1); }
 if (params.check) { console.log(rapport.join('\n')); process.exit(0); }
 
-// ---------- écrire graphe.json et index.html ----------
+// ---------- écrire .cache/graphe.json et index.html ----------
 const graphe = {
   schema: 'la-carte/graph@1',
   meta: {
@@ -391,7 +391,7 @@ const graphe = {
       tags: n.tags || [], paths: n.paths || [], packages: n.packages || [], hosts: n.hosts || [],
       stats: { ...statistiques.get(n.id), repos: [...statistiques.get(n.id).repos] },
     })),
-    ...(nonAffectes.length ? [{ id: 'unassigned', parent: null, label: 'Non affectés', kind: 'misc', summary: 'Fichiers qu’aucune partie ne revendique. Ajoute des motifs dans architecture.json pour les placer.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { ...statistiques.get('unassigned'), repos: [...statistiques.get('unassigned').repos] } }] : []),
+    ...(nonAffectes.length ? [{ id: 'unassigned', parent: null, label: 'Non affectés', kind: 'misc', summary: 'Fichiers qu’aucune partie ne revendique. Ajoute des motifs dans sources/architecture.json pour les placer.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { ...statistiques.get('unassigned'), repos: [...statistiques.get('unassigned').repos] } }] : []),
   ],
   files: fichiersInclus.map((f) => {
     const d = descFichiers.get(f.path);
@@ -421,13 +421,14 @@ if (!analyse.ebauche) try { graphe.sante = construireSante({ graph: graphe, scan
 try { graphe.ecrans = construireEcrans({ graph: graphe, scan: analyse, arch: archi, root: racine }); } catch (e) { signalerAvertissement(`la détection des écrans a échoué : ${e.message}`); graphe.ecrans = []; }
 if (analyse.ebauche) try { graphe.sante = construireSantePlan({ graph: graphe, scan: analyse }); } catch (e) { signalerAvertissement(`la revue du plan a échoué : ${e.message}`); graphe.sante = { problemes: [] }; }
 // les problèmes marqués « Pas un problème » sur la carte (enregistrés par serveur.mjs) restent listés, à part, et sortent des totaux
-const fichierRejets = path.join(dossierSortie, 'rejets-sante.json');
+const fichierRejets = path.join(dossierSortie, 'sources', 'rejets-sante.json');
 if (graphe.sante?.problemes && fs.existsSync(fichierRejets)) {
-  try { graphe.sante = avecRejets(graphe.sante, JSON.parse(fs.readFileSync(fichierRejets, 'utf8')).dismissed); } catch (e) { signalerAvertissement(`rejets-sante.json n’est pas un JSON valide : ${e.message}`); }
+  try { graphe.sante = avecRejets(graphe.sante, JSON.parse(fs.readFileSync(fichierRejets, 'utf8')).dismissed); } catch (e) { signalerAvertissement(`sources/rejets-sante.json n’est pas un JSON valide : ${e.message}`); }
 }
 fs.mkdirSync(dossierSortie, { recursive: true });
-const avertissementSuivi = garderHorsGit(dossierSortie);
-fs.writeFileSync(path.join(dossierSortie, 'graphe.json'), JSON.stringify(graphe, null, 0));
+const avertissementSuivi = garderGeneresHorsGit(dossierSortie);
+const alerteDocker = avertissementDocker(racine);
+fs.writeFileSync(path.join(dossierSortie, '.cache', 'graphe.json'), JSON.stringify(graphe, null, 0));
 
 const gabarit = assemblerPage(DOSSIER_SKILL);
 // Le moteur de mise en page (elkjs 0.9.3) et les polices (Inter, JetBrains Mono) sont fournis dans assets/vendor/ et
@@ -458,10 +459,10 @@ const santePartagee = graphe.sante?.dismissed ? { ...graphe.sante, dismissed: gr
 if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null, agent: 'claude' } }));
 // Outils autonomes à côté de la carte : poser des questions via la CLI Claude Code ou Codex (serveur.mjs)
 // et les recherches dans le graphe qu’il leur confie (requete.mjs). Ils n’ont besoin que de Node, pas de ce skill.
-fs.writeFileSync(path.join(dossierSortie, 'requete.mjs'), `${codeRequetes}
+fs.writeFileSync(path.join(dossierSortie, '.cache', 'requete.mjs'), `${codeRequetes}
 // ---- cli ----
 ${fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'requete-cli.mjs'), 'utf8')}`);
-fs.copyFileSync(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs'), path.join(dossierSortie, 'serveur.mjs'));
+fs.copyFileSync(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs'), path.join(dossierSortie, '.cache', 'serveur.mjs'));
 // un plan peut être modifié depuis la carte : serveur.mjs le redessine avec plan.mjs et construire.mjs de ce skill
 if (analyse.ebauche) { fs.mkdirSync(path.join(dossierSortie, '.cache'), { recursive: true }); fs.writeFileSync(path.join(dossierSortie, '.cache', 'skill.json'), JSON.stringify({ dir: DOSSIER_SKILL })); }
 function echapperHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
@@ -474,13 +475,14 @@ if (resumeSante && (resumeSante.high || resumeSante.medium || resumeSante.low)) 
 if (graphe.ecrans?.length) rapport.push(`ÉCRANS  ${graphe.ecrans.length} détecté(s)`);
 rapport.push(graphe.recent
   ? `TRAVAIL RÉCENT  ${graphe.recent.items.length} bloc(s) mis en avant sur ${graphe.recent.tasks.length} tâche(s)`
-  : `TRAVAIL RÉCENT  rien de mis en avant${fs.existsSync(fichierRecent) ? '' : ' (pas de travail-recent.json)'}`);
+  : `TRAVAIL RÉCENT  rien de mis en avant${fs.existsSync(fichierRecent) ? '' : ' (pas de .cache/travail-recent.json)'}`);
 // orienter les futures sessions Claude Code de ce projet vers la carte. Codex n’a pas d’équivalent personnel
 // hors Git (AGENTS.md est partagé avec l’équipe) : une carte construite par Codex laisse donc les notes du projet tranquilles.
 if (agent === 'codex') rapport.push('AGENT  Codex : les questions posées sur la carte passent par Codex');
-if (analyse.ebauche) rapport.push('PLAN  prévu, pas encore construit : dessiné d’après la-carte/plan.json');
-rapport.push(avertissementSuivi ? `GIT  ! ${avertissementSuivi}` : 'GIT  la-carte/ reste hors de git (le dossier s’ignore lui-même)');
+if (analyse.ebauche) rapport.push('PLAN  prévu, pas encore construit : dessiné d’après la-carte/sources/plan.json');
+rapport.push(avertissementSuivi ? `GIT  ! ${avertissementSuivi}` : 'GIT  seul la-carte/sources/ est à enregistrer avec le projet, le reste s’ignore tout seul');
+if (alerteDocker) rapport.push(`DOCKER  ! ${alerteDocker}`);
 rapport.push('');
-rapport.push(`✓ écrit ${path.relative(racine, path.join(dossierSortie, 'index.html'))} (${Math.round(html.length / 1024)} Ko) et graphe.json`);
+rapport.push(`✓ écrit ${path.relative(racine, path.join(dossierSortie, 'index.html'))} (${Math.round(html.length / 1024)} Ko) et .cache/graphe.json`);
 if (pourcent > 10) rapport.push(`  Non affectés : ${pourcent.toFixed(0)} %. Ajoute des parties ou des motifs pour les dossiers ci-dessus (ou mets-les dans "ignore") puis relance build.`);
 console.log(rapport.join('\n'));

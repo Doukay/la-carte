@@ -49,18 +49,18 @@ test('la carte ne fait aucun appel extérieur : scripts, styles et polices sont 
   assert.match(html, /@font-face\{font-family:"Inter"/);
 });
 
-test('rien de ce que la carte fabrique n’est versé dans git : la-carte/ s’ignore lui-même', () => {
-  assert.equal(fs.readFileSync(path.join(racine, 'la-carte', '.gitignore'), 'utf8').trim().split('\n').pop(), '*');
+test('seul sources/ reste à enregistrer dans git : le reste de la-carte/ s’ignore lui-même', () => {
+  assert.deepEqual(fs.readFileSync(path.join(racine, 'la-carte', '.gitignore'), 'utf8').trim().split('\n').slice(1), ['*', '!.gitignore', '!sources/', '!sources/**']);
 });
 
 test('requete.mjs trouve des éléments de la carte avec des mots simples', () => {
-  const trouve = JSON.parse(execFileSync(process.execPath, [path.join(racine, 'la-carte', 'requete.mjs'), 'find', 'refund'], { encoding: 'utf8' }));
+  const trouve = JSON.parse(execFileSync(process.execPath, [path.join(racine, 'la-carte', '.cache', 'requete.mjs'), 'find', 'refund'], { encoding: 'utf8' }));
   const ids = JSON.stringify(trouve);
   assert.ok(ids.includes('r:'), `une adresse du serveur est trouvée : ${ids.slice(0, 300)}`);
 });
 
 test('une mise à jour reporte les descriptions sur un fichier renommé', () => {
-  const fichierDescriptions = path.join(racine, 'la-carte', 'descriptions', 'api.json');
+  const fichierDescriptions = path.join(racine, 'la-carte', 'sources', 'descriptions', 'api.json');
   const description = { name: 'Customer notes', description: 'Saves a note a customer leaves.' };
   ecrireJson(fichierDescriptions, { files: { 'shop-api/routes/notes.js': description } });
   fs.renameSync(path.join(racine, 'shop-api/routes/notes.js'), path.join(racine, 'shop-api/routes/feedback.js'));

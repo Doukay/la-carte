@@ -22,7 +22,7 @@ test('une partie garde l’icône choisie, une icône inconnue est écartée ave
   const racine = appliBoutique();
   try {
     executer('analyser.mjs', racine);
-    const fichier = path.join(racine, 'la-carte', 'architecture.json');
+    const fichier = path.join(racine, 'la-carte', 'sources', 'architecture.json');
     const arch = lireJson(fichier);
     arch.nodes[0].icon = 'panier';
     arch.nodes[1].icon = 'n-existe-pas';

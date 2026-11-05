@@ -33,8 +33,8 @@ Ce que Claude Code et Codex gardent de leur côté (historique des conversations
 - Il ne répond qu'à `127.0.0.1` et à `localhost` sur son propre port, donc un site web qui fait pointer son propre nom de domaine vers ton ordinateur (le « rebond DNS ») ne peut ni charger la carte ni son jeton.
 - Avec Claude Code, les questions lancent Claude avec des outils **en lecture seule** : lire des fichiers, chercher, et le script de recherche de la carte. Il ne peut ni modifier de fichiers ni lancer d'autres commandes.
 - Avec Codex, les questions tournent dans le bac à sable **en lecture seule** de Codex : il peut lire et chercher, mais pas écrire de fichiers.
-- Sur un plan (une carte prévue à partir d'un cahier des charges), les demandes **Modifier** tournent de la même façon, en lecture seule. L'agent répond avec le plan mis à jour, et c'est le serveur lui-même qui écrit uniquement `la-carte/plan.json`, `la-carte/architecture.json` et `la-carte/travail-recent.json`, après les avoir vérifiés et gardé les anciennes copies pour Annuler.
-- Il s'arrête tout seul deux heures après la fermeture du dernier onglet, et `node la-carte/serveur.mjs --stop` l'arrête tout de suite.
+- Sur un plan (une carte prévue à partir d'un cahier des charges), les demandes **Modifier** tournent de la même façon, en lecture seule. L'agent répond avec le plan mis à jour, et c'est le serveur lui-même qui écrit uniquement `la-carte/sources/plan.json`, `la-carte/sources/architecture.json` et `la-carte/.cache/travail-recent.json`, après les avoir vérifiés et gardé les anciennes copies pour Annuler.
+- Il s'arrête tout seul deux heures après la fermeture du dernier onglet, et `node la-carte/.cache/serveur.mjs --stop` l'arrête tout de suite.
 
 Limite honnête : n'importe quel programme qui tourne sur ton ordinateur avec ton compte peut aussi se connecter à `127.0.0.1`. La protection par jeton et par nom d'hôte vise les pages web et les autres machines, pas un programme malveillant déjà installé chez toi.
 

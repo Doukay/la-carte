@@ -2,16 +2,16 @@
 
 Chaque bloc de la carte montre un **nom** et une **description**. Le chemin du fichier et celui de l'adresse du serveur restent affichés, mais en petit dessous. Le but : qu'une personne qui n'a jamais vu le code puisse lire le tableau comme un schéma du système.
 
-Ce guide couvre les noms et les descriptions de `descriptions/*.json`, ainsi que les `label` et `summary` des nœuds et le `projet.summary` d'`architecture.json`.
+Ce guide couvre les noms et les descriptions de `sources/descriptions/*.json`, ainsi que les `label` et `summary` des nœuds et le `projet.summary` d'`sources/architecture.json`.
 
 ## La langue : français, langage simple, tutoiement
 
 **Tout ce qui sera affiché s'écrit en français, en langage simple, en tutoyant la personne**, même si le code, ses commentaires et ses noms de fichiers sont en anglais. C'est vrai pour :
 
-- `architecture.json` : `projet.summary`, `label`, `summary`, `details` des nœuds, `description` et `label` des liens, notes des annotations, titres et notes des `parcours` et de la `visite` ;
-- `descriptions/*.json` : tous les `name` et `description` ;
-- `travail-recent.json` : `title`, `request`, `summary`, `note` ;
-- `plan.json` : `name`, `description`, `assumptions`, `questions` ;
+- `sources/architecture.json` : `projet.summary`, `label`, `summary`, `details` des nœuds, `description` et `label` des liens, notes des annotations, titres et notes des `parcours` et de la `visite` ;
+- `sources/descriptions/*.json` : tous les `name` et `description` ;
+- `.cache/travail-recent.json` : `title`, `request`, `summary`, `note` ;
+- `sources/plan.json` : `name`, `description`, `assumptions`, `questions` ;
 - le rapport que tu fais à la personne à la fin.
 
 Une description décrit en général la chose et ne s'adresse pas à la personne ; mais dès que tu t'adresses à elle (rapport, notes d'une visite, avertissements), tu la tutoies : « Tu peux modifier ces fichiers », « Ici tu retrouves… ».
@@ -22,7 +22,7 @@ Les clés du JSON ne bougent jamais (voir plus bas).
 
 ## Pour qui tu écris : `audience`
 
-`architecture.json` a un `"audience"` facultatif au premier niveau. L'en-tête de chaque fiche de travail le rappelle.
+`sources/architecture.json` a un `"audience"` facultatif au premier niveau. L'en-tête de chaque fiche de travail le rappelle.
 
 - **`"everyone"` (par défaut).** Suppose que la personne qui lit est la propriétaire de l'appli, pas une ingénieure. Souvent elle l'a construite avec une IA et ne sait pas comment ça marche à l'intérieur. Écris en **langage simple** : ce que la chose fait pour l'activité ou pour ses utilisateurs, avec des mots de tous les jours. Reste précis et exact. Voir [Langage simple](#langage-simple) plus bas.
 - **`"developers"`.** La personne qui lit est un ingénieur qui arrive dans le code. Nommer les frameworks, les patrons et les mécanismes est permis et souvent utile (« blueprint Flask », « modèle SQLAlchemy », « consommateur Pub/Sub »). La langue reste le français.
@@ -31,7 +31,7 @@ N'utilise `"developers"` que si la personne le demande, ou si la carte est visib
 
 ## Où ça va
 
-`decrire.mjs` écrit une fiche de travail par module (`la-carte/.cache/worksheets/<clé>.md`) et un squelette correspondant (`la-carte/descriptions/<clé>.json`) :
+`decrire.mjs` écrit une fiche de travail par module (`la-carte/.cache/worksheets/<clé>.md`) et un squelette correspondant (`la-carte/sources/descriptions/<clé>.json`) :
 
 ```json
 {
@@ -131,7 +131,7 @@ Le public par défaut est `"everyone"`. Écris comme si tu expliquais l'appli à
 
 Les ✗ montrent des textes calqués sur l'anglais et le jargon du code ; les ✓ montrent ce qu'il faut écrire.
 
-**Modules et parties (`summary` d'`architecture.json`)**
+**Modules et parties (`summary` d'`sources/architecture.json`)**
 
 | | |
 |---|---|
@@ -142,7 +142,7 @@ Les ✗ montrent des textes calqués sur l'anglais et le jargon du code ; les �
 | ✗ | « Workers Cloud Run longue durée : inventaire en masse, pricing, relances de paniers abandonnés, réconciliation Stripe. » |
 | ✓ | « Des tâches qui tournent seules en arrière-plan ou à heure fixe : grosses mises à jour de stock, changements de prix, e-mails de paniers abandonnés et contrôle de nuit des versements Stripe. » |
 
-**Fichiers (`descriptions/*.json`)**
+**Fichiers (`sources/descriptions/*.json`)**
 
 | | |
 |---|---|

@@ -1,4 +1,4 @@
-// Travail récent : ce que Claude vient de changer (graphe.recent, tiré de la-carte/travail-recent.json), mis en regard de
+// Travail récent : ce que Claude vient de changer (graphe.recent, tiré de la-carte/.cache/travail-recent.json), mis en regard de
 // ce que la personne avait demandé. Les blocs portent l'étiquette verte et la note au survol (visualiseur de base) ; ce fichier ajoute le
 // bouton d'en-tête qui range les blocs modifiés sur un seul tableau, et les sections du panneau. Ne parle au visualiseur que
 // par window.LaCarte.
