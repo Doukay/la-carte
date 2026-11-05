@@ -23,14 +23,17 @@ const fichierArchi = path.join(dossier, 'sources', 'architecture.json');
 const lancer = (script, ...reste) => execFileSync(process.execPath, [path.join(ICI, script), racine, ...reste], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
 try {
-  if (fs.existsSync(fichierArchi)) lancer('actualiser.mjs');
+  // actualiser.mjs a besoin d’une construction précédente ; des sources recopiées d’ailleurs n’en ont pas encore
+  if (fs.existsSync(fichierArchi) && fs.existsSync(path.join(dossier, '.cache', 'graphe.json'))) lancer('actualiser.mjs');
   else {
     lancer('analyser.mjs');
-    const analyse = JSON.parse(fs.readFileSync(path.join(dossier, '.cache', 'analyse.json'), 'utf8'));
-    const nbCode = analyse.files.filter((f) => f.category === 'code').length;
-    if (nbCode < (Number(params['min-code']) || 3)) { console.log(`Pas de carte : ${nbCode} fichier(s) de code seulement.`); process.exit(3); }
-    fs.mkdirSync(path.dirname(fichierArchi), { recursive: true });
-    fs.writeFileSync(fichierArchi, JSON.stringify(architectureAuto(analyse, analyse.rootName || path.basename(racine)), null, 2) + '\n');
+    if (!fs.existsSync(fichierArchi)) {
+      const analyse = JSON.parse(fs.readFileSync(path.join(dossier, '.cache', 'analyse.json'), 'utf8'));
+      const nbCode = analyse.files.filter((f) => f.category === 'code').length;
+      if (nbCode < (Number(params['min-code']) || 3)) { console.log(`Pas de carte : ${nbCode} fichier(s) de code seulement.`); process.exit(3); }
+      fs.mkdirSync(path.dirname(fichierArchi), { recursive: true });
+      fs.writeFileSync(fichierArchi, JSON.stringify(architectureAuto(analyse, analyse.rootName || path.basename(racine)), null, 2) + '\n');
+    }
     lancer('construire.mjs');
   }
   if (!fs.existsSync(path.join(dossier, '.cache', 'graphe.json'))) throw new Error('la construction n’a pas écrit .cache/graphe.json');

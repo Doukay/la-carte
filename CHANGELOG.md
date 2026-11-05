@@ -2,6 +2,10 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.7 (2026-11-05)
+
+- **Mise à jour sans Claude** : une carte décrite recopiée dans un nouveau dossier (sans construction précédente) est maintenant construite la première fois, au lieu de rester vide.
+
 ## 0.6.3-fr.6 (2026-11-05)
 
 - **Mise à jour sans Claude** (`scripts/sans-claude.mjs`) : remet une carte à jour sans aucun jeton, pour une tâche planifiée. Sans carte décrite, les parties suivent les dossiers (`"auto": true` dans `architecture.json`, que Claude réécrit à la première vraie mise à jour). `--export` écrit une copie à partager, sans contrôle de santé.

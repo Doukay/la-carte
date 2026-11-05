@@ -57,6 +57,14 @@ test('sans Claude : une deuxième fois, les descriptions écrites sont gardées 
   assert.equal(g.files.find((f) => f.p === 'backend/rappels.js').name, 'Rappels');
 });
 
+test('sans Claude : des sources recopiées sans construction précédente donnent une première carte', () => {
+  const racine = projetAvecCommit(), dossier = dossierAilleurs();
+  ecrireJson(path.join(dossier, 'sources', 'architecture.json'), { projet: { name: 'Liste' }, nodes: [{ id: 'tout', label: 'Tout le code', kind: 'feature', paths: ['frontend', 'backend'] }] });
+  sansClaude(racine, dossier);
+  const g = lireJson(path.join(dossier, '.cache', 'graphe.json'));
+  assert.deepEqual(g.nodes.filter((n) => n.id !== 'unassigned').map((n) => n.id), ['tout']);
+});
+
 test('sans Claude : trop peu de code, pas de carte (code 3)', () => {
   const racine = creerProjet({ 'README.md': '# Notes\n', 'plan.f3d': 'x' });
   aNettoyer.push(racine);
