@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // la-carte refresh : remet à jour une carte existante sans tout refaire.
 // Ré-analyse, compare avec la dernière construction (.cache/graphe.json), met en accord sources/descriptions/*.json
-// (renommages reportés, entrées supprimées retirées, entrées dont les exports ou les routes ont changé
+// (renommages reportés, entrées des fichiers absents gardées pour leur retour, entrées dont les exports ou les routes ont changé
 // marquées "review"), reconstruit, puis dit précisément ce qu’il reste à regarder pour Claude.
 //
 // usage : node actualiser.mjs [racine]
@@ -102,7 +102,7 @@ for (const k of routesDisparues) {
 
 // ---------- 4. remettre les descriptions en accord ----------
 const dossierDescriptions = path.join(dossierSortie, 'sources', 'descriptions');
-let reportees = 0, retirees = 0, signalees = 0, routesReportees = 0, routesRetirees = 0;
+let reportees = 0, gardees = 0, signalees = 0, routesReportees = 0, routesGardees = 0;
 const ensembleEmpreinte = new Set(empreinteChangee);
 if (fs.existsSync(dossierDescriptions)) {
   for (const nom of fs.readdirSync(dossierDescriptions).filter((n) => n.endsWith('.json'))) {
@@ -116,14 +116,14 @@ if (fs.existsSync(dossierDescriptions)) {
         const nouveauChemin = renommages.get(p);
         fichiersSortie[nouveauChemin] = maintenant.get(nouveauChemin).sig !== avant.get(p).sig ? { ...v, review: `déplacé depuis ${p} ; ${noteChangement(nouveauChemin, p)}` } : v;
         reportees++; modifie = true;
-      } else if (supprimes.includes(p)) { retirees++; modifie = true; }
+      } else if (supprimes.includes(p)) { fichiersSortie[p] = v; gardees++; }
       else if (ensembleEmpreinte.has(p) && v.description) { fichiersSortie[p] = { ...v, review: noteChangement(p) }; signalees++; modifie = true; }
       else fichiersSortie[p] = v;
     }
     const routesSortie = {};
     for (const [k, v] of Object.entries(d.routes || {})) {
       if (deplacementsRoutes.has(k)) { routesSortie[deplacementsRoutes.get(k)] = { ...v, review: `chemin changé depuis ${k}` }; routesReportees++; modifie = true; }
-      else if (!nouvellesClesRoutes.has(k) && anciennesClesRoutes.has(k)) { routesRetirees++; modifie = true; }
+      else if (!nouvellesClesRoutes.has(k) && anciennesClesRoutes.has(k)) { routesSortie[k] = v; routesGardees++; }
       else routesSortie[k] = v;
     }
     if (modifie) {
@@ -153,7 +153,7 @@ const L = [];
 L.push(`Mise à jour de la carte — dernière carte construite le ${depuis.toLocaleString('fr-FR')}`);
 L.push(`  fichiers  +${crees.length} nouveaux · −${supprimes.length} supprimés · ${renommages.size} déplacés ou renommés (descriptions reportées) · ${modifies.length} modifiés, dont ${empreinteChangee.length} avec des exports ou des routes changés`);
 L.push(`  routes    +${nouvellesRoutes.size} nouvelles · −${routesDisparues.length - deplacementsRoutes.size} retirées · ${deplacementsRoutes.size} avec un nouveau chemin (descriptions reportées)`);
-L.push(`  descriptions : ${reportees + routesReportees} reportées, ${retirees + routesRetirees} retirées, ${signalees} à revoir`);
+L.push(`  descriptions : ${reportees + routesReportees} reportées, ${gardees + routesGardees} gardées pour un retour, ${signalees} à revoir`);
 if (!avant.values().next().value?.h) L.push('  (la carte précédente date d’avant les empreintes de contenu : les modifications depuis n’ont pas pu être détectées ; les prochaines mises à jour le pourront)');
 const parDossier = new Map();
 for (const p of crees) { const d = p.split('/').slice(0, -1).join('/'); parDossier.set(d, (parDossier.get(d) || 0) + 1); }

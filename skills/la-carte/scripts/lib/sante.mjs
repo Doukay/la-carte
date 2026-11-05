@@ -1311,9 +1311,32 @@ export function construireSante({ graph: graphe, scan: analyse, arch: archi, roo
     });
   }
 
+  // un même fichier manquant dont beaucoup se servent : une seule alerte, qui dit la vraie cause et ne prend pas la place des autres
+  const parFichierManquant = new Map();
+  for (const c of analyse.casses || []) {
+    if (c.kind !== 'fichier' || !c.chemin || !fichierParChemin.has(c.from)) continue;
+    if (!parFichierManquant.has(c.chemin)) parFichierManquant.set(c.chemin, []);
+    parFichierManquant.get(c.chemin).push(c);
+  }
+  const regroupes = new Set();
+  for (const [chemin, liste] of parFichierManquant) {
+    const fichiers = [...new Set(liste.map((c) => c.from))];
+    if (fichiers.length < 3) continue;
+    liste.forEach((c) => regroupes.add(c));
+    const nom = chemin.split('/').pop();
+    const items = fichiers.map((p) => 'f:' + p);
+    listeProblemes.push({
+      id: 'lien-casse:manquant:' + chemin, kind: 'lien-casse', severity: 'high',
+      title: `${nom} n’existe plus : ${fichiers.length} fichiers s’en servent`,
+      detail: `${fichiers.length} fichiers cherchent ${chemin}, qui n’existe plus (par exemple ${fichiers.slice(0, 3).map(nomDe).join(', ')}). Ces parties de l’appli risquent de ne plus marcher.`,
+      items, notes: Object.fromEntries(items.map((i) => [i, liste.find((c) => 'f:' + c.from === i).target])),
+      locations: liste.slice(0, 40).map((c) => ({ file: c.from, line: c.line })),
+      fix: [`${chemin} n’existe plus, et ${fichiers.length} fichiers s’en servent, par exemple :`, ...fichiers.slice(0, 20).map((p) => `- ${p}`), ``, `Trouve s’il a été renommé, déplacé ou supprimé, puis répare ces liens sans changer ce que fait le code.`],
+    });
+  }
   const parFichierCoupe = new Map();
   for (const c of analyse.casses || []) {
-    if (!fichierParChemin.has(c.from)) continue;
+    if (!fichierParChemin.has(c.from) || regroupes.has(c)) continue;
     if (!parFichierCoupe.has(c.from)) parFichierCoupe.set(c.from, []);
     parFichierCoupe.get(c.from).push(c);
   }

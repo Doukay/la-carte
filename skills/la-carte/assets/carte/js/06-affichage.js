@@ -18,7 +18,7 @@ let jetonAffichage = 0;
 async function afficherVue(options = {}) {
   const jeton = ++jetonAffichage;
   const vue = construireVue(etatVue.container);
-  const enCartes = !estTelephone() && vue.visible.length > SEUIL_CARTES;
+  const enCartes = !estTelephone() && vue.visible.length + vue.connectors.length > SEUIL_CARTES;
   if (enCartes !== vueEnCartes) { vueEnCartes = enCartes; document.body.classList.toggle('vue-cartes', enCartes); placerContexte(); }
   const chargement = setTimeout(() => $('#loading').classList.add('on'), 160);
   let res;

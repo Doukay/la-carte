@@ -98,3 +98,43 @@ test('une adresse dont le début est posé ailleurs n’est pas un lien coupé',
     assert.ok(!cibles.includes('GET /api/contrats'), cibles.join());
   } finally { nettoyer(racine); }
 });
+
+test('un import par raccourci vers un fichier absent est coupé ; un paquet installé, un fichier présent ou un motif « * » ne le sont pas', () => {
+  const racine = creerProjet({
+    'package.json': '{}',
+    'web/jsconfig.json': JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@/*': ['src/*'] } } }),
+    'web/src/ok.js': 'export const present = 1;\n',
+    'web/src/page.js': "import { present } from '@/ok';\nimport { absent } from '@/parti';\nimport { x } from '@acme/installe';\nimport { disparue } from '@/ok2';\nexport const p = [present, absent, x, disparue];\n",
+    'web/src/ok2.js': 'export const autre = 1;\n',
+    'autre/tsconfig.json': JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '*': ['types/*'] } } }),
+    'autre/a.js': "import { y } from 'paquet-installe';\nexport const a = y;\n",
+  });
+  try {
+    executer('analyser.mjs', racine);
+    const { casses } = JSON.parse(fs.readFileSync(path.join(racine, 'la-carte', '.cache', 'analyse.json'), 'utf8'));
+    assert.deepEqual(casses.map((c) => `${c.kind} ${c.target}`).sort(), ['fichier @/parti', 'fonction disparue']);
+  } finally { nettoyer(racine); }
+});
+
+test('un fichier manquant dont beaucoup se servent fait une seule alerte, quelle que soit la façon de l’appeler', () => {
+  const racine = creerProjet({
+    'package.json': '{}',
+    'web/jsconfig.json': JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@/*': ['src/*'] } } }),
+    'web/src/a.js': "import { x } from '@/lib/parti';\nexport const a = x;\n",
+    'web/src/b.js': "import { x } from './lib/parti';\nexport const b = x;\n",
+    'web/src/sous/c.js': "import { x } from '../lib/parti';\nexport const c = x;\n",
+    'web/src/d.js': "import { y } from './seul';\nexport const d = y;\n",
+  });
+  try {
+    ecrireJson(path.join(racine, 'la-carte', 'sources', 'architecture.json'), { projet: { name: 'E', summary: 'E.' }, nodes: [{ id: 'web', label: 'Web', kind: 'ui', summary: 'Le site.', paths: ['web/**'] }], edges: [] });
+    executer('analyser.mjs', racine);
+    executer('construire.mjs', racine);
+    const p = lireGraphe(racine).sante.problemes.filter((i) => i.kind === 'lien-casse');
+    assert.equal(p.length, 2, p.map((i) => i.title).join(' | '));
+    const groupe = p.find((i) => i.id === 'lien-casse:manquant:web/src/lib/parti');
+    assert.match(groupe.title, /^parti n’existe plus : 3 fichiers s’en servent$/);
+    assert.equal(groupe.items.length, 3);
+    assert.ok(Array.isArray(groupe.fix) && groupe.fix.join('\n').includes('web/src/a.js'));
+    assert.ok(p.some((i) => i.id === 'lien-casse:web/src/d.js'));
+  } finally { nettoyer(racine); }
+});

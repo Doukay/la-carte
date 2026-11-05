@@ -47,7 +47,7 @@ Laisse la souris un instant sur un bloc pour voir de quel genre de chose il s'ag
 
 ## Quand il y a beaucoup de blocs
 
-Au-delà de 14 blocs, un schéma devient un paquet de lignes. La vue passe alors en cartes qui défilent : chaque carte dit ce que fait le bloc et ce qu'il **utilise**. Touche une pastille pour aller à ce bloc, ou une carte pour l'ouvrir. Le panneau de droite garde ce qui utilise cette partie et ce dont elle dépend.
+Au-delà de 14 blocs, en comptant ceux qui sont reliés depuis l'extérieur, un schéma devient un paquet de lignes. La vue passe alors en cartes qui défilent : chaque carte dit ce que fait le bloc et ce qu'il **utilise**. Touche une pastille pour aller à ce bloc, ou une carte pour l'ouvrir. Le panneau de droite garde ce qui utilise cette partie et ce dont elle dépend.
 
 ## Voir l'état du code à l'instant T
 

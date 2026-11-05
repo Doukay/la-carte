@@ -98,6 +98,7 @@ Après chaque création ou mise à jour, l'IA note ce sur quoi elle vient de tra
 
 Il :
 - reporte les descriptions sur les fichiers et adresses du serveur déplacés ou renommés ;
+- garde les descriptions d'un fichier absent : il peut revenir, par exemple quand tu changes de branche ;
 - supprime les entrées des fichiers effacés ;
 - signale à relire les entrées dont la signature a changé.
 

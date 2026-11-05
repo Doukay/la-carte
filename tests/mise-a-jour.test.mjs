@@ -59,3 +59,20 @@ test('réparer le code puis Mettre à jour retire la coupure', async () => {
   assert.ok(!lireGraphe(racine).links.some((l) => l.k === 'casse'));
   assert.ok(!lireGraphe(racine).nodes.some((n) => n.id === 'casse'));
 });
+
+test('une description survit à l’absence de son fichier : changer de branche ne coûte pas de jetons', async () => {
+  const fiche = path.join(racine, 'la-carte', 'sources', 'descriptions', 'src.json');
+  ecrireJson(fiche, { files: { 'src/b.js': { name: 'Le fichier b', description: 'Une phrase payée en jetons.' } } });
+  assert.equal((await (await api('/api/update', { method: 'POST' })).json()).ok, true);
+  const b = () => lireGraphe(racine).files.find((f) => f.p === 'src/b.js');
+  assert.equal(b().name, 'Le fichier b');
+  const texte = fs.readFileSync(path.join(racine, 'src/b.js'), 'utf8');
+  fs.rmSync(path.join(racine, 'src/b.js'));
+  assert.equal((await (await api('/api/update', { method: 'POST' })).json()).ok, true);
+  assert.equal(b(), undefined);
+  assert.ok(fs.readFileSync(fiche, 'utf8').includes('Une phrase payée en jetons.'));
+  fs.writeFileSync(path.join(racine, 'src/b.js'), texte);
+  assert.equal((await (await api('/api/update', { method: 'POST' })).json()).ok, true);
+  assert.equal(b().name, 'Le fichier b');
+  assert.ok(!b().auto);
+});

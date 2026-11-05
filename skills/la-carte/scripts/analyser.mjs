@@ -131,7 +131,7 @@ for (const f of fichiers) {
       e.count++;
       e.files.add(f.path);
       liensExternes.push({ from: f.path, pkg: cle });
-    } else if (resultat.unresolved) nonResolus++;
+    } else if (resultat.unresolved) { nonResolus++; if (resultat.ciblesRaccourci) importe.ciblesRaccourci = resultat.ciblesRaccourci; }
   }
 }
 // fusionne les liens en double (même départ et même arrivée)

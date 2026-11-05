@@ -323,8 +323,8 @@ if (fs.existsSync(dossierDescriptions)) {
     }
   }
 }
-if (fichiersPerimes) signalerAvertissement(`${fichiersPerimes} fichier(s) décrit(s) n’existent plus ou ne sont pas inclus (par exemple ${exemplesPerimes.join(', ')}). Retire-les de sources/descriptions/.`);
-if (routesPerimees) signalerAvertissement(`${routesPerimees} route(s) décrite(s) ne correspondent plus à une route de l’analyse ; retire-les ou change leur clé.`);
+if (fichiersPerimes) signalerAvertissement(`${fichiersPerimes} fichier(s) décrit(s) n’existent plus ou ne sont pas inclus (par exemple ${exemplesPerimes.join(', ')}). Leur description reste gardée pour leur retour ; retire-la de sources/descriptions/ si le fichier est parti pour de bon.`);
+if (routesPerimees) signalerAvertissement(`${routesPerimees} route(s) décrite(s) ne correspondent plus à une route de l’analyse. Leur description reste gardée pour leur retour ; retire-la ou change sa clé si la route est partie pour de bon.`);
 
 // ---------- statistiques ----------
 const nonAffectes = fichiersInclus.filter((f) => proprietaire.get(f.path) === 'unassigned');

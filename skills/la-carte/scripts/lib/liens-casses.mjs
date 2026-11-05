@@ -20,6 +20,7 @@ export function trouverLiensCasses(racine, fichiers, routes) {
     const base = path.join(racine, path.dirname(depuis), specifieur.split(/[?#]/)[0]);
     return EXTENSIONS.some((e) => fs.existsSync(base + e));
   };
+  const existeDepuisRacine = (cible) => EXTENSIONS.some((e) => fs.existsSync(path.join(racine, cible.split(/[?#]/)[0]) + e));
   const parChemin = new Map(fichiers.map((f) => [f.path, f]));
   // Python : seulement les imports relatifs (from .prix import calcul). Un import absolu peut venir de n'importe quel paquet installé.
   const existePy = (depuis, spec) => {
@@ -59,9 +60,12 @@ export function trouverLiensCasses(racine, fichiers, routes) {
     if (!LANGUES_JS.has(f.lang)) continue;
     for (const i of f.imports || []) {
       const spec = String(i.spec || '');
-      if (!spec.startsWith('.') || /[`$*{]/.test(spec)) continue;
+      if (/[`$*{]/.test(spec)) continue;
       if (!i.files?.length) {
-        if (!existe(f.path, spec)) casses.push({ from: f.path, kind: 'fichier', target: spec, line: i.line });
+        // relatif, ou par un raccourci du projet (@/lib/x) ; un autre nom sans fichier est un paquet installé
+        const manque = spec.startsWith('.') ? !existe(f.path, spec) : i.ciblesRaccourci && !i.ciblesRaccourci.some(existeDepuisRacine);
+        // chemin : le même fichier manquant, qu'on l'appelle par ./x, ../lib/x ou @/lib/x
+        if (manque) casses.push({ from: f.path, kind: 'fichier', target: spec, chemin: i.ciblesRaccourci?.[0] || path.posix.join(path.posix.dirname(f.path), spec), line: i.line });
         continue;
       }
       if (i.files.length !== 1 || !i.locals) continue;

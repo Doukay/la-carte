@@ -71,6 +71,7 @@ export function creerResolveur(racine, fichiers) {
       return candidat ? { file: candidat } : { unresolved: true };
     }
     const config = tsconfigProche(P.dirname(depuis));
+    const ciblesRaccourci = [];
     if (config) {
       for (const [motif, cibles] of config.paths) {
         const etoile = motif.indexOf('*');
@@ -80,10 +81,13 @@ export function creerResolveur(racine, fichiers) {
         for (const t of cibles) {
           const candidat = essayerFichierJs(P.join(config.baseDir, t.split('*').join(correspondance)));
           if (candidat) return { file: candidat };
+          // un motif qui commence par un vrai préfixe (@/*) désigne ce projet ; "*" seul peut aussi être un paquet installé
+          if (etoile !== 0) ciblesRaccourci.push(P.normalize(P.join(config.baseDir, t.split('*').join(correspondance))));
         }
       }
       if (config.hasBaseUrl) { const candidat = essayerFichierJs(P.join(config.baseDir, specifieur)); if (candidat) return { file: candidat }; }
     }
+    if (ciblesRaccourci.length) return { unresolved: true, ciblesRaccourci };
     if (specifieur.startsWith('node:')) return { builtin: true };
     const morceaux = specifieur.split('/');
     const nomPaquet = specifieur.startsWith('@') ? morceaux.slice(0, 2).join('/') : morceaux[0];
