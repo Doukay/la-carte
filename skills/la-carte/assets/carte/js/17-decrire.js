@@ -7,8 +7,9 @@ let descriptionLancee = null;
 function compterNonDecrits() { return G.files.filter((f) => f.auto).length + routes.filter((r) => r.auto).length; }
 
 function encartNonDecrits(n) {
+  if (COPIE_EXPORTEE) return ''; // celui qui reçoit une copie ne peut rien y changer
   const debut = n > 1 ? `${n} fichiers ou adresses gardent un nom provisoire.` : '1 fichier ou adresse garde un nom provisoire.';
-  if (!window.LA_CARTE_SERVER?.cli || COPIE_EXPORTEE || PLAN) return `<div class="callout">${debut} Demande à Claude de mettre à jour la carte pour les décrire.</div>`;
+  if (!window.LA_CARTE_SERVER?.cli || PLAN) return `<div class="callout">${debut} Demande à Claude de mettre à jour la carte pour les décrire.</div>`;
   if (descriptionLancee) return `<div class="callout" id="encart-decrire"><span id="decrire-avance" aria-live="polite">${h(descriptionLancee.texte)}</span><div class="actions"><button class="btn soft" data-decrire-stop>Arrêter</button></div></div>`;
   return `<div class="callout" id="encart-decrire">${debut} Claude peut ${n > 1 ? 'les nommer et les décrire' : 'le nommer et le décrire'}, ce qui consomme des jetons.<div class="actions"><button class="btn soft" data-decrire>${n > LOT_DESCRIPTION ? `Décrire les ${LOT_DESCRIPTION} premiers` : 'Décrire'}</button></div></div>`;
 }

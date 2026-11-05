@@ -136,6 +136,9 @@ function liaisonsImports(code) {
     }
   }
   for (const m of code.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:React\.)?(?:lazy|loadable|lazyWithRetry|defineAsyncComponent|dynamic)\s*\(\s*(?:async\s*)?\(\s*\)\s*=>\s*import\(\s*["']([^"']+)["']/g)) table.set(m[1], m[2]);
+  // le chargeur peut être rangé à part : const chargerAgenda = () => import('...'); const PageAgenda = lazy(chargerAgenda);
+  const chargeurs = new Map([...code.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(\s*\)\s*=>\s*import\(\s*["']([^"']+)["']/g)].map((m) => [m[1], m[2]]));
+  for (const m of code.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:React\.)?(?:lazy|loadable|lazyWithRetry|defineAsyncComponent|dynamic)\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/g)) if (chargeurs.has(m[2])) table.set(m[1], chargeurs.get(m[2]));
   return table;
 }
 

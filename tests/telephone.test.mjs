@@ -187,6 +187,7 @@ test('rien de nouveau n’apparaît sur un ordinateur : les boutons n’ont pas 
 
 test('au-delà de 14 blocs sur ordinateur, la vue passe en cartes : pas de calcul de schéma, pas de lignes', () => {
   assert.match(page, /const SEUIL_CARTES = 14;/);
+  assert.match(page, /if \(COPIE_EXPORTEE\) return ''; \/\/ celui qui reçoit une copie/);
   assert.match(page, /const ZOOM_LISIBLE = 0\.45;/);
   assert.match(page, /< ZOOM_LISIBLE\) \{ reglerCartes\(true\); res = disposerColonne\(vue\); \}/);
   assert.match(page, /\n\s*'elk\.separateConnectedComponents': 'true'/); // sur sa propre ligne : un commentaire en fin de ligne l'avait désactivé
