@@ -227,7 +227,7 @@
   }
   majBouton();
   // la liste du serveur est celle qui est enregistrée : elle a pu changer depuis la construction de cette carte
-  if (SERVEUR && peutRejeter) fetch('/api/health/dismissed', { headers: { 'x-la-carte-token': SERVEUR.token } }).then((r) => r.json()).then((r) => { if (Array.isArray(r.dismissed)) { rejetes = r.dismissed; actualiser(); } }).catch(() => {});
+  if (SERVEUR && peutRejeter) fetch('/api/health/dismissed', { headers: { 'x-la-carte-token': SERVEUR.token } }).then((r) => r.json()).then((r) => { if (Array.isArray(r.dismissed)) { rejetes = r.dismissed; actualiser(); CARTE.redessiner(); } }).catch(() => {});
 
   // Sélectionner autre chose sur la carte pendant que la liste est ouverte affiche cet élément à la place.
   CARTE.sur('panel', () => { if (estOuverte && ouverteA && position() !== ouverteA) { estOuverte = false; CARTE.fermerPanneau(); } });
@@ -256,6 +256,6 @@
       touches.push(htmlProbleme(issue, indice, precis || (dedans.length > 1 || dedans[0] !== idElement ? `Concerne ${CARTE.pluriel(dedans.length, 'endroit')} à l’intérieur` : '')));
     });
     if (!touches.length) return '';
-    return { html: `<div class="sec"><h3>${PLAN ? 'Revue du plan' : 'Santé'} <span class="c">${touches.length}</span></h3>${touches.slice(0, 6).join('')}${touches.length > 6 ? `<div class="more" data-hc-open style="cursor:pointer">+${touches.length - 6} autres dans ${CONTROLE}</div>` : ''}</div>`, bind: (el) => { brancherProblemes(el); el.querySelector('[data-hc-open]')?.addEventListener('click', ouvrirListe); } };
+    return { top: true, html: `<div class="sec"><h3>${PLAN ? 'Revue du plan' : 'Santé'} <span class="c">${touches.length}</span></h3>${touches.slice(0, 6).join('')}${touches.length > 6 ? `<div class="more" data-hc-open style="cursor:pointer">+${touches.length - 6} autres dans ${CONTROLE}</div>` : ''}</div>`, bind: (el) => { brancherProblemes(el); el.querySelector('[data-hc-open]')?.addEventListener('click', ouvrirListe); } };
   });
 })();

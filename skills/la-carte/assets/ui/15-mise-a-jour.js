@@ -21,7 +21,7 @@
     try { etat = await fetch('/api/fraicheur', { headers: entetes }).then((r) => (r.ok ? r.json() : null)); } catch { return; }
     if (!etat?.suivi) return;
     pastille.hidden = !etat.fichiers;
-    pastille.textContent = etat.fichiers;
+    pastille.textContent = etat.fichiers > 99 ? '99+' : String(etat.fichiers);
     bouton.title = etat.fichiers ? `${CARTE.pluriel(etat.fichiers, 'fichier')} modifié${etat.fichiers > 1 ? 's' : ''} depuis la dernière carte. Mettre à jour ne consomme aucun jeton.` : 'La carte correspond au code actuel.';
   }
 
@@ -30,6 +30,7 @@
     enCours = true;
     bouton.disabled = true;
     if (libelle) libelle.textContent = 'Mise à jour…';
+    CARTE.message('Mise à jour de la carte…');
     let r;
     try { r = await fetch('/api/update', { method: 'POST', headers: entetes }).then((x) => x.json()); } catch { r = { ok: false, error: 'Impossible de joindre le serveur de la carte.' }; }
     if (r.ok) {

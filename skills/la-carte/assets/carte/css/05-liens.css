@@ -13,6 +13,7 @@
 .edge:hover .port, .edge.hl .port { opacity: 1; }
 .edge.k-config .trace { stroke-dasharray: 5 5; }
 .edge.k-casse .trace { stroke-dasharray: 7 6; }
+.edge.k-casse .flow { display: none; } /* rien ne circule sur un lien coupé */
 .coupure circle { fill: var(--surface); stroke: currentColor; stroke-width: 1.5; }
 .coupure path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .edge.k-contains .trace { stroke-dasharray: 2 6; stroke-opacity: .9; }

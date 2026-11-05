@@ -78,7 +78,7 @@ function sectionParties(racines) {
   });
   const reste = racines.filter((t) => !places.has(t));
   if (reste.length) parties.push(`<div class="group-h">Autres</div><div class="list">${reste.map((t) => ligneDe(t)).join('')}</div>`);
-  return `<div class="sec"><h3>Parties <span class="c">${racines.length}</span></h3>${parties.join('')}</div>`;
+  return `<div class="sec"><h3>Parties <span class="c">${racines.filter((t) => infosBloc(t).kind !== 'casse').length}</span></h3>${parties.join('')}</div>`;
 }
 
 function panneauApercu() {
@@ -116,6 +116,12 @@ function connexions(element) {
 function panneauElement(element, viaConnecteur) {
   const i = infosBloc(element);
   let html = `<div class="sec">${enteteFiche(i)}`;
+  if (i.type === 'node' && i.kind === 'casse') {
+    // ce bloc n'a de sens que par ce qu'il annonce : qui cherche quoi, et où le réparer
+    const liens = G.links.filter((l) => l.b === element && l.k === 'casse');
+    const rangees = liens.map((l) => `<a class="row" data-go="${h(l.a)}"><span class="dot" style="background:var(--k-casse)"></span><span class="rt"><div class="rn">${h(nomDe(l.a))}</div><div class="rd">${h((l.phrases || []).join(' '))}${modeTechnique() ? ` ${h((l.labels || []).join(', '))}` : ''}</div></span></a>`);
+    return `${html}<div class="actions"><button class="btn soft" data-voir-sante>Voir la Santé</button></div></div>${sectionListe('À réparer', rangees)}`;
+  }
   const actions = [];
   if (ouvrable(element) && etatVue.container !== element) actions.push(`<button class="btn soft" data-open="${h(element)}">${pictoI('drill')}Ouvrir</button>`);
   if (viaConnecteur || (parentsParId.get(element) !== etatVue.container && etatVue.container !== element)) actions.push(`<button class="btn soft" data-go="${h(element)}">Montrer sur la carte</button>`);
@@ -183,13 +189,16 @@ function panneauLien(e) {
   if (!e) return '';
   const eps = adressesDe(e);
   const noms = [...new Set(e.links.flatMap((l) => l.names || []))];
-  const desc = e.k === 'casse' ? [`Ce lien est coupé : ${[...new Set(e.links.flatMap((l) => l.labels || []))].join(', ')} n’existe plus ou ne répond plus.`] : e.links.map((l) => l.desc).filter(Boolean);
+  const coupe = e.k === 'casse';
+  const cibles = [...new Set(e.links.flatMap((l) => l.labels || []))];
+  const desc = coupe ? [...new Set(e.links.flatMap((l) => l.phrases || []))] : e.links.map((l) => l.desc).filter(Boolean);
   const ep = (id) => id.startsWith('x:') ? entiteConnecteur(id) : id;
   const paires = e.links.filter((l) => l.a.startsWith('f:') || l.b.startsWith('f:'));
-  return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--k-${e.k})">${picto(e.k === 'http' ? 'route' : 'feature')}</span><span class="kind">Connexion · ${LIBELLE_TYPE[e.k]}</span></div>
+  return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--k-${e.k})">${picto(coupe ? 'casse' : e.k === 'http' ? 'route' : 'feature')}</span><span class="kind">${coupe ? 'Lien coupé' : `Connexion · ${LIBELLE_TYPE[e.k]}`}</span></div>
       <h2 class="pt">${h(nomDe(e.a))} → ${h(nomDe(e.b))}</h2>
       <p class="pd">${desc.length ? h(desc.join(' ')) : `${accorder(e.w, 'connexion')}${eps.length ? ` sur ${accorder(eps.length, 'adresse')} du serveur` : ''}${e.k === 'http' && eps.length ? ', rapprochées des appels vers les adresses du serveur définies dans le code' : ''}.`}</p>
       <div class="actions"><button class="btn soft" data-go="${h(ep(e.a))}">Aller à la source</button><button class="btn soft" data-go="${h(ep(e.b))}">Aller à la cible</button></div></div>
+    ${coupe && modeTechnique() ? `<div class="sec"><h3>Cibles <span class="c">${cibles.length}</span></h3><div class="tags">${cibles.map((x) => `<span class="tag">${h(x)}</span>`).join('')}</div></div>` : ''}
     ${sectionListe('Adresses du serveur', eps.map((x) => ligneRoute(x.i, accorder(x.n, 'appel'))), eps.length, 40)}
     ${noms.length && modeTechnique() ? `<div class="sec"><h3>Noms importés <span class="c">${noms.length}</span></h3><div class="tags">${noms.slice(0, 60).map((x) => `<span class="tag">${h(x)}</span>`).join('')}</div></div>` : ''}
     ${sectionListe('Fichiers concernés', paires.map((l) => { const a = l.a.startsWith('f:') ? fichiersParChemin.get(l.a.slice(2)) : null, b = l.b.startsWith('f:') ? fichiersParChemin.get(l.b.slice(2)) : null;

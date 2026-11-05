@@ -16,7 +16,6 @@
   const style = document.createElement('style');
   style.textContent = `
     #btn-recent svg.i { color: var(--recent); }
-    #btn-recent .badge { background: var(--recent); color: var(--on-recent-text); }
     .rw-task { padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--recent) 6%, transparent); margin-bottom: 8px; }
     .rw-task:last-child { margin-bottom: 0; }
     .rw-tt { display: flex; gap: 9px; align-items: center; font-weight: 600; line-height: 1.4; }

@@ -382,10 +382,12 @@ function liensCoupes() {
   for (const c of cassesRetenues) {
     const a = `f:${c.from}`, b = c.kind === 'fonction' ? `f:${c.to}` : 'n:casse';
     const cle = `${a}|${b}`;
-    if (!coupes.has(cle)) coupes.set(cle, { a, b, k: 'casse', w: 0, labels: [] });
+    if (!coupes.has(cle)) coupes.set(cle, { a, b, k: 'casse', w: 0, labels: [], phrases: [] });
     const l = coupes.get(cle);
     l.w++;
     if (l.labels.length < 40) l.labels.push(c.target);
+    const phrase = c.kind === 'fichier' ? 'Un fichier utilisé ici n’existe plus.' : c.kind === 'fonction' ? 'Une fonction utilisée ici n’existe plus.' : c.mauvaiseMethode ? 'Un appel demande au serveur quelque chose qu’il n’accepte pas à cette adresse.' : 'Un appel vise une adresse que le serveur n’a pas.';
+    if (!l.phrases.includes(phrase)) l.phrases.push(phrase);
   }
   return [...coupes.values()];
 }

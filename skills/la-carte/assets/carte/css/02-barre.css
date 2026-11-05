@@ -22,6 +22,7 @@ header > * { pointer-events: auto; }
 .btn.primary { background: var(--on); color: var(--on-text); }
 .btn.primary:hover { background: var(--on-hover); }
 .btn:disabled { opacity: .35; cursor: default; }
+#btn-update:disabled { opacity: 1; }
 .btn .badge[hidden] { display: none; }
 .btn .badge { min-width: 16px; height: 16px; border-radius: 999px; background: var(--on); color: var(--on-text); font-size: 10px; font-weight: 600; display: grid; place-items: center; padding: 0 4px; }
 #btn-up[hidden] { display: none; }
@@ -40,13 +41,14 @@ header .btn .badge { background: #2997ff; color: #000; }
 /* tous les boutons affichés : des noms courts tant que la largeur manque */
 @media (min-width: 1000px) and (max-width: 1500px) {
   #btn-recent .bl, #tour-btn .bl { font-size: 0; }
-  #btn-recent .bl::after { content: "Récent"; font-size: 13.5px; }
-  #tour-btn .bl::after { content: "Visite"; font-size: 13.5px; }
+  #btn-recent .bl::after { content: "Récent"; font-size: 13px; }
+  #tour-btn .bl::after { content: "Visite"; font-size: 13px; }
   header .btn { padding: 0 9px; }
 }
 @media (min-width: 1000px) and (max-width: 1280px) {
   #btn-update .bl { display: none; }
   header .btn { padding: 0 7px; gap: 5px; }
+  #crumbs button { max-width: 130px; }
   #search-btn .kbd { display: none; }
 }
 @media (min-width: 1000px) {

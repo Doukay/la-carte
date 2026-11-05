@@ -31,7 +31,12 @@ function hauteurSupplementaireBloc(element) {
 function pastilleAnomalie(element) {
   const a = ext.anomalies?.(element);
   if (!a?.n) return '';
-  return `<span class="alerte ${a.gravite}" title="${a.n === 1 ? '1 point à voir' : `${a.n} points à voir`}">${a.n}</span>`;
+  return `<span class="alerte ${a.gravite}">${a.n}</span>`;
+}
+/** La même information en mots, pour l'infobulle du bloc. */
+function texteAnomalie(element) {
+  const a = ext.anomalies?.(element);
+  return a?.n ? `<div class="td">${a.n === 1 ? '1 point à voir' : `${a.n} points à voir`}</div>` : '';
 }
 function blocHTML(element) {
   const i = infosBloc(element);
@@ -76,7 +81,7 @@ function infobulleBloc(id) {
     return `<div class="tt">${id.startsWith('x:in') ? 'De' : 'Vers'} ${h(i.name)}</div>${i.desc ? `<div class="td">${h(i.desc)}</div>` : ''}<div class="th"><span>Double-clic pour y aller</span></div>`;
   }
   const i = infosBloc(id);
-  if (!modeTechnique()) return `<div class="tt">${h(i.name)}</div>${i.desc ? `<div class="td">${h(i.desc)}</div>` : ''}${infobulleRecent(id)}${ouvrable(id) && etatVue.container !== id ? '<div class="th"><span>Double-clic pour ouvrir</span></div>' : ''}`;
+  if (!modeTechnique()) return `<div class="tt">${h(i.name)}</div>${i.desc ? `<div class="td">${h(i.desc)}</div>` : ''}${texteAnomalie(id)}${infobulleRecent(id)}${ouvrable(id) && etatVue.container !== id ? '<div class="th"><span>Double-clic pour ouvrir</span></div>' : ''}`;
   const st = statsDe(id);
   const genre = i.type === 'node' ? i.kind : i.type === 'route' ? 'endpoint' : i.type === 'symbol' ? i.symKind : i.type === 'module' ? 'file' : i.type;
   const endroit = i.type === 'node' ? (i.n.paths || []).join('\n') : i.type === 'route' ? `${i.f.p}${i.r.h ? ` · ${i.r.h}()` : ''}` : i.path || '';

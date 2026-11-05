@@ -36,6 +36,8 @@ colors:
   sev-low: "#6e6e73"
   warn-bg: "#fff4e5"
   warn-text: "#7a4100"
+  k-casse: "#d70015"
+  n-casse: "#d70015"
   k-import: "#6e6e73"
   k-http: "#0066cc"
   k-call: "#8944ab"
@@ -49,6 +51,8 @@ colors:
   on-hover-sombre: "#64b0ff"
   on-text-sombre: "#000000"
   n-service-sombre: "#bf5af2"
+  k-casse-sombre: "#ff6961"
+  n-casse-sombre: "#ff6961"
   n-external-sombre: "#30d158"
   n-test-sombre: "#ff9f0a"
   n-misc-sombre: "#98989d"
@@ -263,7 +267,7 @@ Les couleurs d'état et de lien. Elles informent et ne décorent jamais.
 - **Gris de lecture** (`text-2`, `text-3`) : les descriptions, puis les indications et les petits libellés.
 - **Noir de barre** (`barre`, #000000) : la barre du haut, identique dans les deux thèmes, avec son champ de recherche (`barre-champ`), son survol (`barre-survol`) et ses textes (`barre-texte`, `barre-texte-2`).
 
-- **Alerte** (`k-casse` et `n-casse`, #d70015 ; sombre #ff453a) : un lien coupé et le bloc Introuvable. Le rouge reste réservé à ce qui est cassé ou à voir d'abord.
+- **Alerte** (`k-casse` et `n-casse`, #d70015 ; sombre #ff6961) : un lien coupé et le bloc Introuvable. Le rouge reste réservé à ce qui est cassé ou à voir d'abord.
 
 ### Named Rules
 
@@ -301,7 +305,7 @@ Les couleurs d'état et de lien. Elles informent et ne décorent jamais.
 
 La page entière est le schéma. Tout le reste flotte par-dessus.
 
-**Ordinateur (1000px et plus).** Barre noire de 52px en trois zones : le niveau courant à gauche, la recherche au centre, les actions à droite (Thème, Santé, Commencer ici, Exporter, Parcours, filtres, détails). En haut à gauche, le grand titre et la description. À droite, le panneau de 360px, redimensionnable, décollé des bords de 16px. Il commence par les chiffres. En bas au centre, la bulle de questions. En bas à gauche, les boutons de zoom.
+**Ordinateur (1000px et plus).** Barre noire de 52px en trois zones : le niveau courant à gauche, la recherche au centre, les actions à droite (Thème, Mettre à jour, Santé, Travail récent (Récent), Écrans, Commencer ici (Visite), Exporter, Parcours, filtres, détails). En haut à gauche, le grand titre et la description. À droite, le panneau de 360px, redimensionnable, décollé des bords de 16px. Il commence par les chiffres. En bas au centre, la bulle de questions. En bas à gauche, les boutons de zoom.
 
 **Tablette (701 à 999px).** La barre passe sur deux rangées et ses boutons ne gardent que leurs icônes, en 44px. Le panneau démarre fermé. Les boutons de zoom remontent en haut à droite pour ne pas passer sous la bulle. Les écrans tactiles jusqu'à 1279px reprennent cette barre.
 

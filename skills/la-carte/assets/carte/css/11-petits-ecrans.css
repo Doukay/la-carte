@@ -113,8 +113,8 @@
   header .hr .btn .badge { position: static; }
   #btn-update .bl { display: none; }
   #btn-recent .bl, #tour-btn .bl { font-size: 0; }
-  #btn-recent .bl::after { content: "Récent"; font-size: 13.5px; }
-  #tour-btn .bl::after { content: "Visite"; font-size: 13.5px; }
+  #btn-recent .bl::after { content: "Récent"; font-size: 13px; }
+  #tour-btn .bl::after { content: "Visite"; font-size: 13px; }
   #btn-panel::after { content: "Détails"; }
   body, body.no-panel { --pw: 0px; }
   #panel { top: auto; left: 16px; right: 16px; bottom: 16px; width: auto; height: 44vh; }

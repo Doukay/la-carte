@@ -43,7 +43,7 @@ svg.lod-low .foot .meta { visibility: hidden; }
 .rw.soft { font-weight: 500; }
 body.no-recent .rw { display: none; }
 body.no-recent .card.recent, body.no-recent .card.recent-in { box-shadow: var(--shadow-card); }
-svg.lod-low .rw { font-size: 18px; padding: 6px 12px; }
+svg.lod-mid .rw, svg.lod-low .rw { font-size: calc(11.5px * var(--contre, 1)); padding: calc(2px * var(--contre, 1)) calc(8px * var(--contre, 1)); }
 .card.has-note .title::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--sev-medium); margin-left: 8px; vertical-align: middle; }
 .card.connector { flex-direction: row; align-items: center; gap: 10px; padding: 0 14px 0 10px; border-radius: var(--r-card); }
 .card.connector .ico { width: 26px; height: 26px; border-radius: 9px; }

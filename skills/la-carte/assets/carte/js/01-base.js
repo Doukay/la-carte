@@ -43,7 +43,7 @@ function el(balise, attrs = {}, parent) {
 
 // ---------- pictogrammes ----------
 const P = {
-  casse: '<path d="M9.5 14.5 7 17a3 3 0 0 1-4-4l2.5-2.5M14.5 9.5 17 7a3 3 0 0 1 4 4l-2.5 2.5M9 5V3M15 21v-2M5 9H3M21 15h-2"/>',
+  casse: '<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
   health: '<path d="M12 3 5 6v6c0 5 3 8 7 9 4-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
   ui: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
   service: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>',

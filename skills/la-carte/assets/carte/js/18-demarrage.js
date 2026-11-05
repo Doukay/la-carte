@@ -70,7 +70,10 @@ const placerContexte = () => { if (estTelephone()) colonne.prepend(elContexte); 
 requeteTelephone.addEventListener('change', () => { placerContexte(); if (etatVue.view) afficherVue(); }); // la colonne et le schéma n'ont pas la même disposition
  placerContexte();
 $('#btn-panel').onclick = () => reglerPanneau(document.body.classList.contains('no-panel'));
-panneau.addEventListener('click', (ev) => { if (ev.target.closest('.feuille-x')) reglerPanneau(false); });
+panneau.addEventListener('click', (ev) => {
+  if (ev.target.closest('.feuille-x')) reglerPanneau(false);
+  if (ev.target.closest('[data-voir-sante]')) $('#btn-health')?.click();
+});
 Object.assign(etatVue.kinds, stockageLocal.get('kinds', {}));
 window.addEventListener('keydown', (ev) => {
   if (elPalette.classList.contains('open') || ev.target.tagName === 'INPUT') return;

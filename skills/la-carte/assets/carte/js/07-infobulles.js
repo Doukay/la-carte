@@ -26,8 +26,8 @@ function infobulleLien(e) {
   if (e.k === 'contains') return `<div class="tt">${h(nomDe(e.a))} contient ${h(nomDe(e.b))}</div>`;
   const eps = adressesDe(e);
   const noms = [...new Set(e.links.flatMap((l) => l.names || []))];
-  const libelles = [...new Set(e.links.flatMap((l) => l.labels || []))].filter((x) => !/^[A-Z]+ \//.test(x));
-  const desc = e.links.map((l) => l.desc).find(Boolean);
+  const libelles = e.k === 'casse' && !modeTechnique() ? [] : [...new Set(e.links.flatMap((l) => l.labels || []))].filter((x) => !/^[A-Z]+ \//.test(x));
+  const desc = e.k === 'casse' ? [...new Set(e.links.flatMap((l) => l.phrases || []))].join(' ') : e.links.map((l) => l.desc).find(Boolean);
   const meta = eps.length ? eps.slice(0, 4).map((x) => `${x.r.m} ${x.r.p}`).join('\n') + (eps.length > 4 ? `\n+${eps.length - 4} de plus` : '')
     : noms.length ? 'utilise ' + noms.slice(0, 8).join(', ') + (noms.length > 8 ? '…' : '') : libelles.slice(0, 4).join('\n');
   return `<div class="tt">${h(nomDe(e.a))} → ${h(nomDe(e.b))}</div><div class="td">${h(LIBELLE_TYPE[e.k])} · ${accorder(e.w, 'connexion')}${eps.length ? ` · ${accorder(eps.length, 'adresse')} du serveur` : ''}</div>${desc ? `<div class="td">${h(desc)}</div>` : ''}${meta ? `<div class="tp">${h(meta)}</div>` : ''}<div class="th"><span><span class="kbd">clic</span> détails</span><span><span class="kbd">clic droit</span> plus</span></div>`;
