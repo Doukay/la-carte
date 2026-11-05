@@ -11,7 +11,7 @@ const MARGE = 28; // place autour de chaque bloc pour son ombre, son anneau de s
 function piedBloc(element) {
   const i = infosBloc(element);
   let taille = '';
-  if (i.type === 'node' && i.n.kind !== 'external') { const sous = (fils.get(element) || []).filter((k) => k.startsWith('n:')).length; taille = sous ? accorder(sous, 'partie') : accorder(statsDe(element).files, 'fichier'); }
+  if (i.type === 'node' && i.n.kind !== 'external' && i.n.kind !== 'casse') { const sous = (fils.get(element) || []).filter((k) => k.startsWith('n:')).length; taille = sous ? accorder(sous, 'partie') : accorder(statsDe(element).files, 'fichier'); }
   else if (i.type === 'dir') taille = accorder(statsDe(element).files, 'fichier');
   else if (i.type === 'module') taille = 'ce fichier';
   else if (i.type === 'file') { const nr = (routesParFichier.get(i.f.p) || []).length; taille = nr ? accorder(nr, 'adresse') + ' du serveur' : ''; }
