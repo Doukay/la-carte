@@ -187,6 +187,7 @@ test('rien de nouveau n’apparaît sur un ordinateur : les boutons n’ont pas 
 
 test('au-delà de 14 blocs sur ordinateur, la vue passe en cartes : pas de calcul de schéma, pas de lignes', () => {
   assert.match(page, /const SEUIL_CARTES = 14;/);
+  assert.match(page, /body\.vue-cartes\.in-flow \.col-bloc \{ scroll-margin-top: 156px; \}/); // la barre du parcours ne cache pas la carte concernée
   assert.match(page, /if \(COPIE_EXPORTEE\) return ''; \/\/ celui qui reçoit une copie/);
   assert.match(page, /const ZOOM_LISIBLE = 0\.45;/);
   assert.match(page, /< ZOOM_LISIBLE\) \{ reglerCartes\(true\); res = disposerColonne\(vue\); \}/);

@@ -4,6 +4,10 @@
   body.vue-cartes #svg, body.vue-cartes #zoom, body.vue-cartes #colonne > .credit { display: none; }
   body.vue-cartes #colonne { display: block; position: absolute; inset: var(--hh, 64px) var(--pw) 0 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 24px 112px; background: var(--bg); }
   body.vue-cartes #colonne #context { position: static; max-width: 640px; pointer-events: auto; margin-bottom: 20px; }
+  /* pendant un parcours, la barre prend la place du titre : la carte concernée s'arrête dessous */
+  body.vue-cartes.in-flow #colonne #context { display: none; }
+  body.vue-cartes.in-flow #colonne { padding-top: 156px; }
+  body.vue-cartes.in-flow .col-bloc { scroll-margin-top: 156px; }
   body.vue-cartes #colonne-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; align-items: stretch; }
   body.vue-cartes .col-rang { display: contents; }
   body.vue-cartes .col-bloc { scroll-margin-top: 12px; position: relative; display: flex; flex-direction: column; border-radius: var(--r-card); background: color-mix(in srgb, var(--c) 10%, var(--surface)); overflow: hidden; transition: background .15s var(--ease); }

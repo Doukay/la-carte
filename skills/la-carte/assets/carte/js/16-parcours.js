@@ -122,7 +122,7 @@ function etapeParcours() {
   const conteneur = b ? conteneurCommun(a, b) : parentsParId.get(a) || 'root';
   const barre = $('#flowbar'); barre.hidden = false;
   barre.innerHTML = `<div class="ft"><div class="fk">${h(f.title)} · étape ${i + 1} sur ${f.steps.length}</div><b>${h(infosBloc(a).name)}</b>${b ? ` <span>→</span> <b>${h(infosBloc(b).name)}</b>` : ''}<br><span>${h(f.steps[i].note)}</span><div class="dots">${f.steps.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div></div>
-    <button class="btn icon" id="fl-prev" ${i === 0 ? 'disabled' : ''}>${pictoI('left')}</button><button class="btn icon" id="fl-next">${pictoI(i >= f.steps.length - 1 ? 'x' : 'right')}</button><button class="btn icon" id="fl-x" title="Quitter">${pictoI('x')}</button>`;
+    <button class="btn icon" id="fl-prev" title="Étape précédente" aria-label="Étape précédente" ${i === 0 ? 'disabled' : ''}>${pictoI('left')}</button><button class="btn icon" id="fl-next" title="${i >= f.steps.length - 1 ? 'Terminer' : 'Étape suivante'}" aria-label="${i >= f.steps.length - 1 ? 'Terminer' : 'Étape suivante'}">${pictoI(i >= f.steps.length - 1 ? 'x' : 'right')}</button><button class="btn icon" id="fl-x" title="Quitter" aria-label="Quitter le parcours">${pictoI('x')}</button>`;
   $('#fl-prev').onclick = () => { etatVue.flow.i--; etapeParcours(); };
   $('#fl-next').onclick = () => { if (etatVue.flow.i >= f.steps.length - 1) finirParcours(); else { etatVue.flow.i++; etapeParcours(); } };
   $('#fl-x').onclick = finirParcours;
