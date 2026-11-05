@@ -1,9 +1,9 @@
 # la carte 0.6.3-fr.1: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 3eb44c80efa5ee321228d6f239820a52fbe820a21252539afd3390b634d45207  .agents/plugins/marketplace.json
-5f9be9dbfb7ebd385b4fc1215bdf72d55476e83b61964087eea4246967e6b54e  .claude-plugin/marketplace.json
-529b7e98eb45cbf689506e8d282266586ec0885d492e2a3ae8daf466c01b9f72  .claude-plugin/plugin.json
-755b39952b6f19985bc48080d7d7a6d978ef3e329bc037d8bf4cf9ec308608c4  .codex-plugin/plugin.json
+31aa8cf3e3ac69672e843a4421437d9e2e32cd7065578d739ffbce5277539dc2  .claude-plugin/marketplace.json
+8391aa1f866fe38059149837f99104a24f23ea595e7dfb7d8d7446c771dfc274  .claude-plugin/plugin.json
+626e989222a10d19e1235bdc18721d9e8afe735bef002eec00877cc2ac3af8ad  .codex-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 775c2fdf3ac7db13462eeec459a45c66aac7bf3a116d4db86f739d38165fa9f2  skills/la-carte/SKILL.md
 42264b33a4e0336d3aa96c05a91fa49faa948d2cfabd5226e5978fe5d4528104  skills/la-carte/agents/openai.yaml
