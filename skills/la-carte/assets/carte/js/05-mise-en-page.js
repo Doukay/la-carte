@@ -27,10 +27,10 @@ async function disposer(vue) {
   for (const element of vue.visible) {
     const [w, hh] = TAILLES[infosBloc(element).type] || TAILLES.file;
     const ext = element.startsWith('n:') && noeudsParId.get(element.slice(2)).kind === 'external';
-    enfantsElk.push({ id: element, width: w, height: Math.max(hh + hauteurSupplementaireBloc(element) + (noteReponse(element) ? HAUTEUR_NOTE : 0), (deg.get(element) || 0) * 7 + 28), ...(ext ? { layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } } : {}) });
+    enfantsElk.push({ id: element, width: w, height: Math.max(hh + hauteurSupplementaireBloc(element) + (noteReponse(element) ? HAUTEUR_NOTE : 0), (deg.get(element) || 0) * 10 + 28), ...(ext ? { layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } } : {}) });
   }
   for (const c of vue.connectors) {
-    enfantsElk.push({ id: c.id, width: borner(largeurTexte(infosBloc(c.entity).name, 22) + 96, 230, 460), height: Math.max(76, (deg.get(c.id) || 0) * 7 + 14),
+    enfantsElk.push({ id: c.id, width: borner(largeurTexte(infosBloc(c.entity).name, 22) + 96, 230, 460), height: Math.max(76, (deg.get(c.id) || 0) * 10 + 14),
       layoutOptions: { 'elk.layered.layering.layerConstraint': c.side === 'in' ? 'FIRST_SEPARATE' : 'LAST_SEPARATE' } });
   }
   const entree = {
@@ -38,10 +38,11 @@ async function disposer(vue) {
     edges: vue.edges.map((e) => ({ id: e.id, sources: [e.a], targets: [e.b] })),
     layoutOptions: {
       'elk.algorithm': 'layered', 'elk.direction': 'RIGHT', 'elk.edgeRouting': 'ORTHOGONAL',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '130', 'elk.spacing.nodeNode': '32',
-      'elk.layered.spacing.edgeEdgeBetweenLayers': '8', 'elk.spacing.edgeEdge': '8', 'elk.layered.spacing.edgeNodeBetweenLayers': '24',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '190', 'elk.spacing.nodeNode': '64',
+      'elk.layered.spacing.edgeEdgeBetweenLayers': '18', 'elk.spacing.edgeEdge': '18', 'elk.layered.spacing.edgeNodeBetweenLayers': '40',
       'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX', 'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-      'elk.layered.thoroughness': vue.edges.length > 150 ? '4' : '12', // une grande vue cherche moins longtemps à éviter les croisements 'elk.separateConnectedComponents': 'true', 'elk.spacing.componentComponent': '80',
+      'elk.layered.thoroughness': vue.edges.length > 150 ? '4' : '12', // une grande vue cherche moins longtemps à éviter les croisements
+      'elk.separateConnectedComponents': 'true', 'elk.spacing.componentComponent': '80',
       'elk.padding': '[top=40,left=40,bottom=40,right=40]',
     },
   };

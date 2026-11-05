@@ -18,8 +18,10 @@ let jetonAffichage = 0;
 async function afficherVue(options = {}) {
   const jeton = ++jetonAffichage;
   const vue = construireVue(etatVue.container);
-  const enCartes = !estTelephone() && vue.visible.length + vue.connectors.length > SEUIL_CARTES;
-  if (enCartes !== vueEnCartes) { vueEnCartes = enCartes; document.body.classList.toggle('vue-cartes', enCartes); placerContexte(); }
+  const reponse = vue.container === 'q:answer'; // la réponse à une question reste un schéma : elle montre un enchaînement
+  const enCartes = !estTelephone() && !reponse && vue.visible.length + vue.connectors.length > SEUIL_CARTES;
+  const reglerCartes = (on) => { if (on !== vueEnCartes) { vueEnCartes = on; document.body.classList.toggle('vue-cartes', on); placerContexte(); } };
+  reglerCartes(enCartes);
   const chargement = setTimeout(() => $('#loading').classList.add('on'), 160);
   let res;
   try { res = await disposer(vue); }
@@ -27,6 +29,11 @@ async function afficherVue(options = {}) {
   clearTimeout(chargement);
   $('#loading').classList.remove('on');
   if (jeton !== jetonAffichage) return;
+  // la vue d'ensemble reste un schéma : c'est elle qui montre comment tout tient ensemble
+  if (!modeColonne() && !reponse && etatVue.container !== 'root') {
+    const a = zoneDisponible();
+    if (Math.min(a.w / (res.width + 40), a.h / (res.height + 20)) < ZOOM_LISIBLE) { reglerCartes(true); res = disposerColonne(vue); }
+  }
   etatVue.view = vue; etatVue.layout = res;
   queueMicrotask(() => emettre('render', { container: etatVue.container, view: vue }));
   dessiner(vue, res);

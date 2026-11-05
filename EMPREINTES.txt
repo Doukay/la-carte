@@ -16,12 +16,12 @@ c2fedcf1f82303a38d9725ec0ddfa7e47158e1603ba45720e2c52ecad3f750ee  skills/la-cart
 85433b7b80e661c18543c46ac497056bbc9856f59e363fee9533845626ca13cd  skills/la-carte/assets/carte/css/10-extensions.css
 a761dc85b54c19538bd2e13db151c256266426b023beef139f9f4922356ab168  skills/la-carte/assets/carte/css/11-petits-ecrans.css
 8bbc08d2ed934226d5c6e1b22d544e445be6f45a81121d5dd1ed6cfa89cd65ed  skills/la-carte/assets/carte/css/12-vue-cartes.css
-7e81fa4f36a64aa759142d545d8ebc15ccd0cef098dee8841f5fc064ff22dbd1  skills/la-carte/assets/carte/js/01-base.js
+1fb7a0ac856b5cd6c05389bb91e525463e51b822178e3747367fcb046b30b96a  skills/la-carte/assets/carte/js/01-base.js
 4eaafc59393ea9cf5df8e781195f1a08259b84d942dc2618d2d3fbc08249a99d  skills/la-carte/assets/carte/js/02-modele.js
 0ef40a00abb980f6b3c5d219b197f6913034d54fa83208875f832749f8650121  skills/la-carte/assets/carte/js/03-projection.js
 caed7168a24f81a57bec41e246f09be5827be18d76c09dc91ee9f957de67cd9f  skills/la-carte/assets/carte/js/04-blocs.js
-a106e00b8aa1cbc55596801a37c4dc9ec58549b2d971c60cf4348908e8b77a8a  skills/la-carte/assets/carte/js/05-mise-en-page.js
-3a1252942d76f4c31037e054fecb18524ccf1f29f08aa57039f5622fa70f7228  skills/la-carte/assets/carte/js/06-affichage.js
+1e310c16f7480b16238115403ac4159f34bf845cf5a2509aee22a2320b0a7e6c  skills/la-carte/assets/carte/js/05-mise-en-page.js
+cfc773a2cd8ef51dc628c31e78b864b681a002b7353e334bc8a5e416e35c5942  skills/la-carte/assets/carte/js/06-affichage.js
 8438373f54fafe896e43763508c9b4727191c9210a1e225494bfbc8cb1e16d34  skills/la-carte/assets/carte/js/07-infobulles.js
 c3dec12bab59ccdc3d1f1cb1c9ad4165fec76e0c5d8657f18c45af4eb74c663b  skills/la-carte/assets/carte/js/08-menus.js
 6bbd51cc54d081883653d20b02454ced8644ec501c122648bf4d8118bdc6ba16  skills/la-carte/assets/carte/js/09-deplacement.js

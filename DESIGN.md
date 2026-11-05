@@ -379,6 +379,8 @@ La barre noire porte tout. Le niveau courant se lit à gauche, les niveaux supé
 
 ### Vue en cartes
 
+Un schéma qui ne tiendrait à l'écran qu'en dessous de 45 % de zoom passe aussi en cartes, sauf la vue d'ensemble. Espacements du schéma : 64 px entre deux blocs d'une colonne, 190 px entre deux colonnes, 18 px entre deux lignes.
+
 Au-delà de 14 blocs (intérieur et blocs reliés de l'extérieur), sur ordinateur et tablette, une grille de cartes (250 px minimum) remplace le schéma : mêmes cartes que la colonne du téléphone, liens en pastilles « Utilise » de 26 px. Le panneau garde « Utilisé par » et « Dépend de » : la grille ne montre que ce que la partie contient.
 
 ### Liens coupés

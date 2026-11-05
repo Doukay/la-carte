@@ -10,6 +10,8 @@ const requeteTelephone = matchMedia('(max-width: 700px)');
 const estTelephone = () => requeteTelephone.matches;
 // au-delà de ce nombre de blocs, un schéma devient un paquet de lignes : la vue passe en cartes, comme sur le téléphone
 const SEUIL_CARTES = 14;
+// un schéma qui ne tient à l'écran qu'en dessous de ce zoom est illisible, même avec peu de blocs
+const ZOOM_LISIBLE = 0.45;
 let vueEnCartes = false;
 const modeColonne = () => estTelephone() || vueEnCartes;
 const petitEcran = () => matchMedia('(max-width: 999px)').matches; // tablette comprise : à cette largeur, le panneau ouvert écraserait la carte
