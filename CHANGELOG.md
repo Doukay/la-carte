@@ -2,6 +2,10 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.9 (2026-11-05)
+
+- **Mise à jour sans Claude** : `--nom "Nom du projet"` donne son nom à une carte faite sans Claude (sinon le nom du dossier, souvent en majuscules). Une carte décrite par Claude garde le sien.
+
 ## 0.6.3-fr.8 (2026-11-05)
 
 - **Cartes rangées ailleurs** : l'analyse saute aussi un dossier de carte qui ne s'appelle pas `la-carte/` (reconnu à son `.cache/skill.json`), et le dossier de la carte en cours. Une carte de dossier qui contient d'autres cartes ne les lit plus comme du code.

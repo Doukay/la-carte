@@ -4,7 +4,7 @@
 // les descriptions déjà écrites (actualiser.mjs) et donne un nom par défaut aux nouveaux fichiers. Remplit ensuite
 // « Récent » avec les commits Git (recents.mjs --git), reconstruit, et peut écrire une copie à partager.
 //
-// usage : node sans-claude.mjs [racine] [--export <fichier>] [--min-code 3]
+// usage : node sans-claude.mjs [racine] [--export <fichier>] [--min-code 3] [--nom "Nom du projet"]
 // Avec LA_CARTE_DOSSIER=<dossier>, la carte est rangée là au lieu de <racine>/la-carte : le projet n’est pas touché.
 // Code de sortie : 0 carte à jour, 3 pas assez de code pour une carte, 1 échec.
 
@@ -23,6 +23,11 @@ const fichierArchi = path.join(dossier, 'sources', 'architecture.json');
 const lancer = (script, ...reste) => execFileSync(process.execPath, [path.join(ICI, script), racine, ...reste], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
 try {
+  // une carte faite ici sans Claude reprend le nom demandé (celle que Claude a décrite garde le sien)
+  if (typeof params.nom === 'string' && params.nom.trim() && fs.existsSync(fichierArchi)) {
+    const archi = JSON.parse(fs.readFileSync(fichierArchi, 'utf8'));
+    if (archi.auto && archi.projet?.name !== params.nom.trim()) { archi.projet = { ...archi.projet, name: params.nom.trim() }; fs.writeFileSync(fichierArchi, JSON.stringify(archi, null, 2) + '\n'); }
+  }
   // actualiser.mjs a besoin d’une construction précédente ; des sources recopiées d’ailleurs n’en ont pas encore
   if (fs.existsSync(fichierArchi) && fs.existsSync(path.join(dossier, '.cache', 'graphe.json'))) lancer('actualiser.mjs');
   else {
@@ -32,7 +37,7 @@ try {
       const nbCode = analyse.files.filter((f) => f.category === 'code').length;
       if (nbCode < (Number(params['min-code']) || 3)) { console.log(`Pas de carte : ${nbCode} fichier(s) de code seulement.`); process.exit(3); }
       fs.mkdirSync(path.dirname(fichierArchi), { recursive: true });
-      fs.writeFileSync(fichierArchi, JSON.stringify(architectureAuto(analyse, analyse.rootName || path.basename(racine)), null, 2) + '\n');
+      fs.writeFileSync(fichierArchi, JSON.stringify(architectureAuto(analyse, (typeof params.nom === 'string' && params.nom.trim()) || analyse.rootName || path.basename(racine)), null, 2) + '\n');
     }
     lancer('construire.mjs');
   }

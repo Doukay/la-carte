@@ -31,12 +31,13 @@ const sansClaude = (racine, dossier, ...reste) => execFileSync(process.execPath,
 
 test('sans Claude : la carte est rangée hors du projet, ses parties suivent les dossiers, « Récent » vient de Git', () => {
   const racine = projetAvecCommit(), dossier = dossierAilleurs();
-  const sortie = sansClaude(racine, dossier, '--export', path.join(dossier, 'copie.html'));
+  const sortie = sansClaude(racine, dossier, '--export', path.join(dossier, 'copie.html'), '--nom', 'Liste de courses');
   assert.match(sortie, /Carte à jour : 4 fichiers/);
   assert.equal(fs.existsSync(path.join(racine, 'la-carte')), false, 'rien n’est écrit dans le projet');
   assert.equal(gitDans(racine, 'status', '--porcelain').toString(), '');
   const archi = lireJson(path.join(dossier, 'sources', 'architecture.json'));
   assert.equal(archi.auto, true);
+  assert.equal(archi.projet.name, 'Liste de courses');
   assert.deepEqual(archi.nodes.map((n) => [n.id, n.kind]).sort(), [['backend', 'service'], ['frontend', 'ui']]);
   const g = lireJson(path.join(dossier, '.cache', 'graphe.json'));
   assert.equal(g.recent.tasks[0].title, 'Première version de la liste');
