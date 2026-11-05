@@ -37,7 +37,7 @@ function demarrer({ enregistre, appareilClair = false, stockageBloque = false } 
 
 test('la page a un jeu de couleurs sombre et un jeu clair, et le clair est celui par défaut', () => {
   assert.match(page, /let memoire = 'light';/);
-  assert.match(page, /:root \{[^}]*--bg: #000000;/);
+  assert.match(page, /:root \{[^}]*--bg: #111113;/);
   assert.match(page, /:root\[data-theme="light"\] \{[^}]*--bg: #f5f5f7;/);
   assert.match(page, /:root\[data-theme="light"\] \{[^}]*color-scheme: light;/);
   // chaque variable de couleur définie en sombre a aussi une valeur claire

@@ -34,7 +34,7 @@
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", ui-sans-serif, system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
   --accent: #2997ff;
-  --bg: #000000; --bg-rgb: 0, 0, 0; --grid: #1c1c1e;
+  --bg: #111113; --bg-rgb: 17, 17, 19; --grid: #1c1c1e;
   --ink: 255, 255, 255; /* la couleur dont la page se teinte : blanc sur fond sombre, noir sur fond clair */
   --surface: #1d1d1f; --surface-hover: #242426; --raise: #272729; --raise-2: #333336;
   --elev: #1d1d1f; --hair: rgba(var(--ink), .08); --hair-2: rgba(var(--ink), .14);
@@ -45,7 +45,7 @@
   --ok: #30d158; --sev-high: #ff6961; --sev-medium: #ffb340; --sev-low: #98989d;
   --warn-bg: rgba(255, 179, 64, .12); --warn-text: #ffd8a0; --warn-sheet: #3a2c14;
   --ok-bg: rgba(48, 209, 88, .12); --ok-text: #a8e9bd; --err-text: #ff8a82;
-  --dir-bg: #161618; --menu-solid: #1d1d1f; --well: #000000;
+  --dir-bg: #18181a; --menu-solid: #1d1d1f; --well: #000000;
   --palette-bg: #1d1d1f; --modal-bg: #1d1d1f;
   --scrim: rgba(0, 0, 0, .55); --scrim-2: rgba(0, 0, 0, .6);
   --shadow-lift: 0 0 0 1px #48484a;
@@ -55,9 +55,9 @@
   --ease: cubic-bezier(.16, 1, .3, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
   --shadow-card: none;
   --shadow-float: 0 0 0 1px #333336;
-  --k-import: #636366; --k-http: #2997ff; --k-call: #bf5af2; --k-rpc: #7d7aff; --k-event: #ff375f; --k-queue: #ff9f0a; --k-data: #64d2ff; --k-config: #6b7280; --k-contains: #4a4a4a;
-  --n-ui: #2997ff; --n-service: #bf5af2; --n-worker: #ff9f0a; --n-library: #30d158; --n-feature: #2997ff; --n-data: #64d2ff; --n-config: #98989d;
-  --n-test: #ff375f; --n-script: #ff9f0a; --n-infra: #ff453a; --n-external: #7d7aff; --n-misc: #98989d; --n-dir: #98989d; --n-file: #98989d;
+  --k-import: #8e8e93; --k-http: #2997ff; --k-call: #bf5af2; --k-rpc: #7d7aff; --k-event: #ff375f; --k-queue: #ff9f0a; --k-data: #64d2ff; --k-config: #6b7280; --k-contains: #4a4a4a;
+  --n-ui: #2997ff; --n-service: #bf5af2; --n-worker: #bf5af2; --n-library: #bf5af2; --n-feature: #bf5af2; --n-data: #bf5af2; --n-config: #bf5af2;
+  --n-test: #ff9f0a; --n-script: #ff9f0a; --n-infra: #ff9f0a; --n-external: #30d158; --n-misc: #98989d; --n-dir: #98989d; --n-file: #98989d;
   --n-module: #98989d; --n-symbol: #bf5af2; --n-route: #2997ff; --n-connector: #98989d;
   --m-GET: #30d158; --m-POST: #2997ff; --m-PUT: #ffb340; --m-PATCH: #98989d; --m-DELETE: #ff6961; --m-CALL: #2997ff; --m-ANY: #98989d;
   --panel-w: 360px; --pw: calc(var(--panel-w) + 32px); --gutter: 28px;
@@ -84,9 +84,9 @@
   --shadow-float: 0 0 0 1px #e8e8ed;
   --shadow-lift: 0 0 0 1px #d2d2d7;
   --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .3);
-  --k-import: #aeaeb2; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
-  --n-ui: #0066cc; --n-service: #8944ab; --n-worker: #b25000; --n-library: #248a3d; --n-feature: #0066cc; --n-data: #0071a4; --n-config: #66666b;
-  --n-test: #d30f45; --n-script: #b25000; --n-infra: #d70015; --n-external: #3634a3; --n-misc: #66666b; --n-dir: #66666b; --n-file: #66666b;
+  --k-import: #86868b; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
+  --n-ui: #0066cc; --n-service: #8944ab; --n-worker: #8944ab; --n-library: #8944ab; --n-feature: #8944ab; --n-data: #8944ab; --n-config: #8944ab;
+  --n-test: #b25000; --n-script: #b25000; --n-infra: #b25000; --n-external: #248a3d; --n-misc: #66666b; --n-dir: #66666b; --n-file: #66666b;
   --n-module: #66666b; --n-symbol: #8944ab; --n-route: #0066cc; --n-connector: #6e6e73;
   --m-GET: #248a3d; --m-POST: #0066cc; --m-PUT: #b25000; --m-PATCH: #6e6e73; --m-DELETE: #d70015; --m-CALL: #0066cc; --m-ANY: #6e6e73;
 }
@@ -135,7 +135,7 @@ header > * { pointer-events: auto; }
 .rel { position: relative; }
 
 /* ---------- carte ---------- */
-#stage { position: fixed; inset: 0; overflow: hidden; background-color: var(--bg); background-image: radial-gradient(var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
+#stage { position: fixed; inset: 0; overflow: hidden; background-color: var(--bg); }
 #svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
 #svg.panning { cursor: grabbing; }
 #svg { touch-action: none; } /* un doigt fait glisser la carte au lieu que le navigateur prenne le toucher ; n'agit que sur le tactile */
@@ -206,11 +206,17 @@ svg.lod-low .rw { font-size: 18px; padding: 6px 12px; }
 .anote { margin-top: 4px; display: flex; gap: 9px; align-items: flex-start; padding: 9px 11px; border-radius: 14px; background: rgba(var(--ink), .05); font-size: 12.5px; line-height: 1.45; color: var(--text); }
 .anote b { flex: none; width: 19px; height: 19px; border-radius: 999px; background: var(--on); color: var(--on-text); display: grid; place-items: center; font-size: 10.5px; font-weight: 700; }
 .anote span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-svg.lod-mid .desc { -webkit-line-clamp: 1 !important; max-height: 19px; }
+svg.lod-mid .desc, svg.lod-mid .foot .meta { display: none; }
+svg.lod-mid .title, svg.lod-low .title { font-size: calc(13px * var(--contre, 1)); line-height: 1.2; -webkit-line-clamp: 3; }
+svg.lod-mid .head, svg.lod-low .head { align-items: flex-start; }
+svg.lod-mid .ico, svg.lod-low .ico { width: calc(20px * var(--contre, 1)); height: calc(20px * var(--contre, 1)); border-radius: calc(6px * var(--contre, 1)); }
+svg.lod-mid .ico svg, svg.lod-low .ico svg { width: calc(12px * var(--contre, 1)); height: calc(12px * var(--contre, 1)); }
+svg.lod-mid .card.connector .lbl, svg.lod-low .card.connector .lbl { font-size: calc(12px * var(--contre, 1)); line-height: 1.15; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+svg.lod-mid .card.connector .dir-ico, svg.lod-low .card.connector .dir-ico { display: none; }
+svg.lod-mid .cols text, svg.lod-low .cols text { font-size: calc(11.5px * var(--contre, 1)); }
 svg.lod-low .meta, svg.lod-low .anote { visibility: hidden; }
 /* de loin, seuls le gros titre et la pastille du pied sont lisibles : on retire la description pour qu'ils tiennent */
 svg.lod-low .desc { display: none; }
-svg.lod-low .title { font-size: 22px; white-space: normal; }
 svg.dim .node:not(.hl) .card { box-shadow: none; }
 svg.dim .node:not(.hl) .card > * { opacity: .28; transition: opacity .3s var(--ease); }
 
@@ -222,10 +228,11 @@ svg.dim .node:not(.hl) .card > * { opacity: .28; transition: opacity .3s var(--e
 .cols text { fill: var(--text-3); font: 500 13px Inter, system-ui, sans-serif; letter-spacing: -.005em; dominant-baseline: central; text-anchor: middle; }
 @keyframes fadeIn { from { opacity: 0; } }
 .edge { color: var(--k-import); }
-.edge .trace { fill: none; stroke: currentColor; stroke-opacity: .5; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity .25s var(--ease), stroke-width .25s var(--ease); }
+.edge .trace { fill: none; stroke: currentColor; stroke-opacity: .85; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity .25s var(--ease), stroke-width .25s var(--ease); }
 .edge .flow { fill: none; stroke: currentColor; stroke-width: 2; stroke-dasharray: 2 10; stroke-linecap: round; opacity: 0; transition: opacity .25s var(--ease); }
 .edge .hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
-.edge .port { fill: var(--bg); stroke: currentColor; stroke-width: 1.5; transition: opacity .25s var(--ease); }
+.edge .port { fill: var(--bg); stroke: currentColor; stroke-width: 1.5; opacity: 0; transition: opacity .25s var(--ease); }
+.edge:hover .port, .edge.hl .port { opacity: 1; }
 .edge.k-config .trace { stroke-dasharray: 5 5; }
 .edge.k-contains .trace { stroke-dasharray: 2 6; stroke-opacity: .9; }
 .edge:hover .trace, .edge.hl .trace { stroke-opacity: 1; }
@@ -322,10 +329,8 @@ body.resizing #panel-resize::after { background: rgba(var(--ink), .4); }
 body.resizing, body.resizing * { cursor: ew-resize !important; user-select: none; }
 body.resizing #panel, body.resizing #ask, body.resizing #flowbar { transition: none; }
 body.exported #ask { display: none; }
-#madewith { position: absolute; left: calc((100% - var(--pw)) / 2); bottom: 20px; transform: translateX(-50%); z-index: 4; display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px 8px 12px; border-radius: 999px; font-size: 12.5px; color: var(--text-3); text-decoration: none; white-space: nowrap; transition: left .45s var(--ease), color .15s var(--ease); }
-#madewith b { color: var(--text); font-weight: 600; }
-#madewith:hover { color: var(--text); }
-@media (max-width: 700px) { #madewith .x { display: none; } }
+.credit { padding: 14px 18px 18px; font-size: 12px; line-height: 1.5; color: var(--text-3); }
+.credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .xtag { font-size: 11.5px; font-weight: 500; color: var(--text-3); background: rgba(var(--ink), .06); border-radius: 999px; padding: 3px 9px; margin-left: 8px; white-space: nowrap; cursor: default; }
 body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 #panel::-webkit-scrollbar { width: 12px; } #panel::-webkit-scrollbar-thumb { background: rgba(var(--ink), .1); border-radius: 10px; border: 4px solid transparent; background-clip: padding-box; }
@@ -409,7 +414,7 @@ body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 #ask-input:disabled { cursor: not-allowed; }
 .engine { font-size: 12px; color: var(--text-3); background: rgba(var(--ink), .05); border-radius: 999px; padding: 4px 10px; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
 .engine i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-4); }
-.engine.ok i { background: var(--ok); box-shadow: 0 0 8px color-mix(in srgb, var(--ok) 80%, transparent); }
+.engine.ok i { background: var(--ok); }
 .engine.warn { color: var(--warn-text); background: var(--warn-bg); }
 .engine.warn i { background: var(--sev-medium); }
 .einfo { background: none; border: 0; padding: 0; margin-left: 1px; color: var(--text-3); cursor: pointer; display: grid; }
@@ -467,7 +472,6 @@ body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 #toast.on { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 .group-h { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 4px; font-size: 12.5px; color: var(--text-2); font-weight: 500; }
 .group-h:first-of-type { margin-top: 2px; }
-.group-h .gd { color: var(--text-4); font-weight: 400; font-size: 12px; }
 #legend .tech { border-top: 1px solid var(--hair); margin-top: 4px; padding-top: 4px; }
 /* Safari/WebKit : le HTML dans <foreignObject> qui reçoit sa propre couche d'affichage (position, découpe du débordement,
    transformation, opacité, animation) est dessiné à l'origine de la page, sans tenir compte de la transformation SVG. On garde donc les blocs sans couche là-bas. */
@@ -492,11 +496,13 @@ header .btn .badge { background: #2997ff; color: #000; }
 .ico { background: color-mix(in srgb, var(--c) 18%, var(--surface)); border-radius: 8px; color: var(--c); }
 .meta { background: var(--raise); color: var(--text-3); }
 .card { padding: 18px 20px; background: color-mix(in srgb, var(--c) 10%, var(--surface)); }
-.card.external { background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, var(--surface)); }
+.card.external { background: color-mix(in srgb, var(--c) 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, var(--surface)); }
 .node:hover .card { transform: none; box-shadow: var(--shadow-lift); }
 .node.sel .card, .node.sel .card.external { box-shadow: 0 0 0 2px var(--ring); }
 #panel.meme-sujet > .sec:first-child > .ph, #panel.meme-sujet > .sec:first-child > .pt, #panel.meme-sujet > .sec:first-child > .pd:not(.md) { display: none; } /* une information à un seul endroit : le titre et la description sont déjà en haut à gauche */
 #colonne { display: none; }
+.brand { display: none; } /* le nom du projet est le grand titre de la page */
+#crumbs button.cur:not(:first-child), #crumbs .sep:nth-last-child(2) { display: none; } /* le niveau courant aussi */
 /* ---------- téléphones et tablettes : fenêtres sous 1000 px et écrans tactiles sous 1280 px (une souris à 1000 px et plus n'est pas touchée) ---------- */
 @media (max-width: 999px), (max-width: 1279px) and (pointer: coarse) {
   #btn-up, .brand { flex: none; }
@@ -541,7 +547,7 @@ header .btn .badge { background: #2997ff; color: #000; }
   #search-btn { padding: 0; justify-content: center; gap: 0; }
   #search-btn .st, #search-btn .kbd { display: none; }
   #crumbs button { padding: 6px 8px; max-width: 160px; }
-  #crumbs button:not(.cur), #crumbs .sep { display: none; } /* seulement là où tu es ; la flèche Haut permet de remonter */
+  #crumbs button:not(.cur):not(:nth-last-child(3)), #crumbs .sep { display: none; } /* seulement le niveau au-dessus ; la flèche permet de remonter */
   #context { left: 16px; right: 16px; max-width: none; }
   #context h1 { font-size: 20px; }
   /* la description se replie sur une ligne avec un bouton Plus / Moins, pour ne pas remplir l'écran */
@@ -577,15 +583,16 @@ header .btn .badge { background: #2997ff; color: #000; }
   .col-zone:active { background: var(--raise); }
   .col-bloc .card, .col-bloc .card.external { height: auto; background: transparent; box-shadow: none; animation: none; padding: 16px 44px 14px 16px; overflow: visible; }
   .col-bloc .card.connector { padding: 12px 44px 12px 12px; }
-  .col-bloc .desc { max-height: none; -webkit-line-clamp: unset; display: block; }
-  .col-bloc .foot { margin-top: 6px; }
+  .col-bloc .desc { -webkit-line-clamp: 2; max-height: 40px; }
+  .col-bloc .foot .meta { display: none; }
+  .col-bloc .foot:not(:has(.rw)) { display: none; }
   .col-ouvrir { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); display: grid; place-items: center; width: 24px; height: 24px; }
-  .col-titre { flex: 0 0 100%; font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
-  .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 0 12px 12px; }
-  .col-lien { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  .col-titre { font-size: 12.5px; color: var(--text-3); padding: 0 2px; }
+  .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; padding: 0 12px 12px; }
+  .col-lien { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  .col-lien[hidden] { display: none; }
   .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .col-lien svg.i { width: 13px; height: 13px; color: var(--on); }
-  .col-plus { font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
+  .col-plus { min-height: 44px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème suit l'appareil */
   #btn-export, #filters-btn, #theme-toggle, #ask-engine { display: none; }
   header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 10px; }
@@ -605,7 +612,7 @@ header .btn .badge { background: #2997ff; color: #000; }
 <script>if (matchMedia('(max-width: 700px)').matches && !/[#&]s=/.test(location.hash)) document.body.classList.add('no-panel'); // un téléphone démarre avec les détails fermés, pour que le panneau ne s'ouvre pas puis ne se referme pas d'un coup</script>
 <div id="stage">
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="viewport"></g></svg>
-  <div id="colonne"><div id="colonne-liste"></div></div>
+  <div id="colonne"><div id="colonne-liste"></div><div class="credit">Faite avec <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div></div>
   <div id="context"></div>
   <div id="zoom" class="glass">
     <button id="z-out" title="Dézoomer (−)"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
@@ -866,7 +873,14 @@ const nomDe = (element) => infosBloc(element.startsWith('x:') ? entiteConnecteur
 const filsVisibles = (element) => (fils.get(element) || []).filter((k) => modeTechnique() || !k.startsWith('s:'));
 const ouvrable = (element) => /^(n:|d:|f:)/.test(element) && filsVisibles(element).length > 0;
 const varMethode = (m) => `var(--m-${m in METHODES ? m : 'ANY'})`;
-const couleurBloc = (i) => i.type === 'route' ? varMethode(i.r.m) : `var(--n-${i.type === 'node' ? i.kind : i.type === 'symbol' ? 'symbol' : i.type})`;
+/** La couleur d'un bloc est celle de son groupe : les blocs à l'intérieur d'une partie prennent la couleur de la partie de premier niveau. */
+function genreDuGroupe(i) {
+  const noeud = i.type === 'node' ? i.n.id : i.type === 'dir' ? i.d.node : i.type === 'file' || i.type === 'module' ? i.f.n : null;
+  if (!noeud) return null;
+  const chaine = lignee('n:' + noeud), haut = chaine[chaine.length - 2];
+  return (haut && infosBloc(haut).kind) || (i.type === 'node' ? i.kind : null);
+}
+const couleurBloc = (i) => i.type === 'route' ? varMethode(i.r.m) : `var(--n-${i.type === 'symbol' ? 'symbol' : genreDuGroupe(i) || i.type})`;
 const clePicto = (i) => i.type === 'node' ? (P[i.n.icon] ? i.n.icon : i.kind) : i.type === 'symbol' ? i.kind : (i.type === 'file' || i.type === 'module') && P[i.f.icon] ? i.f.icon : i.type;
 
 function statsDe(element) {
@@ -1105,7 +1119,7 @@ async function disposer(vue) {
     enfantsElk.push({ id: element, width: w, height: Math.max(hh + hauteurSupplementaireBloc(element) + (noteReponse(element) ? HAUTEUR_NOTE : 0), (deg.get(element) || 0) * 7 + 28), ...(ext ? { layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } } : {}) });
   }
   for (const c of vue.connectors) {
-    enfantsElk.push({ id: c.id, width: borner(largeurTexte(infosBloc(c.entity).name, 13) + 84, 150, 320), height: Math.max(42, (deg.get(c.id) || 0) * 7 + 14),
+    enfantsElk.push({ id: c.id, width: borner(largeurTexte(infosBloc(c.entity).name, 22) + 96, 230, 460), height: Math.max(76, (deg.get(c.id) || 0) * 7 + 14),
       layoutOptions: { 'elk.layered.layering.layerConstraint': c.side === 'in' ? 'FIRST_SEPARATE' : 'LAST_SEPARATE' } });
   }
   return elk.layout({
@@ -1332,7 +1346,8 @@ function appliquerTransformation() {
   const { x, y, k } = etatVue.t;
   vp.style.transform = `translate(${x}px,${y}px) scale(${k})`;
   svg.classList.toggle('lod-low', k < 0.42);
-  svg.classList.toggle('lod-mid', k >= 0.42 && k < 0.65);
+  svg.classList.toggle('lod-mid', k >= 0.42 && k < 0.75);
+  svg.style.setProperty('--contre', Math.min(2.4, 1 / Math.min(k, 1)).toFixed(3));
 }
 const rectScene = () => svg.getBoundingClientRect();
 function reglerTransformation(t, animate) {
@@ -1521,8 +1536,8 @@ function rangsColonne(vue, res) {
 function liensColonne(vue, id) {
   const cibles = [...new Set(vue.edges.filter((e) => e.a === id).map((e) => e.b))];
   if (!cibles.length) return '';
-  const montres = cibles.slice(0, 3).map((b) => `<button type="button" class="col-lien" data-vers="${h(b)}">${pictoI('right')}<span>${h(nomDe(b))}</span></button>`).join('');
-  return `<div class="col-liens"><span class="col-titre">Utilise</span>${montres}${cibles.length > 3 ? `<span class="col-plus">+${cibles.length - 3}</span>` : ''}</div>`;
+  const bouton = (b, cache) => `<button type="button" class="col-lien" data-vers="${h(b)}"${cache ? ' hidden' : ''}><span>${h(nomDe(b))}</span></button>`;
+  return `<div class="col-liens"><span class="col-titre">Utilise</span>${cibles.map((b, n) => bouton(b, n >= 2)).join('')}${cibles.length > 2 ? `<button type="button" class="col-plus" aria-label="Montrer les ${cibles.length - 2} autres liens">+${cibles.length - 2}</button>` : ''}</div>`;
 }
 function rendreColonne(vue, res) {
   if (!estTelephone()) { listeColonne.innerHTML = ''; return; }
@@ -1544,6 +1559,8 @@ function montrerDansColonne(id, surligner = true) {
   return true;
 }
 colonne.addEventListener('click', (ev) => {
+  const plus = ev.target.closest('.col-plus');
+  if (plus) { ev.stopPropagation(); plus.parentElement.querySelectorAll('.col-lien[hidden]').forEach((x) => { x.hidden = false; }); plus.remove(); return; }
   const lien = ev.target.closest('[data-vers]');
   if (lien) { ev.stopPropagation(); const v = lien.dataset.vers; if (!montrerDansColonne(v)) localiser(v.startsWith('x:') ? entiteConnecteur(v) : v); return; }
   const zone = ev.target.closest('.col-zone');
@@ -1584,13 +1601,11 @@ function appliquerSelection() {
 // ======================= interface : contexte, fil d'Ariane, légende =======================
 function afficherContexte() {
   if (etatVue.container === 'q:answer') {
-    $('#context').innerHTML = `<div class="k"><span class="ico" style="--c:var(--on)">${picto(etatVue.answer.icon || 'spark')}</span>${h(etatVue.answer.kind || 'Réponse')} · ${accorder(etatVue.answer.items.length, 'bloc')}</div><h1>${h(etatVue.answer.title)}</h1><p>${h(etatVue.answer.question)}</p>`;
+    $('#context').innerHTML = `<h1>${h(etatVue.answer.title)}</h1><p>${h(etatVue.answer.question)}</p>`;
     return;
   }
   const i = infosBloc(etatVue.container);
-  const genre = etatVue.container === 'root' ? '' : Maj(nomGenre(i.type === 'node' ? i.kind : i.type));
-  const pastilleNombre = etatVue.container === 'root' ? '' : `<span class="ico" style="--c:${couleurBloc(i)}">${picto(clePicto(i))}</span>`;
-  $('#context').innerHTML = `${genre ? `<div class="k">${pastilleNombre}${h(genre)}</div>` : ''}<h1>${h(i.name)}</h1>${i.desc ? `<p class="cd" id="ctx-desc">${h(i.desc)}</p>` : ''}${etatVue.view?.hidden ? `<p class="cx" style="color:var(--text-3);font-size:12.5px;margin-top:8px">${etatVue.view.hidden} export(s) de plus ne sont importés nulle part par leur nom ; ils sont listés dans le panneau de détails.</p>` : ''}${i.desc ? '<button type="button" class="ctx-more" aria-controls="ctx-desc" hidden></button>' : ''}`;
+  $('#context').innerHTML = `<h1>${h(i.name)}</h1>${i.desc ? `<p class="cd" id="ctx-desc">${h(i.desc)}</p>` : ''}${etatVue.view?.hidden ? `<p class="cx" style="color:var(--text-3);font-size:12.5px;margin-top:8px">${etatVue.view.hidden} export(s) de plus ne sont importés nulle part par leur nom ; ils sont listés dans le panneau de détails.</p>` : ''}${i.desc ? '<button type="button" class="ctx-more" aria-controls="ctx-desc" hidden></button>' : ''}`;
   replierContexte();
 }
 /** Sur un téléphone, la description se replie sur une ligne ; le bouton Plus / Moins n'apparaît que s'il y a plus à lire, et le choix est retenu sur cet appareil. */
@@ -1650,9 +1665,9 @@ function afficherLegende(vue) {
 
 // ======================= panneau de détails =======================
 const urlEditeur = (p, ligne = 1) => G.meta.root && !PLAN ? `vscode://file/${encodeURI(G.meta.root.replace(/\\/g, '/'))}/${encodeURI(p)}:${ligne}` : null;
-const ligneDe = (element, extra = '', couleurPoint) => {
+const ligneDe = (element, extra = '') => {
   const i = infosBloc(element);
-  return `<a class="row" data-go="${h(element)}" title="${h(i.path || '')}"><span class="dot" style="background:${couleurPoint || couleurBloc(i)}"></span><span class="rt"><div class="rn">${h(i.name)}</div>${i.desc ? `<div class="rd">${h(i.desc)}</div>` : ''}</span>${extra ? `<span class="rc">${extra}</span>` : ''}</a>`;
+  return `<a class="row" data-go="${h(element)}" title="${h(i.path || '')}"><span class="dot" style="background:${couleurBloc(i)}"></span><span class="rt"><div class="rn">${h(i.name)}</div>${i.desc ? `<div class="rd">${h(i.desc)}</div>` : ''}</span>${extra ? `<span class="rc">${extra}</span>` : ''}</a>`;
 };
 const ligneRoute = (ri, extra = '') => {
   const r = routes[ri];
@@ -1666,6 +1681,7 @@ function enteteFiche(i) {
     <h2 class="pt">${h(i.name)}</h2>${i.desc ? `<p class="pd">${h(i.desc)}</p>` : '<p class="pd empty">Pas encore de description.</p>'}`;
 }
 
+const CREDIT = `<div class="credit">Faite avec <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div>`;
 function afficherPanneau() {
   const sel = etatVue.selected;
   let html;
@@ -1691,7 +1707,7 @@ function afficherPanneau() {
       html = second > 0 ? html.slice(0, second) + bloc + html.slice(second) : html + bloc;
     } catch (e) { console.error('floorplan extension', e); }
   }
-  panneau.innerHTML = html || '';
+  panneau.innerHTML = (html || '') + CREDIT;
   panneau.classList.toggle('meme-sujet', !sel && !perso.panel);
   sortiesExt.forEach((o, i) => { try { o.bind?.(o.whole ? panneau : panneau.querySelector(`[data-ext="${i}"]`)); } catch (e) { console.error('floorplan extension', e); } });
   panneau.scrollTop = 0;
@@ -1714,17 +1730,17 @@ function panneauReponse() {
 
 // Parties de premier niveau, regroupées sous des noms compréhensibles plutôt que de simples points de couleur.
 const GROUPES_SYSTEMES = [
-  { label: 'Applications utilisées', hint: 'ce que les utilisateurs et l\'équipe ouvrent', kinds: ['ui'] },
-  { label: 'Dans les coulisses', hint: 'serveurs, tâches de fond, code partagé', kinds: ['service', 'worker', 'library', 'feature', 'data', 'config'] },
-  { label: 'Services extérieurs', hint: 'd\'autres entreprises dont ton application dépend', kinds: ['external'] },
-  { label: 'Outils de développement', hint: 'scripts, tests, déploiement', kinds: ['script', 'test', 'infra'] },
+  { label: 'Applications utilisées', kinds: ['ui'] },
+  { label: 'Dans les coulisses', kinds: ['service', 'worker', 'library', 'feature', 'data', 'config'] },
+  { label: 'Services extérieurs', kinds: ['external'] },
+  { label: 'Outils de développement', kinds: ['script', 'test', 'infra'] },
 ];
 function sectionParties(racines) {
   const places = new Set();
   const parties = GROUPES_SYSTEMES.map((g) => {
     const elements = racines.filter((t) => g.kinds.includes(infosBloc(t).kind));
     elements.forEach((t) => places.add(t));
-    return elements.length ? `<div class="group-h">${h(g.label)}<span class="gd">${h(g.hint)}</span></div><div class="list">${elements.map((t) => ligneDe(t, infosBloc(t).kind === 'external' ? '' : modeTechnique() && !PLAN && statsDe(t)?.files ? formaterNombre(statsDe(t).loc) + ' lignes' : statsDe(t)?.files ? accorder(statsDe(t).files, 'fichier') : '')).join('')}</div>` : '';
+    return elements.length ? `<div class="group-h">${h(g.label)}</div><div class="list">${elements.map((t) => ligneDe(t, infosBloc(t).kind === 'external' ? '' : modeTechnique() && !PLAN && statsDe(t)?.files ? formaterNombre(statsDe(t).loc) + ' lignes' : statsDe(t)?.files ? accorder(statsDe(t).files, 'fichier') : '')).join('')}</div>` : '';
   });
   const reste = racines.filter((t) => !places.has(t));
   if (reste.length) parties.push(`<div class="group-h">Autres</div><div class="list">${reste.map((t) => ligneDe(t)).join('')}</div>`);
@@ -1736,7 +1752,7 @@ function panneauApercu() {
   const racines = fils.get('root') || [];
   const nonDecrits = G.files.filter((f) => f.auto).length + routes.filter((r) => r.auto).length;
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--accent)">${picto('feature')}</span><span class="kind">${PLAN ? 'Plan' : 'Projet'}</span></div><h2 class="pt">${h(p.name)}</h2>${p.summary ? `<p class="pd">${h(p.summary)}</p>` : ''}
-      <div class="stats" style="margin-top:14px"><div><b>${formaterNombre(G.meta.counts.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? `<div><b>${formaterNombre((G.ecrans || []).length)}</b><span>écrans</span></div>` : `<div><b>${formaterNombre(G.meta.counts.loc)}</b><span>lignes</span></div>`}<div><b>${formaterNombre(routes.length)}</b><span>adresses du serveur</span></div></div>
+      <div class="stats" style="margin-top:14px"><div><b>${formaterNombre(G.meta.counts.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? `<div><b>${formaterNombre((G.ecrans || []).length)}</b><span>écrans</span></div>` : `<div><b>${formaterNombre(G.meta.counts.loc)}</b><span>lignes</span></div>`}${routes.length ? `<div><b>${formaterNombre(routes.length)}</b><span>adresses du serveur</span></div>` : ''}</div>
       ${nonDecrits ? `<div class="callout">${nonDecrits} fichiers et adresses du serveur gardent encore des noms générés. Relance le skill Floorplan pour les décrire.</div>` : ''}</div>
     ${sectionParties(racines)}
     ${sectionListe('Parcours guidés', G.parcours.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} étapes</span></a>`))}
@@ -1759,7 +1775,7 @@ function connexions(element) {
     const cur = m.get(cle) || { peer: voisin, k: l.k, w: 0 };
     cur.w += l.w; m.set(cle, cur);
   }
-  const rangees = (m) => [...m.values()].sort((a, b) => b.w - a.w).map((c) => ligneDe(c.peer, `${LIBELLE_TYPE[c.k]} · ${c.w}`, `var(--k-${c.k})`));
+  const rangees = (m) => [...m.values()].sort((a, b) => b.w - a.w).map((c) => ligneDe(c.peer, `${LIBELLE_TYPE[c.k]} · ${c.w}`));
   return { out: rangees(sortie), inn: rangees(entree) };
 }
 
@@ -1772,7 +1788,7 @@ function panneauElement(element, viaConnecteur) {
   if (i.type === 'node' || i.type === 'dir') {
     const n = i.n, s = statsDe(element);
     if (n?.details) html += n.details.split(/\n\n+/).map((p) => `<p class="pd" style="margin-top:8px">${h(p)}</p>`).join('');
-    if (n?.paths?.length || i.d) html += boiteChemin(i.d ? i.d.path + '/' : n.paths.join('  '));
+    if (modeTechnique() && (n?.paths?.length || i.d)) html += boiteChemin(i.d ? i.d.path + '/' : n.paths.join('  '));
     if (actions.length) html += `<div class="actions">${actions.join('')}</div>`;
     html += '</div>';
     if (s?.files) {
@@ -1780,10 +1796,10 @@ function panneauElement(element, viaConnecteur) {
       const tot = langages.reduce((a, [, v]) => a + v, 0) || 1;
       const couleurs = ['#a78bfa', '#38bdf8', '#34d399', '#fbbf24', '#f472b6'];
       const nr = routes.filter((r) => lignee('f:' + r.f).includes(element)).length;
-      html += `<div class="sec"><div class="stats"><div><b>${formaterNombre(s.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? '' : `<div><b>${formaterNombre(s.loc)}</b><span>lignes</span></div>`}<div><b>${nr}</b><span>adresses du serveur</span></div></div>
-        ${langages.length && !PLAN ? `<div class="bar">${langages.map(([, v], k) => `<span style="flex:${v};background:${couleurs[k]}"></span>`).join('')}</div><div class="legend-row">${langages.map(([l, v], k) => `<span><span class="dot" style="background:${couleurs[k]}"></span>${h(l)} ${Math.round((v / tot) * 100)}%</span>`).join('')}</div>` : ''}</div>`;
+      html += `<div class="sec"><div class="stats"><div><b>${formaterNombre(s.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? '' : `<div><b>${formaterNombre(s.loc)}</b><span>lignes</span></div>`}${nr ? `<div><b>${nr}</b><span>adresses du serveur</span></div>` : ''}</div>
+        ${modeTechnique() && langages.length && !PLAN ? `<div class="bar">${langages.map(([, v], k) => `<span style="flex:${v};background:${couleurs[k]}"></span>`).join('')}</div><div class="legend-row">${langages.map(([l, v], k) => `<span><span class="dot" style="background:${couleurs[k]}"></span>${h(l)} ${Math.round((v / tot) * 100)}%</span>`).join('')}</div>` : ''}</div>`;
     }
-    if (n?.packages?.length || n?.hosts?.length || n?.tags?.length) html += `<div class="sec"><h3>Repéré grâce à</h3><div class="tags">${[...n.packages.map((p) => 'paquet ' + p), ...n.hosts.map((p) => 'hôte ' + p), ...n.tags.map((t) => '#' + t)].map((t) => `<span class="tag">${h(t)}</span>`).join('')}</div></div>`;
+    if (modeTechnique() && (n?.packages?.length || n?.hosts?.length || n?.tags?.length)) html += `<div class="sec"><h3>Repéré grâce à</h3><div class="tags">${[...n.packages.map((p) => 'paquet ' + p), ...n.hosts.map((p) => 'hôte ' + p), ...n.tags.map((t) => '#' + t)].map((t) => `<span class="tag">${h(t)}</span>`).join('')}</div></div>`;
     html += sectionListe('À l\'intérieur', (fils.get(element) || []).filter((k) => !k.startsWith('f:')).map((k) => ligneDe(k)));
     const c = connexions(element);
     html += sectionListe('Utilisé par', c.inn) + sectionListe('Dépend de', c.out);
@@ -1801,7 +1817,7 @@ function panneauElement(element, viaConnecteur) {
       ${proprietaire ? `<div class="list" style="margin-top:12px">${ligneDe('n:' + proprietaire.id, 'module')}</div>` : ''}</div>`;
     html += sectionListe('Adresses du serveur', (routesParFichier.get(f.p) || []).map((ri) => ligneRoute(ri)), undefined, 60);
     const liensEntrants = G.links.filter((l) => l.b === fid), liensSortants = G.links.filter((l) => l.a === fid);
-    const ligneLien = (l, autre) => ligneDe(autre, l.calls?.length ? accorder(l.calls.length, 'appel') : LIBELLE_TYPE[l.k], `var(--k-${l.k})`);
+    const ligneLien = (l, autre) => ligneDe(autre, l.calls?.length ? accorder(l.calls.length, 'appel') : LIBELLE_TYPE[l.k]);
     html += sectionListe('Utilisé par', liensEntrants.map((l) => ligneLien(l, l.a)));
     html += sectionListe('Dépend de', liensSortants.map((l) => ligneLien(l, l.b)));
     const gestionnaires = new Set((routesParFichier.get(f.p) || []).map((ri) => routes[ri].h));
@@ -1815,7 +1831,7 @@ function panneauElement(element, viaConnecteur) {
     const ri = routes.indexOf(r);
     const appelants = new Map();
     for (const l of G.links) { const n = (l.calls || []).filter(([x]) => x === ri).length; if (n) appelants.set(l.a, (appelants.get(l.a) || 0) + n); }
-    html += appelants.size ? sectionListe('Appelé depuis', [...appelants.entries()].map(([a, n]) => ligneDe(a, accorder(n, 'appel'), 'var(--k-http)')))
+    html += appelants.size ? sectionListe('Appelé depuis', [...appelants.entries()].map(([a, n]) => ligneDe(a, accorder(n, 'appel'))))
       : `<div class="sec"><h3>Appelé depuis</h3><p class="pd empty">Aucun appel trouvé dans le code analysé. Elle peut être appelée par un système extérieur, ou par une adresse construite pendant l'exécution.</p></div>`;
   } else if (i.type === 'symbol') {
     const url = urlEditeur(i.f.p, i.s[2]);
@@ -2078,7 +2094,7 @@ function reglerMoteur(moteur, libelle, avertissement) {
   balise.title = moteur === 'cli' ? `Les réponses viennent de ${AGENT.cli} sur cet ordinateur, qui peut lire le code source` : moteur === 'app' ? 'Les réponses viennent de Claude dans l\'application Claude, à partir de la carte (pas des fichiers source)' : '';
   champQuestion.disabled = !moteur;
   boutonEnvoyer.disabled = !moteur;
-  champQuestion.placeholder = moteur ? `Pose une question sur ${G.projet.name}…` : 'Questions indisponibles';
+  champQuestion.placeholder = moteur ? (estTelephone() ? 'Pose une question…' : `Pose une question sur ${G.projet.name}…`) : 'Questions indisponibles';
   if (typeof afficherPuces === 'function' && etatQuestion.context) afficherPuces();
   reglerAvertissement(avertissement || null);
   ajouterBasculeMode();
@@ -2187,7 +2203,7 @@ const changementPossible = () => PLAN && etatQuestion.engine === 'cli' && window
 function reglerModeQuestion(m) {
   etatQuestion.mode = changementPossible() && m === 'change' ? 'change' : 'ask';
   $('#ask-mode')?.querySelectorAll('button').forEach((b) => { b.classList.toggle('on', b.dataset.m === etatQuestion.mode); b.setAttribute('aria-pressed', String(b.dataset.m === etatQuestion.mode)); });
-  if (etatQuestion.engine) champQuestion.placeholder = etatQuestion.mode === 'change' ? 'Demande une modification, par ex. « prévois aussi les remboursements »…' : `Pose une question sur ${G.projet.name}…`;
+  if (etatQuestion.engine) champQuestion.placeholder = etatQuestion.mode === 'change' ? 'Demande une modification, par ex. « prévois aussi les remboursements »…' : (estTelephone() ? 'Pose une question…' : `Pose une question sur ${G.projet.name}…`);
   boutonEnvoyer.title = etatQuestion.busy ? 'Arrêter' : etatQuestion.mode === 'change' ? 'Faire cette modification' : 'Demander';
 }
 function ajouterBasculeMode() {
@@ -2346,15 +2362,6 @@ if (COPIE_EXPORTEE) {
   balise.textContent = isNaN(at) ? 'Copie exportée' : `Exportée le ${at.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   balise.title = 'Une copie de cette carte pour la parcourir. Pour poser des questions, il faut Floorplan avec Claude Code ou Codex, dans le projet lui-même.';
   $('#proj-name').after(balise);
-  // la personne qui reçoit une copie peut retrouver d'où elle vient
-  const lienCredit = document.createElement('a');
-  lienCredit.id = 'madewith'; lienCredit.className = 'glass';
-  lienCredit.href = 'https://github.com/haydenschmitty/floorplan'; lienCredit.target = '_blank'; lienCredit.rel = 'noopener';
-  const nom = document.createElement('b'); nom.textContent = 'Floorplan';
-  const libre = document.createElement('span'); libre.className = 'x'; libre.textContent = '· traduction non officielle';
-  lienCredit.title = 'Carte faite avec Floorplan de Hayden Smith (traduction non officielle en français)';
-  lienCredit.append('Faite avec', nom, 'de Hayden Smith', libre);
-  $('#stage').appendChild(lienCredit);
 }
 document.title = `Carte de ${G.projet.name}`;
 $('#btn-up').onclick = monterNiveau;

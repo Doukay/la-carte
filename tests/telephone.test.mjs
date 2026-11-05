@@ -159,7 +159,11 @@ test('sur un téléphone, la colonne qui défile remplace le schéma : ni zoom n
   assert.match(page, /if \(id\.startsWith\('x:'\) \|\| ouvrable\(id\)\) ouvrirBloc\(id\); else choisir\(id\);/); // toucher un bloc l'ouvre ou montre ses détails
   assert.match(page, /role="button" tabindex="0"/); // atteignable au clavier
   assert.match(page, /if \(estTelephone\(\)\) colonne\.prepend\(elContexte\); else contexteOrigine\.insertBefore\(elContexte, contexteSuivant\);/);
-  assert.match(blocMedia('(max-width: 700px)'), /#crumbs button:not\(\.cur\), #crumbs \.sep \{ display: none; \}/); // le chemin montre où tu es, donc la rangée tient à 360 px
+  assert.match(blocMedia('(max-width: 700px)'), /#crumbs button:not\(\.cur\):not\(:nth-last-child\(3\)\), #crumbs \.sep \{ display: none; \}/); // le chemin montre où tu es, donc la rangée tient à 360 px
+});
+
+test('sur téléphone, les liens en trop restent vraiment cachés tant qu’on n’a pas touché « +N »', () => {
+  assert.match(blocMedia('(max-width: 700px)'), /\.col-lien\[hidden\] \{ display: none; \}/); // display: inline-flex écraserait sinon l'attribut hidden
 });
 
 test('rien de nouveau n’apparaît sur un ordinateur : les boutons n’ont pas ajouté d’infobulles', () => {
