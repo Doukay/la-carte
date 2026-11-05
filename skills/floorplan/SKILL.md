@@ -92,6 +92,7 @@ La racine du code est l'argument s'il y en a un, sinon le dossier courant. Ce pe
 3. **Explore juste assez.** Lis les README, les manifestes (package.json, pyproject, go.mod, docker-compose, configs de déploiement) et les points d'entrée, puis parcours 1 ou 2 fichiers par partie candidate, jusqu'à pouvoir écrire un résumé d'une phrase pour chacune. Tu cherches la forme du système, pas une revue de code.
 
 4. **Écris `floorplan/architecture.json`.** Vise :
+   - pour chaque partie, un champ `icon` : l'icône qui dit ce que ce bloc est **dans ce projet** (un caddie pour un site de courses, un cadenas pour le mot de passe), choisie dans la liste de [references/schema.md](references/schema.md#icônes) ;
    - 3 à 9 nœuds de premier niveau ;
    - 3 à 12 enfants sous chaque gros nœud ;
    - des globs qui couvrent plus de 90 % des fichiers de code ;

@@ -267,4 +267,7 @@ export function lireArguments(argv, defauts = {}) {
   return sortie;
 }
 
+// les icônes qu'on peut donner à un bloc (champ icon), dessinées dans assets/carte.html
+export const ICONES = ['appareil-photo', 'argent', 'boite', 'bouclier', 'cadeau', 'cadenas', 'calendrier', 'camion', 'carte-bancaire', 'cloche', 'code-barres', 'coeur', 'couches', 'courriel', 'document', 'donnees', 'dossier', 'eclair', 'ecran', 'etincelle', 'etiquette', 'etoile', 'fiole', 'globe', 'graphique', 'groupe', 'horloge', 'image', 'lien', 'lieu', 'liste', 'livre', 'loupe', 'magasin', 'maison', 'message', 'nuage', 'ordinateur', 'outils', 'palette', 'panier', 'personne', 'puce', 'reglages', 'robot', 'serveur', 'synchronisation', 'telechargement', 'telephone', 'terminal', 'ticket'];
+
 export const formaterNombre = (n) => n >= 10000 ? (n / 1000).toFixed(0) + ' k' : n >= 1000 ? (n / 1000).toFixed(1).replace('.', ',') + ' k' : String(n);

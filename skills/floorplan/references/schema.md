@@ -32,6 +32,7 @@ Chaque nœud est une pastille sur le tableau. La hiérarchie vient de `parent`. 
 | `kind` | énumération | `ui` `service` `worker` `library` `feature` `data` `config` `test` `script` `infra` `external` |
 | `parent` | texte | id du nœud qui l'englobe |
 | `summary` | texte | une phrase : de quoi il est responsable |
+| `icon` | texte | facultatif, mais à remplir pour chaque partie : l'icône qui dit ce que ce bloc est **dans ce projet**, par exemple `panier` pour un site de courses. Liste plus bas |
 | `details` | texte | notes plus longues, facultatives ; les lignes vides séparent les paragraphes |
 | `paths` | string[] | globs qui réclament des fichiers (voir plus bas) |
 | `exclude` | string[] | globs pour sortir des fichiers de `paths`. **Hérité par tous les descendants** : par exemple `"exclude": ["**/*.test.tsx"]` sur un nœud d'écrans garde les tests rangés à côté hors de chaque enfant, pour qu'un nœud Tests séparé puisse les réclamer |
@@ -179,3 +180,9 @@ Un dépôt d'écrans et un dépôt de serveur côte à côte :
   ]
 }
 ```
+
+## Icônes
+
+Choisis pour chaque partie (`icon` dans architecture.json) et chaque fichier (`icon` dans descriptions/*.json) l'icône qui correspond à ce qu'il fait dans **ce** projet, pas à sa nature technique : un service de remboursement prend `argent`, un site de promos `etiquette`, un écran de liste `liste`. Sans icône, le bloc garde celle de son type. Une icône inconnue donne un avertissement à la construction.
+
+`appareil-photo`, `argent`, `boite`, `bouclier`, `cadeau`, `cadenas`, `calendrier`, `camion`, `carte-bancaire`, `cloche`, `code-barres`, `coeur`, `couches`, `courriel`, `document`, `donnees`, `dossier`, `eclair`, `ecran`, `etincelle`, `etiquette`, `etoile`, `fiole`, `globe`, `graphique`, `groupe`, `horloge`, `image`, `lien`, `lieu`, `liste`, `livre`, `loupe`, `magasin`, `maison`, `message`, `nuage`, `ordinateur`, `outils`, `palette`, `panier`, `personne`, `puce`, `reglages`, `robot`, `serveur`, `synchronisation`, `telechargement`, `telephone`, `terminal`, `ticket`

@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderHorsGit } from './lib/commun.mjs';
+import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderHorsGit, ICONES } from './lib/commun.mjs';
 import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/noms.mjs';
 import { construireSante, avecRejets, rejetPour } from './lib/sante.mjs';
 import { construireSantePlan } from './lib/ebauche.mjs';
@@ -309,7 +309,7 @@ if (fs.existsSync(dossierDescriptions)) {
     for (const [p, v] of Object.entries(d.files || {})) {
       if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: files["${p}"] doit être { name, description }`); continue; }
       if (!ensembleInclus.has(p)) { fichiersPerimes++; if (exemplesPerimes.length < 3) exemplesPerimes.push(p); continue; }
-      descFichiers.set(p, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, review: estTexte(v.review) ? v.review : null });
+      descFichiers.set(p, { name: estTexte(v.name) ? v.name.trim() : null, d: estTexte(v.description) ? v.description.trim() : null, icon: ICONES.includes(v.icon) ? v.icon : null, iconBrute: v.icon, review: estTexte(v.review) ? v.review : null });
     }
     for (const [k, v] of Object.entries(d.routes || {})) {
       if (!v || typeof v !== 'object') { signalerErreur(`descriptions/${nom}: routes["${k}"] doit être { name, description }`); continue; }
@@ -341,6 +341,8 @@ if (erreurs.length) {
   rapport.push(`✗ ${erreurs.length} erreur(s) dans ${path.relative(racine, fichierArchi)}${analyse.ebauche ? ' ou plan.json' : ''} :`);
   for (const e of erreurs) rapport.push(`  - ${e}`);
 }
+const iconesInconnues = [...noeuds.map((n) => n?.icon), ...[...descFichiers.values()].map((d) => d.iconBrute)].filter((x) => x && !ICONES.includes(x));
+if (iconesInconnues.length) signalerAvertissement(`icône inconnue : ${[...new Set(iconesInconnues)].join(', ')} (voir la liste dans references/schema.md)`);
 if (avertissements.length) {
   rapport.push(`! ${avertissements.length} avertissement(s) :`);
   for (const w of avertissements.slice(0, 40)) rapport.push(`  - ${w}`);
@@ -384,7 +386,7 @@ const graphe = {
   projet: archi.projet,
   nodes: [
     ...noeuds.map((n) => ({
-      id: n.id, parent: n.parent || null, label: n.label, kind: n.kind, summary: n.summary || '', details: n.details || '',
+      id: n.id, parent: n.parent || null, label: n.label, kind: n.kind, summary: n.summary || '', details: n.details || '', ...(ICONES.includes(n.icon) ? { icon: n.icon } : {}),
       tags: n.tags || [], paths: n.paths || [], packages: n.packages || [], hosts: n.hosts || [],
       stats: { ...statistiques.get(n.id), repos: [...statistiques.get(n.id).repos] },
     })),
@@ -394,7 +396,7 @@ const graphe = {
     const d = descFichiers.get(f.path);
     return {
       p: f.path, n: proprietaire.get(f.path), r: f.repo, l: f.lang || f.category, loc: f.loc,
-      name: d?.name || f.name || nomFichierParDefaut(f.path), d: d?.d || f.desc || f.doc || '', ...(d?.d || f.desc ? {} : { auto: true }),
+      name: d?.name || f.name || nomFichierParDefaut(f.path), ...(d?.icon ? { icon: d.icon } : {}), d: d?.d || f.desc || f.doc || '', ...(d?.d || f.desc ? {} : { auto: true }),
       ...(f.doc ? { doc: f.doc } : {}),
       ...(f.tooLarge ? { tooLarge: true } : {}),
       ...(d?.review ? { review: d.review } : {}),

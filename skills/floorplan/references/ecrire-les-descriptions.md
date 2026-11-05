@@ -44,7 +44,7 @@ N'utilise `"developers"` que si la personne le demande, ou si la carte est visib
 }
 ```
 
-Remplis chaque `description` et améliore chaque `name`. **Ne change, n'ajoute et ne retire aucune clé.** Les clés (les chemins de fichiers, les `"METHODE /chemin"`, et les noms `files`, `routes`, `name`, `description`) servent à `construire.mjs` pour relier les entrées aux fichiers et aux adresses du serveur. Garde le JSON valide.
+Remplis chaque `description` et améliore chaque `name`. Pour chaque fichier, ajoute aussi `icon` : l'icône qui dit ce qu'il fait **dans ce projet** (liste dans [schema.md](schema.md#icônes)). À part `icon`, **ne change, n'ajoute et ne retire aucune clé.** Les clés (les chemins de fichiers, les `"METHODE /chemin"`, et les noms `files`, `routes`, `name`, `description`) servent à `construire.mjs` pour relier les entrées aux fichiers et aux adresses du serveur. Garde le JSON valide.
 
 ## Noms
 
