@@ -27,7 +27,7 @@
 })();
 </script>
 <title>__FLOORPLAN_TITLE__</title>
-<link rel="icon" type="image/png" href="__FLOORPLAN_FAVICON__">
+<link rel="icon" href="data:,">
 <style>/*__FONTS__*/</style>
 <style>
 :root {
@@ -145,8 +145,6 @@ header > * { pointer-events: auto; }
 #context { position: absolute; left: 24px; top: calc(var(--hh, 64px) + 8px); max-width: min(520px, calc(100% - var(--pw) - 64px)); pointer-events: none; transition: opacity .3s var(--ease); }
 /* la barre de parcours prend la place du titre pendant qu'un parcours se joue */
 body.in-flow #context { opacity: 0; }
-#context .k { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-3); }
-#context .k .ico { width: 20px; height: 20px; border-radius: 7px; }
 #context h1 { margin: 6px 0 6px; font-size: 34px; line-height: 1.1; font-weight: 600; letter-spacing: -.035em; text-wrap: balance; }
 #context p { margin: 0; color: var(--text-2); line-height: 1.55; font-size: 14px; }
 .ctx-more { display: none; } /* le bouton Plus / Moins sous la description est réservé aux téléphones */
@@ -225,7 +223,7 @@ svg.dim .node:not(.hl) .card > * { opacity: .28; transition: opacity .3s var(--e
 /* accolades de colonnes au-dessus d'une vue : ce qui utilise cette partie · ce qu'elle contient · ce qu'elle utilise */
 .cols { animation: fadeIn .7s var(--ease) .2s both; pointer-events: none; }
 .cols path { fill: none; stroke: rgba(var(--ink), .16); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.cols text { fill: var(--text-3); font: 500 13px Inter, system-ui, sans-serif; letter-spacing: -.005em; dominant-baseline: central; text-anchor: middle; }
+.cols text { fill: var(--text-3); font: 500 13px var(--sans); letter-spacing: -.005em; dominant-baseline: central; text-anchor: middle; }
 @keyframes fadeIn { from { opacity: 0; } }
 .edge { color: var(--k-import); }
 .edge .trace { fill: none; stroke: currentColor; stroke-opacity: 1; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity .25s var(--ease), stroke-width .25s var(--ease); }
@@ -499,6 +497,8 @@ header .btn .badge { background: #2997ff; color: #000; }
 .meta { background: var(--raise); color: var(--text-3); }
 .card { padding: 18px 20px; background: color-mix(in srgb, var(--c) 10%, var(--surface)); }
 .card.external { background: color-mix(in srgb, var(--c) 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, var(--surface)); }
+.card.dir, .card.module, .card.connector { background: color-mix(in srgb, var(--c) 10%, var(--surface)); }
+.node:hover .card, .node:hover .card.external, .node.sel .card, .node.sel .card.external { background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
 .node:hover .card { transform: none; box-shadow: var(--shadow-lift); }
 .node.sel .card, .node.sel .card.external { box-shadow: 0 0 0 2px var(--ring); }
 #panel.meme-sujet > .sec:first-child > .ph, #panel.meme-sujet > .sec:first-child > .pt, #panel.meme-sujet > .sec:first-child > .pd:not(.md) { display: none; } /* une information à un seul endroit : le titre et la description sont déjà en haut à gauche */
@@ -594,9 +594,12 @@ header .btn .badge { background: #2997ff; color: #000; }
   .col-lien { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   .col-lien[hidden] { display: none; }
   #panel > .credit { display: none; }
+  #ask-send { width: 44px; height: 44px; }
+  .chip button { position: relative; }
+  .chip button::after { content: ""; position: absolute; inset: -12px; }
   .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .col-plus { min-height: 44px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
-  /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème suit l'appareil */
+  /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème reste celui par défaut */
   #btn-export, #filters-btn, #theme-toggle, #ask-engine { display: none; }
   header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 10px; }
   .hr .btn .bl { display: block; font-size: 11px; line-height: 1.2; white-space: nowrap; }
@@ -604,6 +607,9 @@ header .btn .badge { background: #2997ff; color: #000; }
   /* les menus s'ouvrent en blocs pleine largeur sous la barre */
   #flowmenu, #legend { position: fixed; top: calc(var(--hh, 56px) + 4px); left: 8px; right: 8px; width: auto; max-height: 60vh; overflow: auto; }
   body #tour { left: 8px; right: 8px; width: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .cols, .edge .trace, .edge .flow, .flowlink, #viewport.anim { animation: none !important; transition: none !important; }
 }
 @media (prefers-reduced-motion: reduce) and (max-width: 999px), (prefers-reduced-motion: reduce) and (pointer: coarse) {
   #panel, body.no-panel #panel, #viewport.anim, #ask, #flowbar, #zoom button { transition: none; }

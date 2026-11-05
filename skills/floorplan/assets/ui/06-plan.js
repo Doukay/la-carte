@@ -24,7 +24,7 @@
 
   // une pastille « Plan » à côté du titre du tableau, qui est redessiné à chaque déplacement
   const ajouterPastille = () => {
-    const k = document.querySelector('#context .k');
+    const k = document.querySelector('#context h1');
     if (!k || k.querySelector('.bp-pill')) return;
     k.insertAdjacentHTML('beforeend', '<span class="bp-pill" title="Prévu, pas encore construit : chaque bloc est une partie dont le système aurait besoin.">Plan</span>');
   };

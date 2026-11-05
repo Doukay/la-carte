@@ -38,7 +38,6 @@ skills/floorplan/
     requetes-graphe.js recherches partagées dans la carte (visionneuse, requete.mjs, consignes de la bulle de questions)
     serveur.mjs      copié dans le dossier floorplan/ de chaque projet ; répond par Claude Code ou Codex
     requete-cli.mjs  devient floorplan/requete.mjs
-    logo.png, favicon.png
     vendor/        moteur de mise en page (elkjs) et polices intégrés, avec leurs licences
 tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
 outils/empreintes.mjs    écrit EMPREINTES.txt, et compare une copie installée avec lui

@@ -446,8 +446,6 @@ const page = (g) => gabarit
   .replace('/*__FONTS__*/', () => cssPolices)
   .replace('/*__FLOORPLAN_DATA__*/null', () => JSON.stringify(g).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'))
   .replace(/__FLOORPLAN_TITLE__/g, () => echapperHtml(`Carte de ${archi.projet.name}`))
-  .replace(/__FLOORPLAN_LOGO__/g, () => uriDonnees('logo.png'))
-  .replace(/__FLOORPLAN_FAVICON__/g, () => uriDonnees('favicon.png'))
   .replace('<!--__UI_EXTENSIONS__-->', () => scriptsUi);
 const dossierUi = path.join(DOSSIER_SKILL, 'assets', 'ui');
 const scriptsUi = fs.existsSync(dossierUi) ? fs.readdirSync(dossierUi).filter((n) => n.endsWith('.js')).sort().map((n) => `<script>/* ui/${n} */\n${fs.readFileSync(path.join(dossierUi, n), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`).join('\n') : '';
@@ -465,8 +463,6 @@ ${fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'requete-cli.mjs'), 'utf8')
 fs.copyFileSync(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs'), path.join(dossierSortie, 'serveur.mjs'));
 // un plan peut être modifié depuis la carte : serveur.mjs le redessine avec plan.mjs et construire.mjs de ce skill
 if (analyse.ebauche) { fs.mkdirSync(path.join(dossierSortie, '.cache'), { recursive: true }); fs.writeFileSync(path.join(dossierSortie, '.cache', 'skill.json'), JSON.stringify({ dir: DOSSIER_SKILL })); }
-// le logo et l’icône d’onglet sont intégrés pour que la carte reste un seul fichier autonome
-function uriDonnees(nom) { return 'data:image/png;base64,' + fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', nom)).toString('base64'); }
 function echapperHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
 const resumeSante = graphe.sante?.summary;

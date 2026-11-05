@@ -22,9 +22,8 @@ Les détails des blocs se simplifient quand tu dézoomes : les descriptions disp
 
 ### Sur un téléphone ou une tablette
 
-- **Sur un téléphone**, pas de zoom ni de déplacement : les blocs se suivent dans une colonne qui défile. Touche un bloc pour l'ouvrir, ou pour voir ses détails s'il n'a pas d'intérieur. Sous chaque bloc, **Utilise** liste ce à quoi il est relié.
-- **Sur une tablette**, le schéma reste : **fais glisser** avec un doigt pour déplacer la vue, et **pince** avec deux doigts pour zoomer.
-- **Touche un bloc** pour voir ses détails dans une feuille en bas. **Ouvrir** dans la feuille entre dans le bloc. Toucher un espace vide, entrer ou remonter, ou **Échap** range la feuille.
+- **Sur un téléphone**, pas de zoom ni de déplacement : les blocs se suivent dans une colonne qui défile. Touche un bloc pour l'ouvrir, ou pour voir ses détails dans une feuille en bas s'il n'a pas d'intérieur. Sous chaque bloc, **Utilise** liste ce à quoi il est relié : deux liens d'abord, et **+N** montre les autres.
+- **Sur une tablette**, le schéma reste : **fais glisser** avec un doigt pour déplacer la vue, et **pince** avec deux doigts pour zoomer. Le panneau démarre fermé pour laisser la place à la carte, et s'ouvre quand tu touches un bloc.
 - La barre du haut passe sur deux lignes et ses boutons n'affichent que leur icône, avec un mot dessous sur un téléphone. Sur un téléphone, la description sous le titre se replie sur une ligne, avec **Plus** pour lire la suite.
 
 Rien ne change à la souris dans une fenêtre de 1000 px de large ou plus. Le support des téléphones et des tablettes a été construit par [@menachem-kurkus](https://github.com/menachem-kurkus).
@@ -32,10 +31,12 @@ Rien ne change à la souris dans une fenêtre de 1000 px de large ou plus. Le su
 ## Les blocs
 
 - **Titre et description :** un nom en langage simple, et une ligne sur ce qu'il fait.
+- **Couleur :** une par groupe : bleu pour l'appli, violet pour les coulisses, vert pour les services extérieurs, orange pour les outils. Un bloc intérieur prend la couleur de sa partie.
+- **Petite icône :** choisie selon ce que fait le bloc dans ce projet, par exemple un caddie pour un magasin.
 - **Pied :** ce qu'il y a dedans (modules, fichiers ou adresses du serveur) à gauche. À droite, une étiquette verte quand il fait partie du travail récent.
 - **Les blocs d'adresse du serveur** montrent la méthode et l'adresse (`POST /api/orders`) au-dessus de leur nom.
 - **Un petit point ambre** après un titre veut dire qu'une note est épinglée sur ce fichier.
-- **Les blocs en forme de pilule sur les bords** d'une vue sont des éléments extérieurs à elle. Les crochets au-dessus de chaque colonne disent de quel côté on est :
+- **Les petits blocs sur les bords** d'une vue sont des éléments extérieurs à elle. Les crochets au-dessus de chaque colonne disent de quel côté on est :
   - **Utilisé par :** les parties extérieures qui utilisent celle-ci ou l'appellent.
   - **Dans ‹nom› :** de quoi cette partie est faite.
   - **Utilise :** les parties extérieures dont elle dépend, comme une base de données ou Stripe.

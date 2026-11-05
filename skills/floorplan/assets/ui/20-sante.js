@@ -177,7 +177,7 @@
         <div class="ph"><span class="ico" style="--c:${couleurTitre()}">${CARTE.icone('health')}</span><span class="kindlabel">${PLAN ? 'Revue du plan' : 'Contrôle de santé'}</span></div>
         <h2 class="pt">${h(phraseTitre())}</h2>
         <p class="pd">${PLAN ? 'On a vérifié le plan : les parties que n’importe qui sur Internet pourrait utiliser, les décisions que le PRD laisse ouvertes, et les morceaux auxquels rien n’est relié. Les régler maintenant coûte moins cher qu’après la construction.' : 'On a cherché les clés laissées dans le code ou envoyées au navigateur, les données et les parties de ton appli que n’importe qui sur Internet peut atteindre (tables Supabase, règles Firebase, webhooks Stripe, adresses du serveur), les fichiers inutilisés et les fichiers trop gros pour être modifiés sans risque. C’est un contrôle rapide, pas un audit de sécurité.'}</p>
-        ${vivants.length ? repartition() : `<div class="hc-calm">${ecartes.length ? `Il ne reste rien à regarder : tu as marqué ${CARTE.pluriel(ecartes.length, 'point')} comme pas un problème.` : `Rien ne ressort.`} C’est un contrôle automatique rapide, pas une vraie revue ${PLAN ? 'du plan' : 'de sécurité'}.</div>`}
+        ${vivants.length ? repartition() : `<div class="hc-calm">${ecartes.length ? `Il ne reste rien à regarder : tu as marqué ${CARTE.pluriel(ecartes.length, 'point')} comme pas un problème.` : `Rien ne ressort.`}${PLAN ? ' C’est un contrôle automatique rapide, pas une vraie revue du plan.' : ''}</div>`}
         <div class="actions"><button class="btn soft" data-hc-back>${CARTE.iconeI('left')}Retour</button></div>
       </div>`;
     const groupes = ORDRE.map((gravite) => {
