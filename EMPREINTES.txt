@@ -41,7 +41,7 @@ ef4ed238c337deeafa5977039fef394e1482debc69d13989599ff98b3c31c062  skills/la-cart
 85dad448514013643d94fecb7a599d993a1f5de0c72b24c9be36a8629ff7eac1  skills/la-carte/assets/requete-cli.mjs
 a13b1c2975222f46e828f2b88e191d1d765a48861245af2d193e1399f3a4e87e  skills/la-carte/assets/requetes-graphe.js
 d6dfc7103e7d55a1b77a27f55cd0b8fb7a60b5de13263f5c459f626257bac54d  skills/la-carte/assets/serveur.mjs
-0464c61d94699db0b1046e3dfae9412140f49718daf0e81750eb141721510f62  skills/la-carte/assets/ui/05-theme.js
+956ee77e108d14237b13e6be94718a306c1e2c6627fe5ec2b20af464354056cd  skills/la-carte/assets/ui/05-theme.js
 6e557ec437567f4a7f484098a02c49b856f87f9d8d34819e9c8eff891ef484e6  skills/la-carte/assets/ui/06-plan.js
 90964e203a90cf089fd55d93e488024cb7ea9adb79eee828b6f2e2f5d917330f  skills/la-carte/assets/ui/10-glossaire.js
 84847f3f2ee69d0183eae0249428e00bd2d638f7694bbd7c77c208a5e26f8062  skills/la-carte/assets/ui/20-sante.js

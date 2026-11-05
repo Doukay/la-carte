@@ -31,12 +31,12 @@ skills/la-carte/
     ouvrir.mjs       démarrer ou réutiliser le serveur de la carte, et ouvrir le navigateur
     lib/           extraction, résolution des imports, mise en relation des routes, santé, écrans, quel agent tourne, utilitaires
   assets/
-    carte.html    la carte (le gabarit que la construction remplit)
+    carte/         la carte : page.html (le gabarit), css/ et js/ par sujet, assemblés à la construction
     ui/            extensions de la visionneuse : bouton de thème, plans, glossaire, santé, travail récent, écrans, visite guidée, export
     requetes-graphe.js recherches partagées dans la carte (visionneuse, requete.mjs, consignes de la bulle de questions)
-    serveur.mjs      copié dans le dossier la-carte/ de chaque projet ; répond par Claude Code ou Codex
+    serveur.mjs      copié dans la-carte/.cache/ de chaque projet ; répond par Claude Code ou Codex
     requete-cli.mjs  devient la-carte/.cache/requete.mjs
-    vendor/        moteur de mise en page (elkjs) et polices intégrés, avec leurs licences
+    vendor/        moteur de mise en page (elkjs) et police intégrés, avec leurs licences
 tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
 outils/empreintes.mjs    écrit EMPREINTES.txt, et compare une copie installée avec lui
 EMPREINTES.txt          SHA-256 de chaque fichier d'où le plugin tourne
