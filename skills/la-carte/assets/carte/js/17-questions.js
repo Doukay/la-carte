@@ -56,7 +56,7 @@ function pastilleRef(id) {
   return `<span class="ref" data-ref="${h(id)}" style="--c:${couleurBloc(ii)}"><i></i>${h(b.name)}</span>`;
 }
 function md(src) {
-  const enLigne = (s) => h(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[\[([^\]]+)\]\]/g, (_, id) => pastilleRef(id.replace(/&#39;|&quot;/g, '').trim()));
+  const enLigne = (s) => h(s).replace(/~~(.+?)~~/g, '<s>$1</s>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[\[([^\]]+)\]\]/g, (_, id) => pastilleRef(id.replace(/&#39;|&quot;/g, '').trim()));
   const sortie = [];
   let liste = null;
   for (const brut of String(src || '').split('\n')) {

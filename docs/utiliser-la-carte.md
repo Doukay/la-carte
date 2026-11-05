@@ -90,6 +90,21 @@ Apparaît quand Claude vient de changer des choses. Il place les blocs modifiés
 ### Écrans
 Chaque page de ton appli que la carte a détectée. Choisis-en une pour voir tout ce qu'il y a derrière : ses composants, les appels qu'elle fait, le code du serveur qui y répond, les données qu'ils touchent, et les services extérieurs.
 
+### Où j'en suis (facultatif)
+
+Si tu tiens une note de suivi, la fiche du projet peut la montrer. Dis à la carte où elle est, dans `la-carte/sources/reglages.json` :
+
+```json
+{ "suivi": { "fichier": "notes/etat.md", "sections": ["Où j'en suis", "Prochaine étape"] } }
+```
+
+- **`fichier`** : un fichier `.md` ou `.txt`, depuis la racine du projet. Il peut être un dossier plus haut, pas davantage.
+- **`sections`** : les titres à montrer, sinon tout le fichier. Au-delà de 3 000 caractères, la fiche coupe et le dit.
+- **Mettre à jour** relit la note. Ce qui ressemble à une clé est masqué, les commentaires cachés et les adresses des liens sont retirés.
+- La note reste hors des copies exportées, sauf si tu coches **Où j'en suis** (ou `--include suivi` en ligne de commande).
+
+Sans ce réglage, la carte n'en parle pas.
+
 ### Exporter
 Enregistre une copie de la carte à envoyer à n'importe qui, comme un collègue, un client, ou une personne qui n'a pas Claude. C'est un seul fichier HTML qui s'ouvre dans n'importe quel navigateur sans rien installer. La copie contient toute la carte, la recherche, les écrans, la visite guidée et les parcours, mais pas de bulle de questions, pas de demandes **Corriger avec Claude** ou **Construire ça**, pas de liens vers l'éditeur, et rien sur ton ordinateur, comme le chemin de ton dossier. Une étiquette **Exporté** à côté du titre montre la date.
 
@@ -97,6 +112,8 @@ Tu choisis ce qu'on y met :
 - **Parcours et visite guidée**, et **notes épinglées sur les fichiers**, cochés par défaut ;
 - **Travail récent**, décoché par défaut ;
 - **Contrôle de santé** (ou la **revue du plan** sur un plan), décoché par défaut. La Santé liste les adresses du serveur que tout le monde peut utiliser et où se trouvent les secrets dans le code (jamais leurs valeurs) : ne l'inclus que pour des personnes de confiance.
+
+Une copie est un seul fichier, à mettre où tu veux : sur ton serveur, dans un dossier partagé, dans un mail. En ligne de commande, sans ouvrir la carte : `node la-carte/.cache/serveur.mjs --export ma-copie.html`.
 
 Chaque copie montre comment l'appli tient ensemble (chaque partie, fichier et adresse du serveur, avec leurs noms et descriptions), mais pas ton code source. L'export a besoin du serveur de la carte ; sur une carte ouverte directement depuis son fichier, le bouton montre à la place la commande à lancer. Tu peux aussi demander à Claude d'« exporter la carte ».
 

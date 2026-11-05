@@ -14,6 +14,8 @@ la-carte/
 
 ### `sources/` : à enregistrer avec ton projet
 
+`reglages.json` y a sa place s'il existe : il dit où trouver ta note de suivi (voir [Où j'en suis](utiliser-la-carte.md#où-jen-suis-facultatif)). Il ne contient que le chemin, pas la note.
+
 | Fichier | Ce que c'est | À modifier ? |
 |---|---|---|
 | `architecture.json` | Les parties de ton appli, les services extérieurs, les liens en plus, les parcours et la visite guidée | **Oui** |

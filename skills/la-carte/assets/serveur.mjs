@@ -48,7 +48,7 @@ const nettoyerRejet = (d) => ({
 // ---------- export : une copie de la carte à partager ----------
 // La même page autonome, marquée comme exportée : pas de bulle de questions, aucune demande à Claude, aucun lien vers
 // cet ordinateur, et seulement les options demandées. Utilisé par le bouton Exporter de la carte et par --export.
-const EXPORT_PARTIES = ['flows', 'notes', 'recent', 'health'];
+const EXPORT_PARTIES = ['flows', 'notes', 'recent', 'health', 'suivi'];
 const EXPORT_PAR_DEFAUT = ['flows', 'notes'];
 const DEBUT_DONNEES = '<script>window.LA_CARTE = ';
 function exporterCarte(inclus, parcoursSupplementaires = []) {
@@ -66,6 +66,7 @@ function exporterCarte(inclus, parcoursSupplementaires = []) {
     files: retenues.includes('notes') ? g.files : g.files.map(({ note, ...f }) => f),
   };
   if (!retenues.includes('recent')) delete sortie.recent;
+  if (!retenues.includes('suivi')) delete sortie.suivi;
   if (!retenues.includes('health')) {
     delete sortie.sante;
     // un lien coupé est une information de santé : il ne part pas sans elle
@@ -95,7 +96,7 @@ if (aOption('export')) {
     fs.writeFileSync(fichier, x.html);
     console.log(`Carte exportée vers ${fichier}`);
     // les clés ['flows'] et ['health'] sont les valeurs de --include, pas des champs du graphe
-    const etiquette = { ['flows']: 'les parcours et la visite guidée', notes: 'les notes', recent: 'le travail récent', ['health']: x.plan ? 'la revue du plan' : 'le contrôle de santé' };
+    const etiquette = { ['flows']: 'les parcours et la visite guidée', notes: 'les notes', recent: 'le travail récent', suivi: 'la note de suivi', ['health']: x.plan ? 'la revue du plan' : 'le contrôle de santé' };
     console.log(`Contient : la carte${x.include.map((p) => ', ' + etiquette[p]).join('')}. Un seul fichier qui s’ouvre dans n’importe quel navigateur, sans bulle de questions.`);
     if (x.include.includes('health') && !x.plan) console.log('Il contient le contrôle de santé : quelles adresses du serveur sont ouvertes et où se trouvent les secrets dans le code (jamais leurs valeurs). Ne le partage qu’avec des personnes de confiance.');
     process.exit(0);

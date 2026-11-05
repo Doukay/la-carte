@@ -41,6 +41,10 @@ La carte réelle d’une petite appli de démonstration, 72 fichiers décrits, d
 - Sur téléphone, on suit du doigt : défilement et toucher, jamais de geste difficile.
 - Dire ce que l'outil ne sait pas : le contrôle de santé n'est pas un audit.
 
+## Ce que le dépôt ne connaît pas
+
+La carte ne connaît aucune installation particulière : ni un auteur, ni un ordinateur, ni un serveur, ni un tableau de bord. Ce qui sert à une seule personne reste chez elle et utilise ce que l'outil offre à tous, par exemple le fichier d'une copie exportée. Une fonction du dépôt marche pour n'importe qui, ou reste invisible sans son réglage. `outils/rien-de-personnel.mjs` le contrôle.
+
 ## Accessibility & Inclusion
 
 Utilisable au clavier, cibles de 44 px au toucher, contraste lisible en thème clair et sombre, mouvement réduit respecté.

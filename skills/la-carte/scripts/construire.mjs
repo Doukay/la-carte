@@ -12,6 +12,7 @@ import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/noms.mjs
 import { assemblerPage } from './lib/page.mjs';
 import { construireSante, avecRejets, rejetPour } from './lib/sante.mjs';
 import { construireSantePlan } from './lib/ebauche.mjs';
+import { lireSuivi } from './lib/suivi.mjs';
 import { construireEcrans } from './lib/ecrans.mjs';
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
@@ -435,6 +436,8 @@ const graphe = {
   ...(recentSortie?.items.length ? { recent: recentSortie } : {}),
 };
 // points d’extension, calculés à partir du graphe terminé et de l’analyse brute
+const suivi = lireSuivi(racine, dossierSortie, signalerAvertissement);
+if (suivi) graphe.suivi = suivi;
 // un plan n’a pas de code à contrôler : sa Santé est une revue du plan (calculée après les écrans)
 if (!analyse.ebauche) try { graphe.sante = construireSante({ graph: graphe, scan: analyse, arch: archi, root: racine }); } catch (e) { signalerAvertissement(`le contrôle de santé a échoué : ${e.message}`); graphe.sante = { problemes: [] }; }
 try { graphe.ecrans = construireEcrans({ graph: graphe, scan: analyse, arch: archi, root: racine }); } catch (e) { signalerAvertissement(`la détection des écrans a échoué : ${e.message}`); graphe.ecrans = []; }
@@ -475,7 +478,7 @@ fs.writeFileSync(path.join(dossierSortie, 'index.html'), html);
 // --artifact : une copie à publier dans l’application Claude, sans le chemin absolu de cet ordinateur (liens vers l’éditeur)
 // (et sans les raisons des problèmes de santé rejetés, qui sont des notes personnelles)
 const santePartagee = graphe.sante?.dismissed ? { ...graphe.sante, dismissed: graphe.sante.dismissed.map(({ reason: raison, ...d }) => d) } : graphe.sante;
-if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null } }));
+if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, suivi: undefined, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null } }));
 // Outils autonomes à côté de la carte : poser des questions via la CLI Claude Code (serveur.mjs)
 // et les recherches dans le graphe qu’il leur confie (requete.mjs). Ils n’ont besoin que de Node, pas de ce skill.
 fs.writeFileSync(path.join(dossierSortie, '.cache', 'requete.mjs'), `${codeRequetes}

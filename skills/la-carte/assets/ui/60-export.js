@@ -36,6 +36,7 @@
     EST_UN_PLAN
       ? { id: 'health', titre: 'Revue du plan', aide: 'Les décisions que le plan laisse encore ouvertes.', coche: false, present: !!GRAPHE.sante?.problemes?.length }
       : { id: 'health', titre: 'Contrôle de santé', aide: 'Montre les adresses du serveur ouvertes à tous et où se trouvent les secrets dans le code (jamais leur valeur). À inclure seulement pour des personnes de confiance.', coche: false, attention: true, present: !!GRAPHE.sante?.problemes?.length },
+    { id: 'suivi', titre: 'Où j’en suis', aide: 'Ta note de suivi. À inclure seulement si cette personne peut la lire.', coche: false, present: !!GRAPHE.suivi },
   ].filter((e) => e.present);
 
   async function telecharger(fenetre, fermer) {
