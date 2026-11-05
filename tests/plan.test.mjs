@@ -167,7 +167,7 @@ test('construire.mjs repère un service qui n’est pas une partie', () => {
     fs.writeFileSync(archi, sauvegarde);
     const sortie = echoue(() => executer('construire.mjs', r, '--no-claude-md'));
     assert.match(sortie, /erreur\(s\) dans la-carte.sources.architecture\.json ou sources\/plan\.json/);
-    assert.match(sortie, /nomme "strpe" dans ses services, qui n’est pas un identifiant de partie dans architecture\.json — tu voulais dire "stripe" \?/);
+    assert.match(sortie, /nomme "strpe" dans ses services, qui n’est pas un identifiant de partie dans sources\/architecture\.json — tu voulais dire "stripe" \?/);
   } finally { nettoyer(r); }
 });
 

@@ -86,4 +86,4 @@ const depart = lireHash();
 etatVue.container = depart.v; etatVue.selected = depart.s;
 if (depart.s && petitEcran()) { document.body.classList.remove('no-panel'); $('#btn-panel').setAttribute('aria-expanded', 'true'); } // un lien partagé vers un bloc ouvre ses détails
 const policesPretes = document.fonts?.ready ? Promise.race([document.fonts.ready, new Promise((ok) => setTimeout(ok, 1500))]) : Promise.resolve();
-policesPretes.then(() => afficherVue({ after: () => { afficherPanneau(); emettre('ready', {}); if (PLAN && window.LA_CARTE_SERVER) montrerResultatChangement(); } }));
+policesPretes.then(() => afficherVue({ after: () => { afficherPanneau(); performance.mark('carte-prete'); emettre('ready', {}); if (PLAN && window.LA_CARTE_SERVER) montrerResultatChangement(); } }));

@@ -431,7 +431,7 @@ const alerteDocker = avertissementDocker(racine);
 fs.writeFileSync(path.join(dossierSortie, '.cache', 'graphe.json'), JSON.stringify(graphe, null, 0));
 
 const gabarit = assemblerPage(DOSSIER_SKILL);
-// Le moteur de mise en page (elkjs 0.9.3) et les polices (Inter, JetBrains Mono) sont fournis dans assets/vendor/ et
+// Le moteur de mise en page (elkjs 0.9.3) et la police (Inter) sont fournis dans assets/vendor/ et
 // intégrés à la page : la carte ne fait aucun appel extérieur et marche hors ligne.
 const dossierTiers = path.join(DOSSIER_SKILL, 'assets', 'vendor');
 const baliseElk = `<script>${fs.readFileSync(path.join(dossierTiers, 'elk.bundled.js'), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`;
@@ -439,7 +439,7 @@ const PLAGES_POLICES = {
   latin: 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
   'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF',
 };
-const cssPolices = [['Inter', 'inter'], ['JetBrains Mono', 'jetbrains-mono']].flatMap(([famille, fichier]) => Object.entries(PLAGES_POLICES).map(([sousEnsemble, plage]) =>
+const cssPolices = [['Inter', 'inter']].flatMap(([famille, fichier]) => Object.entries(PLAGES_POLICES).map(([sousEnsemble, plage]) =>
   `@font-face{font-family:"${famille}";font-style:normal;font-display:swap;font-weight:100 900;unicode-range:${plage};src:url(data:font/woff2;base64,${fs.readFileSync(path.join(dossierTiers, 'fonts', `${fichier}-${sousEnsemble}-wght-normal.woff2`)).toString('base64')}) format("woff2")}`)).join('\n');
 const codeRequetes = fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'requetes-graphe.js'), 'utf8');
 const page = (g) => gabarit

@@ -149,9 +149,6 @@ test('les fichiers embarqués sont inchangés : le moteur de disposition est ide
     'fonts/inter-LICENSE.txt': null,
     'fonts/inter-latin-ext-wght-normal.woff2': null,
     'fonts/inter-latin-wght-normal.woff2': null,
-    'fonts/jetbrains-mono-LICENSE.txt': null,
-    'fonts/jetbrains-mono-latin-ext-wght-normal.woff2': null,
-    'fonts/jetbrains-mono-latin-wght-normal.woff2': null,
   };
   const dossier = path.join(DOSSIER_SKILL, 'assets', 'vendor');
   assert.deepEqual(tousLesFichiers(dossier).sort(), Object.keys(EMBARQUES).sort(), `fichiers embarqués. ${MISE_A_JOUR}`);

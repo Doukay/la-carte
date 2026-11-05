@@ -118,7 +118,7 @@ typography:
     lineHeight: 1.4
     letterSpacing: "-.01em"
   mono:
-    fontFamily: "JetBrains Mono, ui-monospace, Cascadia Code, SF Mono, Consolas, monospace"
+    fontFamily: "ui-monospace, Cascadia Code, Consolas, monospace"
     fontSize: "11.5px"
     fontWeight: 400
     lineHeight: 1.45
@@ -274,9 +274,9 @@ Les couleurs d'état et de lien. Elles informent et ne décorent jamais.
 ## Typography
 
 **Police principale :** Inter, intégrée au fichier : la même sur tous les appareils.
-**Police des chemins :** JetBrains Mono, intégrée au fichier elle aussi.
+**Police des chemins :** la police à chasse fixe de l'appareil. Elle ne sert qu'au mode technique.
 
-**Character :** une seule famille, droite et nette, qui tient le rôle des titres comme du texte. Aucune police n'est chargée depuis Internet. Hors des appareils Apple, c'est Inter qui s'affiche.
+**Character :** une seule famille, droite et nette, qui tient le rôle des titres comme du texte. Aucune police n'est chargée depuis Internet.
 
 ### Hierarchy
 

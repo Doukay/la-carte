@@ -67,7 +67,8 @@ new ResizeObserver(synchroniserEntete).observe(elEntete); synchroniserEntete(); 
 // sur un téléphone, le titre et la description défilent avec la colonne ; sur un écran plus large, ils reviennent au-dessus de la carte
 const elContexte = $('#context'), contexteOrigine = elContexte.parentNode, contexteSuivant = elContexte.nextSibling;
 const placerContexte = () => { if (estTelephone()) colonne.prepend(elContexte); else contexteOrigine.insertBefore(elContexte, contexteSuivant); synchroniserEntete(); };
-requeteTelephone.addEventListener('change', () => { placerContexte(); if (etatVue.view && etatVue.layout) rendreColonne(etatVue.view, etatVue.layout); }); placerContexte();
+requeteTelephone.addEventListener('change', () => { placerContexte(); if (etatVue.view) afficherVue(); }); // la colonne et le schéma n'ont pas la même disposition
+ placerContexte();
 $('#btn-panel').onclick = () => reglerPanneau(document.body.classList.contains('no-panel'));
 panneau.addEventListener('click', (ev) => { if (ev.target.closest('.feuille-x')) reglerPanneau(false); });
 Object.assign(etatVue.kinds, stockageLocal.get('kinds', {}));
