@@ -8,7 +8,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { DEPOT, DOSSIER_SKILL } from './aides.mjs';
+import { DEPOT, DOSSIER_SKILL, lib } from './aides.mjs';
+
+const { assemblerPage } = await lib('page.mjs');
 
 /** Chemins relatifs de chaque fichier sous dir, avec des barres obliques, sans le dossier de git ni les installations. */
 const tousLesFichiers = (dossier) => fs.readdirSync(dossier, { recursive: true, withFileTypes: true })
@@ -85,7 +87,7 @@ test('aucun envoi vers l’extérieur : il ne contacte jamais internet', () => {
   assert.deepEqual(trouver(/new EventSource\(\s*(?!['"`]\/)/).map((x) => `${x.file}:${x.line}`), [], 'rechargement en direct seulement depuis le serveur local');
 
   // la page de la carte ne charge rien depuis internet : le moteur de disposition et les polices sont intégrés
-  const page = lire(path.join(DOSSIER_SKILL, 'assets', 'carte.html'));
+  const page = assemblerPage(DOSSIER_SKILL);
   assert.doesNotMatch(page, /<script[^>]*\ssrc=/i, 'aucun script extérieur');
   assert.doesNotMatch(page, /<link[^>]*href=["']https?:/i, 'aucune feuille de style ni police extérieure');
   assert.doesNotMatch(page, /url\(\s*["']?https?:/i, 'aucune image ni police extérieure dans le CSS');
@@ -135,8 +137,8 @@ test('aucun code n’est téléchargé, décodé ni construit à partir de texte
 
 test('chaque fichier livré est du code source, du texte ou un genre connu d’image ou de police', () => {
   const genres = new Set(livres.map((f) => path.extname(f).toLowerCase()));
-  assert.deepEqual([...genres].sort(), ['.html', '.js', '.json', '.md', '.mjs', '.png', '.txt', '.woff2', '.yaml'].filter((k) => genres.has(k)), 'genres de fichier');
-  for (const k of genres) assert.ok(['.html', '.js', '.json', '.md', '.mjs', '.png', '.txt', '.woff2', '.yaml'].includes(k), `genre de fichier inattendu : ${k}. ${MISE_A_JOUR}`);
+  assert.deepEqual([...genres].sort(), ['.css', '.html', '.js', '.json', '.md', '.mjs', '.png', '.txt', '.woff2', '.yaml'].filter((k) => genres.has(k)), 'genres de fichier');
+  for (const k of genres) assert.ok(['.css', '.html', '.js', '.json', '.md', '.mjs', '.png', '.txt', '.woff2', '.yaml'].includes(k), `genre de fichier inattendu : ${k}. ${MISE_A_JOUR}`);
 });
 
 test('les fichiers embarqués sont inchangés : le moteur de disposition est identique, octet pour octet, à elkjs 0.9.3 sur npm', () => {

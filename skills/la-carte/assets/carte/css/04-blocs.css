@@ -1,0 +1,66 @@
+/* ---------- blocs ---------- */
+.node foreignObject { pointer-events: none; overflow: visible; }
+.node .card { pointer-events: auto; cursor: pointer; }
+.fo-pad { width: 100%; height: 100%; padding: var(--gutter); }
+.card { width: 100%; height: 100%; border-radius: var(--r-card); background: color-mix(in srgb, var(--c) 10%, var(--surface)); padding: 18px 20px; display: flex; flex-direction: column; gap: 7px; overflow: hidden; position: relative;
+  box-shadow: var(--shadow-card); transition: background .25s var(--ease), box-shadow .25s var(--ease), transform .3s var(--ease);
+  animation: cardIn .55s var(--ease) both; animation-delay: var(--d, 0ms); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(8px) scale(.985); } }
+.card > * { flex-shrink: 0; }
+.node:hover .card, .node:hover .card.external, .node.sel .card, .node.sel .card.external { background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+.node:hover .card { box-shadow: var(--shadow-lift); }
+/* sélectionné : un anneau net qui suit l'arrondi du bloc */
+.node.sel .card, .node.sel .card.external { box-shadow: 0 0 0 2px var(--ring); }
+.node.flash .card { animation: flash 1.2s var(--ease) 2; }
+@keyframes flash { 50% { box-shadow: 0 0 0 1.5px rgba(var(--ink), .6), 0 0 0 10px rgba(var(--ink), .08); } }
+.head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 18%, var(--surface)); }
+.ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.title { font-size: 16px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; overflow: hidden; min-width: 0; flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.card > .title { flex: none; } /* le nom d'une adresse du serveur, sur sa propre ligne sous la méthode et le chemin */
+/* pied : taille à gauche, pastille de travail récent à droite, collé au bas du bloc */
+.foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 23px; }
+.foot .meta { align-self: center; }
+svg.lod-low .foot .meta { visibility: hidden; }
+.title.mono { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.meta { font-size: 11.5px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; background: var(--raise); border-radius: 999px; padding: 2px 8px; }
+.desc { color: var(--text-3); font-size: 13.5px; line-height: 20px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lines, 2); overflow: hidden; max-height: calc(var(--lines, 2) * 20px); }
+.desc[style*="--lines:1"] { -webkit-line-clamp: 1; } .desc[style*="--lines:2"] { -webkit-line-clamp: 2; } .desc[style*="--lines:3"] { -webkit-line-clamp: 3; }
+.desc.empty { color: var(--text-4); }
+.method { font-family: var(--mono); font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 8px; color: var(--m); background: color-mix(in srgb, var(--m) 14%, transparent); letter-spacing: .02em; flex: none; }
+.rpath { font-family: var(--mono); font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.card.external { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, var(--surface)); }
+.card.dir { box-shadow: inset 0 0 0 1px rgba(var(--ink), .05); }
+/* travail récent : blocs que Claude vient de modifier (anneau vert + étiquette), et parties qui les contiennent (anneau doux + compte) */
+.card.recent { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--recent) 62%, transparent), var(--shadow-card); }
+.node:hover .card.recent { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--recent) 85%, transparent), var(--shadow-lift); }
+.card.recent-in { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--recent) 30%, transparent), var(--shadow-card); }
+.rw { flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; line-height: 1; color: var(--recent); background: color-mix(in srgb, var(--recent) 13%, transparent); border-radius: 999px; padding: 4px 8px 4px 7px; white-space: nowrap; }
+.rw::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.rw.soft { font-weight: 500; }
+body.no-recent .rw { display: none; }
+body.no-recent .card.recent, body.no-recent .card.recent-in { box-shadow: var(--shadow-card); }
+svg.lod-low .rw { font-size: 18px; padding: 6px 12px; }
+.card.has-note .title::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--sev-medium); margin-left: 8px; vertical-align: middle; }
+.card.connector { flex-direction: row; align-items: center; gap: 10px; padding: 0 14px 0 10px; border-radius: var(--r-card); }
+.card.connector .ico { width: 26px; height: 26px; border-radius: 9px; }
+.card.connector .lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-2); font-weight: 500; font-size: 13px; flex: 1; }
+.card.connector .dir-ico { color: var(--text-4); display: grid; }
+.card.connector .dir-ico svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.anote { margin-top: 4px; display: flex; gap: 9px; align-items: flex-start; padding: 9px 11px; border-radius: 14px; background: rgba(var(--ink), .05); font-size: 12.5px; line-height: 1.45; color: var(--text); }
+.anote b { flex: none; width: 19px; height: 19px; border-radius: 999px; background: var(--on); color: var(--on-text); display: grid; place-items: center; font-size: 10.5px; font-weight: 700; }
+.anote span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+svg.lod-mid .desc, svg.lod-mid .foot .meta { display: none; }
+svg.lod-mid .title, svg.lod-low .title { font-size: calc(13px * var(--contre, 1)); line-height: 1.2; -webkit-line-clamp: 3; }
+svg.lod-mid .head, svg.lod-low .head { align-items: flex-start; }
+svg.lod-mid .ico, svg.lod-low .ico { width: calc(20px * var(--contre, 1)); height: calc(20px * var(--contre, 1)); border-radius: calc(6px * var(--contre, 1)); }
+svg.lod-mid .ico svg, svg.lod-low .ico svg { width: calc(12px * var(--contre, 1)); height: calc(12px * var(--contre, 1)); }
+svg.lod-mid .card.connector .lbl, svg.lod-low .card.connector .lbl { font-size: calc(12px * var(--contre, 1)); line-height: 1.15; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+svg.lod-mid .card.connector .dir-ico, svg.lod-low .card.connector .dir-ico { display: none; }
+svg.lod-mid .cols text, svg.lod-low .cols text { font-size: calc(11.5px * var(--contre, 1)); }
+svg.lod-low .meta, svg.lod-low .anote { visibility: hidden; }
+/* de loin, seuls le gros titre et la pastille du pied sont lisibles : on retire la description pour qu'ils tiennent */
+svg.lod-low .desc { display: none; }
+svg.dim .node:not(.hl) .card { box-shadow: none; }
+svg.dim .node:not(.hl) .card > * { opacity: .28; transition: opacity .3s var(--ease); }
+

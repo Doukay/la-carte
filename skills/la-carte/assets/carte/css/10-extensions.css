@@ -1,0 +1,21 @@
+/* ---------- interface des extensions : emplacement d'en-tête, fenêtre, message, listes groupées ---------- */
+.hr-ext { display: contents; }
+#modal { position: fixed; inset: 0; z-index: 45; background: var(--scrim-2); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 24px; }
+#modal.open { display: flex; animation: fadeIn .2s var(--ease); }
+#modal .box { width: min(620px, 100%); max-height: min(80vh, 760px); overflow: auto; border-radius: var(--r-panel); background: var(--modal-bg); animation: menuIn .3s var(--ease); padding: 22px 24px 20px; }
+#modal h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; letter-spacing: -.015em; }
+#modal .mb { color: var(--text-2); line-height: 1.6; }
+#modal pre { white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 12px; line-height: 1.55; background: rgba(var(--ink), .05); border-radius: 14px; padding: 14px 16px; color: var(--text); margin: 12px 0 0; max-height: 46vh; overflow: auto; }
+#modal .ma { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+#toast { position: fixed; left: calc((100% - var(--pw)) / 2); bottom: 96px; transform: translateX(-50%); z-index: 50; padding: 10px 16px; border-radius: 999px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity .25s var(--ease), transform .3s var(--ease); }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+.group-h { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 4px; font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+.group-h:first-of-type { margin-top: 2px; }
+#legend .tech { border-top: 1px solid var(--hair); margin-top: 4px; padding-top: 4px; }
+/* Safari/WebKit : le HTML dans <foreignObject> qui reçoit sa propre couche d'affichage (position, découpe du débordement,
+   transformation, opacité, animation) est dessiné à l'origine de la page, sans tenir compte de la transformation SVG. On garde donc les blocs sans couche là-bas. */
+html.wk .node foreignObject { overflow: hidden; }
+html.wk .card, html.wk .card * { position: static !important; transform: none !important; animation: none !important; transition: none !important; will-change: auto !important; }
+html.wk .card { overflow: visible; }
+html.wk svg.dim .node:not(.hl) .card > * { opacity: 1; }
+html.wk svg.dim .node:not(.hl) foreignObject { opacity: .28; }

@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compilerMotif, lireArguments, formaterNombre, dossierCarte, garderHorsGit, ICONES } from './lib/commun.mjs';
 import { nomFichierParDefaut, nomRouteParDefaut, cleRoute } from './lib/noms.mjs';
+import { assemblerPage } from './lib/page.mjs';
 import { construireSante, avecRejets, rejetPour } from './lib/sante.mjs';
 import { construireSantePlan } from './lib/ebauche.mjs';
 import { construireEcrans } from './lib/ecrans.mjs';
@@ -428,7 +429,7 @@ fs.mkdirSync(dossierSortie, { recursive: true });
 const avertissementSuivi = garderHorsGit(dossierSortie);
 fs.writeFileSync(path.join(dossierSortie, 'graphe.json'), JSON.stringify(graphe, null, 0));
 
-const gabarit = fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'carte.html'), 'utf8');
+const gabarit = assemblerPage(DOSSIER_SKILL);
 // Le moteur de mise en page (elkjs 0.9.3) et les polices (Inter, JetBrains Mono) sont fournis dans assets/vendor/ et
 // intégrés à la page : la carte ne fait aucun appel extérieur et marche hors ligne.
 const dossierTiers = path.join(DOSSIER_SKILL, 'assets', 'vendor');

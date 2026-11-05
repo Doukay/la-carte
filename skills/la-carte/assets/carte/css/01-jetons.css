@@ -1,0 +1,72 @@
+:root {
+  --sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  --accent: #2997ff;
+  --bg: #111113;
+  --ink: 255, 255, 255; /* la couleur dont la page se teinte : blanc sur fond sombre, noir sur fond clair */
+  --surface: #1d1d1f; --raise: #272729;
+  --elev: #1d1d1f; --hair: rgba(var(--ink), .08);
+  --text: #f5f5f7; --text-2: #d2d2d7; --text-3: #a1a1a6; --text-4: #86868b;
+  --recent: #2997ff; --on-recent-text: #000;
+  --on: #2997ff; --on-hover: #64b0ff; --on-text: #000; /* boutons pleins, pastilles et points */
+  --on-sev-text: #000; /* texte sur une pastille rouge ou orange */
+  --ok: #30d158; --sev-high: #ff6961; --sev-medium: #ffb340; --sev-low: #98989d;
+  --warn-bg: rgba(255, 179, 64, .12); --warn-text: #ffd8a0; --warn-sheet: #3a2c14;
+  --ok-bg: rgba(48, 209, 88, .12); --ok-text: #a8e9bd; --err-text: #ff8a82;
+ --menu-solid: #1d1d1f; --well: #000000;
+  --palette-bg: #1d1d1f; --modal-bg: #1d1d1f;
+  --scrim: rgba(0, 0, 0, .55); --scrim-2: rgba(0, 0, 0, .6);
+  --shadow-lift: 0 0 0 1px #48484a;
+  --shadow-deep: 0 24px 64px -24px rgba(0, 0, 0, .8);
+  --ring: #2997ff; --focus: rgba(41, 151, 255, .3);
+  --r-card: 18px; --r-panel: 18px;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --shadow-card: none;
+  --shadow-float: 0 0 0 1px #333336;
+  --k-import: #8e8e93; --k-http: #2997ff; --k-call: #bf5af2; --k-rpc: #7d7aff; --k-event: #ff375f; --k-queue: #ff9f0a; --k-data: #64d2ff; --k-config: #6b7280; --k-contains: #4a4a4a;
+  --n-ui: #2997ff; --n-service: #bf5af2; --n-worker: #bf5af2; --n-library: #bf5af2; --n-feature: #bf5af2; --n-data: #bf5af2; --n-config: #bf5af2;
+  --n-test: #ff9f0a; --n-script: #ff9f0a; --n-infra: #ff9f0a; --n-external: #30d158; --n-misc: #98989d; --n-dir: #98989d; --n-file: #98989d;
+  --n-module: #98989d; --n-symbol: #bf5af2; --n-route: #2997ff; --n-connector: #98989d;
+  --m-GET: #30d158; --m-POST: #2997ff; --m-PUT: #ffb340; --m-PATCH: #98989d; --m-DELETE: #ff6961; --m-CALL: #2997ff; --m-ANY: #98989d;
+  --panel-w: 360px; --pw: calc(var(--panel-w) + 32px); --gutter: 28px;
+  color-scheme: dark;
+}
+/* ---------- thème clair : mêmes variables, nouvelles valeurs. Choisi avec le bouton Thème (voir ui/05-theme.js) ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --accent: #0066cc;
+  --bg: #f5f5f7; --ink: 0, 0, 0;
+  --surface: #ffffff; --raise: #f0f0f2;
+  --elev: #ffffff; --hair: #f0f0f0;
+  --text: #1d1d1f; --text-2: #333336; --text-3: #66666b; --text-4: #66666b;
+  --recent: #0066cc; --on-recent-text: #fff;
+  --on: #0066cc; --on-hover: #0071e3; --on-text: #fff; --on-sev-text: #fff;
+  --ok: #248a3d; --sev-high: #d70015; --sev-medium: #b25000; --sev-low: #6e6e73;
+  --warn-bg: #fff4e5; --warn-text: #7a4100; --warn-sheet: #fff4e5;
+  --ok-bg: #e9f6ec; --ok-text: #1a6b2f; --err-text: #d70015;
+ --menu-solid: #ffffff; --well: #f5f5f7;
+  --palette-bg: #ffffff; --modal-bg: #ffffff;
+  --scrim: rgba(0, 0, 0, .3); --scrim-2: rgba(0, 0, 0, .36);
+  --ring: #0071e3; --focus: rgba(0, 113, 227, .25);
+  --shadow-card: none;
+  --shadow-float: 0 0 0 1px #e8e8ed;
+  --shadow-lift: 0 0 0 1px #d2d2d7;
+  --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .3);
+  --k-import: #6e6e73; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
+  --n-ui: #0066cc; --n-service: #8944ab; --n-worker: #8944ab; --n-library: #8944ab; --n-feature: #8944ab; --n-data: #8944ab; --n-config: #8944ab;
+  --n-test: #b25000; --n-script: #b25000; --n-infra: #b25000; --n-external: #248a3d; --n-misc: #66666b; --n-dir: #66666b; --n-file: #66666b;
+  --n-module: #66666b; --n-symbol: #8944ab; --n-route: #0066cc; --n-connector: #6e6e73;
+  --m-GET: #248a3d; --m-POST: #0066cc; --m-PUT: #b25000; --m-PATCH: #6e6e73; --m-DELETE: #d70015; --m-CALL: #0066cc; --m-ANY: #6e6e73;
+}
+:root[data-theme="light"] #search::placeholder { color: var(--text-3); } /* le gris par défaut du navigateur est trop pâle sur du blanc */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: none !important; } /* un changement de thème est instantané, jamais animé */
+body.no-panel { --pw: 0px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13.5px; letter-spacing: -.01em; overflow: hidden; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+::selection { background: rgba(var(--ink), .2); }
+svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.glass { background: var(--elev); box-shadow: var(--shadow-float); }
+.kbd { font-family: var(--mono); font-size: 11px; color: var(--text-3); background: rgba(var(--ink), .06); border-radius: 6px; padding: 1px 6px; line-height: 17px; }
+

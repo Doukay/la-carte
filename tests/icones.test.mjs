@@ -6,7 +6,8 @@ import path from 'node:path';
 import { lib, appliBoutique, executer, lireGraphe, lireJson, ecrireJson, nettoyer, DOSSIER_SKILL } from './aides.mjs';
 
 const { ICONES } = await lib('commun.mjs');
-const page = fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'carte.html'), 'utf8');
+const { assemblerPage } = await lib('page.mjs');
+const page = assemblerPage(DOSSIER_SKILL);
 
 test('chaque icône proposée est dessinée dans la page et citée dans les consignes', () => {
   assert.ok(ICONES.length >= 40);

@@ -70,49 +70,49 @@ colors:
   ok-text-sombre: "#a8e9bd"
 typography:
   display:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "34px"
     fontWeight: 600
     lineHeight: 1.1
     letterSpacing: "-.035em"
   display-telephone:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "20px"
     fontWeight: 600
     lineHeight: 1.1
     letterSpacing: "-.035em"
   headline:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "20px"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-.02em"
   title:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-.02em"
   body-large:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.55
     letterSpacing: "-.01em"
   body:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "13.5px"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "-.01em"
   label:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "12.5px"
     fontWeight: 500
     lineHeight: 1.45
     letterSpacing: "-.01em"
   caption:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "11.5px"
     fontWeight: 400
     lineHeight: 1.4
@@ -216,7 +216,7 @@ Ce fichier décrit l'apparence de la carte telle qu'elle est construite aujourd'
 
 **Creative North Star: "La fiche produit calme"**
 
-La carte se lit comme une fiche produit Apple : un fond perle, une barre noire, de grands titres serrés, très peu d'éléments et beaucoup d'air. Le propriétaire a choisi ce style sur la vraie carte, le 05/11/2026. La disposition du schéma reste celle de l'outil d'origine. Seule son apparence change.
+La carte se lit comme une fiche produit soignée : un fond perle, une barre noire, de grands titres serrés, très peu d'éléments et beaucoup d'air. Le propriétaire a choisi ce style sur la vraie carte, le 05/11/2026. La disposition du schéma reste celle de l'outil d'origine. Seule son apparence change.
 
 La couleur ne décore pas, elle classe. Chaque groupe de blocs a sa teinte et les blocs reliés se lisent d'un coup d'œil. Le bleu dit ce qu'on peut faire. Tout le reste est du gris ou du blanc.
 
@@ -273,7 +273,7 @@ Les couleurs d'état et de lien. Elles informent et ne décorent jamais.
 
 ## Typography
 
-**Police principale :** la police système Apple (SF), avec Inter en secours, intégrée au fichier.
+**Police principale :** Inter, intégrée au fichier : la même sur tous les appareils.
 **Police des chemins :** JetBrains Mono, intégrée au fichier elle aussi.
 
 **Character :** une seule famille, droite et nette, qui tient le rôle des titres comme du texte. Aucune police n'est chargée depuis Internet. Hors des appareils Apple, c'est Inter qui s'affiche.

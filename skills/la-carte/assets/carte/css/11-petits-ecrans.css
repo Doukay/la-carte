@@ -1,0 +1,121 @@
+/* ---------- téléphones et tablettes : fenêtres sous 1000 px et écrans tactiles sous 1280 px (une souris à 1000 px et plus n'est pas touchée) ---------- */
+@media (max-width: 999px), (max-width: 1279px) and (pointer: coarse) {
+  #btn-up { flex: none; }
+  header .btn:focus-visible, #zoom button:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+  /* une seule rangée qui passe sur une deuxième si besoin, pour que rien ne déborde ; les boutons gardent leurs pictogrammes et perdent leurs mots */
+  header { display: flex; flex-wrap: wrap; align-items: center; height: auto; min-height: 56px; padding: 6px 12px; gap: 0 8px; }
+  .hl { flex: 1 1 240px; }
+  .hc { flex: 2 3 min(460px, 24vw); max-width: 460px; min-width: 44px; justify-content: stretch; }
+  #search-btn { width: 100%; min-width: 44px; }
+  #search-btn .st { overflow: hidden; text-overflow: ellipsis; }
+  .hr { flex: 0 0 auto; flex-wrap: wrap; }
+  header .rel { position: static; } /* Parcours et Filtres s'ouvrent sous la barre, dans l'écran, où que la barre ait passé à la ligne */
+  #flowmenu, #legend { position: fixed; top: calc(var(--hh, 56px) + 4px); left: 8px; right: auto; width: min(320px, calc(100% - 16px)); max-height: 60vh; overflow: auto; }
+  .hr .btn { position: relative; padding: 0; justify-content: center; }
+  .hr .btn .bl { display: none; }
+  .hr .btn .badge { position: absolute; }
+}
+@media (max-width: 999px), (pointer: coarse) {
+  /* chaque commande de la barre, et les boutons de zoom, font au moins 44 px */
+  header .btn, #search-btn { height: 44px; min-width: 44px; }
+  header .btn.icon { width: 44px; }
+  #ask-mode button { height: 44px; }
+  #crumbs button { min-height: 44px; }
+  #zoom button { width: 44px; height: 44px; }
+}
+@media (max-width: 999px), (max-width: 1279px) and (pointer: coarse) {
+  header .hr .btn { width: 44px; }
+  header .hr .btn .badge { top: 4px; right: 2px; }
+  /* les boutons de zoom montent en haut de la carte, à gauche du panneau de détails, pour que la bulle de questions ne les recouvre pas */
+  #zoom { left: auto; right: calc(var(--pw) + 16px); bottom: auto; top: calc(var(--hh, 56px) + 8px); flex-direction: column; border-radius: 26px; }
+  #context { max-width: min(520px, calc(100% - var(--pw) - 104px)); } /* s'arrête avant les boutons de zoom */
+}
+@media (max-width: 700px) {
+  :root { --gutter: 20px; }
+  body, body.no-panel { --pw: 0px; }
+  header { padding: 6px 8px; gap: 0 4px; }
+  .hl { flex-basis: 120px; }
+  .hr { flex: 1 1 100%; justify-content: space-between; }
+  .hc { flex: 0 0 44px; }
+  #search-btn { padding: 0; justify-content: center; gap: 0; }
+  #search-btn .st, #search-btn .kbd { display: none; }
+  #crumbs button { padding: 6px 8px; max-width: 160px; }
+  #context { left: 16px; right: 16px; max-width: none; }
+  #context h1 { font-size: 20px; }
+  /* la description se replie sur une ligne avec un bouton Plus / Moins, pour ne pas remplir l'écran */
+  #context.folded .cd { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+  #context.folded .cx { display: none; }
+  #context .ctx-more:not([hidden]) { display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0 -12px -10px; padding: 0 10px; border: 0; border-radius: 999px; background: none; color: var(--text); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; pointer-events: auto; }
+  #context .ctx-more:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+  /* l'avertissement sur la connexion d'un outil d'IA n'apparaît que pendant qu'on utilise la bulle de questions */
+  #ask:not(.asking) #ask-warn { display: none; }
+  /* le panneau de détails devient une feuille en bas : fermée tant qu'on ne touche pas un bloc */
+  #panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: min(56vh, 480px); }
+  body.no-panel #panel { transform: translateY(24px) scale(.98); visibility: hidden; transition: transform .45s var(--ease), opacity .3s var(--ease), visibility 0s linear .45s; } /* fermé : hors de l'ordre de tabulation et hors de portée du lecteur d'écran */
+  #panel-resize { display: none; }
+  body:not(.no-panel) #ask { display: none; }
+  #ask { left: 50%; bottom: 8px; width: calc(100% - 16px); min-width: 0; }
+  #ask-input { min-width: 0; }
+  #ask-form { padding-left: 14px; }
+  #flowbar { left: 50%; width: calc(100% - 16px); }
+  #toast { left: 50%; max-width: calc(100% - 16px); }
+  #loading { left: 50%; }
+  /* pas de zoom ni de déplacement : la colonne qui défile remplace le schéma */
+  #svg, #zoom { display: none; }
+  #colonne { display: block; position: absolute; inset: var(--hh, 56px) 0 0 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 16px 104px; touch-action: pan-y; background: var(--bg); }
+  #colonne #context { position: static; max-width: none; pointer-events: auto; margin-bottom: 18px; }
+  .col-rang { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .col-rang.relie { margin-top: 0; }
+  .col-rang.relie::before { content: ""; display: block; width: 2px; height: 20px; margin: 0 auto -10px; background: var(--k-import); }
+  body:not(.no-panel) #colonne { padding-bottom: 60vh; }
+  .col-bloc { scroll-margin-top: 12px; position: relative; border-radius: var(--r-card); background: color-mix(in srgb, var(--c) 10%, var(--surface)); overflow: hidden; }
+  .col-bloc.sel { box-shadow: 0 0 0 2px var(--ring); }
+  .col-zone { position: relative; display: block; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .col-zone:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; border-radius: var(--r-card); }
+  .col-zone:active { background: var(--raise); }
+  .col-bloc .card, .col-bloc .card.external { height: auto; background: transparent; box-shadow: none; animation: none; padding: 16px 44px 14px 16px; overflow: visible; }
+  .col-bloc .card.connector { padding: 12px 44px 12px 12px; }
+  .col-bloc .desc { -webkit-line-clamp: 2; max-height: 40px; }
+  .col-bloc .foot .meta { display: none; }
+  .col-bloc .foot:not(:has(.rw)) { display: none; }
+  .col-ouvrir { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); display: grid; place-items: center; width: 24px; height: 24px; }
+  .col-titre { font-size: 12.5px; color: var(--text-3); padding: 0 2px; }
+  .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; padding: 0 12px 12px; }
+  .col-lien { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  .col-lien[hidden] { display: none; }
+  #panel > .credit { display: none; }
+  .feuille-x { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 999px; background: none; color: var(--text-3); cursor: pointer; }
+  body:has(#flowbar:not([hidden])) .col-bloc { scroll-margin-top: 170px; }
+  .col-bloc .dir-ico { display: none; }
+  #ask-send { width: 44px; height: 44px; }
+  .chip button { position: relative; }
+  .chip button::after { content: ""; position: absolute; inset: -12px; }
+  .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .col-plus { min-height: 44px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème reste celui par défaut */
+  #btn-export, #filters-btn, #theme-toggle, #ask-engine { display: none; }
+  header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 10px; }
+  .hr .btn .bl { display: block; font-size: 11px; line-height: 1.2; white-space: nowrap; }
+  #btn-panel::after { content: "Détails"; font-size: 11px; line-height: 1.2; }
+  /* les menus s'ouvrent en blocs pleine largeur sous la barre */
+  #flowmenu, #legend { position: fixed; top: calc(var(--hh, 56px) + 4px); left: 8px; right: 8px; width: auto; max-height: 60vh; overflow: auto; }
+  body #tour { left: 8px; right: 8px; width: auto; }
+}
+@media (min-width: 701px) and (max-width: 999px) {
+  .hr .btn .bl { display: inline; }
+  header .hr .btn { width: auto; padding: 0 10px; gap: 6px; }
+  #btn-panel::after { content: "Détails"; }
+  body, body.no-panel { --pw: 0px; }
+  #panel { top: auto; left: 16px; right: 16px; bottom: 16px; width: auto; height: 44vh; }
+  body.no-panel #panel { transform: translateY(24px) scale(.98); visibility: hidden; }
+  #panel-resize { display: none; }
+  body:not(.no-panel) #ask { display: none; }
+  .feuille-x { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 999px; background: none; color: var(--text-3); cursor: pointer; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .cols, .edge .trace, .edge .flow, .flowlink, #viewport.anim { animation: none !important; transition: none !important; }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 999px), (prefers-reduced-motion: reduce) and (pointer: coarse) {
+  #panel, body.no-panel #panel, #viewport.anim, #ask, #flowbar, #zoom button { transition: none; }
+  #panel > *, #ask-warn { animation: none; }
+}

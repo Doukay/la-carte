@@ -1,0 +1,16 @@
+/* ---------- carte ---------- */
+#stage { position: fixed; inset: 0; overflow: hidden; background-color: var(--bg); }
+#svg { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+#svg.panning { cursor: grabbing; }
+#svg { touch-action: none; } /* un doigt fait glisser la carte au lieu que le navigateur prenne le toucher ; n'agit que sur le tactile */
+@media (pointer: coarse) { html, body { overscroll-behavior: none; } } /* pas de rebond de la page sous la carte */
+#viewport { transform-origin: 0 0; }
+#viewport.anim { transition: transform .5s var(--ease), opacity .35s var(--ease); }
+#context { position: absolute; left: 24px; top: calc(var(--hh, 64px) + 8px); max-width: min(520px, calc(100% - var(--pw) - 64px)); pointer-events: none; transition: opacity .3s var(--ease); }
+/* la barre de parcours prend la place du titre pendant qu'un parcours se joue */
+body.in-flow #context { opacity: 0; }
+#context h1 { margin: 6px 0 6px; font-size: 34px; line-height: 1.1; font-weight: 600; letter-spacing: -.035em; text-wrap: balance; }
+#context p { margin: 0; color: var(--text-2); line-height: 1.55; font-size: 14px; }
+.ctx-more { display: none; } /* le bouton Plus / Moins sous la description est réservé aux téléphones */
+#ask-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#colonne { display: none; }

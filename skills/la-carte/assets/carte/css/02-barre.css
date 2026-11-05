@@ -1,0 +1,38 @@
+/* ---------- barre du haut : marque et chemin à gauche, recherche au centre, actions à droite ---------- */
+header { position: fixed; inset: 0 0 auto 0; height: 52px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px; z-index: 10; pointer-events: none;
+  background: #000; }
+header > * { pointer-events: auto; }
+.hl { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.hc { display: flex; justify-content: center; }
+.hr { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+#crumbs { display: flex; align-items: center; min-width: 0; overflow: hidden; }
+#crumbs .sep { display: none; }
+/* seulement le niveau au-dessus : le niveau courant est le grand titre de la page */
+#crumbs button:not(.cur):not(:nth-last-child(3)), #crumbs button.cur:not(:first-child) { display: none; }
+#crumbs button { background: none; border: 0; padding: 6px 10px; border-radius: 999px; cursor: pointer; color: #a1a1a6; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; transition: background .2s var(--ease), color .2s var(--ease); }
+#crumbs button:hover { background: #272729; color: #fff; }
+#crumbs button.cur { color: #f5f5f7; }
+.btn { height: 36px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 999px; border: 0; background: transparent; color: var(--text-2); cursor: pointer; white-space: nowrap; text-decoration: none; font-size: 13px;
+  transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease); }
+.btn:hover { background: rgba(var(--ink), .07); color: var(--text); }
+.btn:active { transform: scale(.95); }
+.btn.icon { width: 36px; padding: 0; justify-content: center; }
+.btn.soft { background: rgba(var(--ink), .06); color: var(--text); }
+.btn.soft:hover { background: rgba(var(--ink), .1); }
+.btn.primary { background: var(--on); color: var(--on-text); }
+.btn.primary:hover { background: var(--on-hover); }
+.btn:disabled { opacity: .35; cursor: default; }
+.btn .badge { min-width: 16px; height: 16px; border-radius: 999px; background: var(--on); color: var(--on-text); font-size: 10px; font-weight: 600; display: grid; place-items: center; padding: 0 4px; }
+#btn-up[hidden] { display: none; }
+#search-btn { width: min(460px, 36vw); height: 34px; justify-content: flex-start; gap: 10px; padding: 0 8px 0 16px; background: #1d1d1f; color: #a1a1a6; }
+/* le bouton Thème ajoute 48 px (44 px et un espace) du côté droit, donc la zone de recherche cède autant, et le nom du projet et les boutons tiennent comme avant. Sous 701 px, la barre relève de la disposition téléphone et reste telle quelle. */
+@media (min-width: 701px) { #search-btn { width: min(460px, max(calc(36vw - 48px), 250px)); } }
+#search-btn:hover { background: #2a2a2c; color: #d2d2d7; }
+#search-btn .kbd { margin-left: auto; background: #333336; color: #a1a1a6; }
+.rel { position: relative; }
+/* la barre reste noire dans les deux thèmes */
+header, header .btn { color: #f5f5f7; }
+header .btn { font-weight: 400; }
+header .btn:hover { background: #272729; color: #fff; }
+header .btn.soft { background: #272729; color: #f5f5f7; }
+header .btn .badge { background: #2997ff; color: #000; }
