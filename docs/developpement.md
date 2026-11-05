@@ -36,6 +36,7 @@ skills/la-carte/
     vendor/        moteur de mise en page (elkjs) et police intégrés, avec leurs licences
 tests/                 tests de non-régression et les projets d'exemple qu'ils cartographient
 outils/empreintes.mjs    écrit EMPREINTES.txt, et compare une copie installée avec lui
+outils/verifier-liens.mjs  vérifie que chaque lien du README et des docs mène à un fichier et à un titre qui existent
 EMPREINTES.txt          SHA-256 de chaque fichier d'où le plugin tourne
 docs/                  ces guides
 .github/workflows/     les tests sur GitHub, à la demande seulement

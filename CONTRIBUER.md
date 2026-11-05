@@ -66,6 +66,12 @@ node outils/rien-de-personnel.mjs .
 node outils/empreintes.mjs
 ```
 
+Si tu as touché au README ou aux docs :
+
+```bash
+node outils/verifier-liens.mjs
+```
+
 ```bash
 node --test
 ```

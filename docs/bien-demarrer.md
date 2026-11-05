@@ -12,16 +12,16 @@ La carte est un plugin de **Claude Code**. Ce guide t'explique comment l'install
 
 ## Installation
 
-Cette copie n'est pas dans une boutique de plugins. Tu l'installes depuis son dossier sur ta machine, ou depuis son dépôt Git (si ton Git y a accès : le dépôt peut être privé). Le plugin et la source s'appellent tous deux `la-carte`.
+Cette copie n'est pas dans une boutique de plugins. Tu l'installes depuis son dépôt GitHub, `Doukay/la-carte`, ou depuis une copie du dépôt sur ta machine. Le plugin et la source s'appellent tous deux `la-carte`.
 
 **Dans Claude Code**, lance ces commandes une fois, dans n'importe quel terminal :
 
 ```bash
-claude plugin marketplace add /chemin/vers/la-carte
+claude plugin marketplace add Doukay/la-carte
 claude plugin install la-carte@la-carte
 ```
 
-La première commande ajoute le dossier de cette copie comme source de plugins (pour le dépôt Git : `claude plugin marketplace add <compte>/la-carte`). La seconde installe la carte pour tous tes projets. L'application de bureau et la ligne de commande partagent les mêmes réglages : il apparaît donc dans les deux.
+La première commande ajoute ce dépôt comme source de plugins (depuis une copie sur ta machine : `claude plugin marketplace add /chemin/vers/la-carte`). La seconde installe la carte pour tous tes projets. L'application de bureau et la ligne de commande partagent les mêmes réglages : il apparaît donc dans les deux.
 
 **Ouvre une nouvelle session** ensuite. Les plugins se chargent au démarrage d'une session.
 

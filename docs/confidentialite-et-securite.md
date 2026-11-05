@@ -61,7 +61,7 @@ Mais, honnêtement :
 
 ## Git
 
-Rien de ce que la carte crée n'est enregistré dans Git. Voir [Ce qu'il y a dans ton projet](fichiers-du-projet.md#rester-hors-de-git).
+Seul `la-carte/sources/` (les noms et les descriptions) est à enregistrer dans Git ; le reste de ce que la carte crée s'ignore tout seul. Voir [Ce qu'il y a dans ton projet](fichiers-du-projet.md#le-dossier-la-carte).
 
 ## Signaler une faille
 

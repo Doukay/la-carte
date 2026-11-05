@@ -36,16 +36,16 @@ D'autres captures dans [Tout ce que fait la carte](docs/fonctions.md#voir-en-ima
 
 Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code. La carte marche avec l'abonnement que tu as déjà, sans clé d'API.
 
-Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `la-carte`.
+Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis ce dépôt GitHub. Le plugin et la source s'appellent tous deux `la-carte`.
 
-Dans l'onglet Code de l'application de bureau ou en ligne de commande, depuis le dossier de cette copie :
+Dans l'onglet Code de l'application de bureau ou en ligne de commande :
 
 ```bash
-claude plugin marketplace add /chemin/vers/la-carte
+claude plugin marketplace add Doukay/la-carte
 claude plugin install la-carte@la-carte
 ```
 
-(ou, depuis le dépôt Git de cette copie : `claude plugin marketplace add <compte>/la-carte`, si ton Git a accès au dépôt.)
+(ou, depuis une copie du dépôt sur ta machine : `claude plugin marketplace add /chemin/vers/la-carte`.)
 
 Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/bien-demarrer.md).
 
@@ -63,6 +63,10 @@ Quand tu as avancé, demande :
 > Mets à jour la carte.
 
 Seul ce qui a changé est relu, et ce sur quoi tu viens de travailler s'allume dans **Travail récent**.
+
+**Les questions de base sont prêtes.** Clique dans la barre de question : « Comment ça fonctionne ? », « Comment lancer le projet ? »… Une réponse déjà donnée revient tout de suite, sans jeton, et la carte prévient si le code a changé depuis.
+
+**Une carte toujours à jour, sans jeton.** Une tâche planifiée peut lancer chaque jour `sans-claude.mjs` : la carte suit le code, les nouveaux fichiers reçoivent un nom par défaut et **Travail récent** montre les derniers commits. Voir [Mise à jour automatique](docs/utiliser-la-carte.md#mise-à-jour-automatique-sans-jeton).
 
 **Pas encore de code ?** La carte peut planifier une appli à partir d'un cahier des charges ou d'une spécification. Donne le document et demande :
 
@@ -88,6 +92,7 @@ Tu obtiens un [plan](docs/fonctions.md#les-plans-pour-une-appli-pas-encore-const
 | Analyser le code, contrôle de santé, liens coupés | Première carte : nommer et décrire les fichiers |
 | Bouton **Mettre à jour** | Bouton **Décrire** : nommer et décrire les nouveaux fichiers |
 | Ouvrir, parcourir, chercher, exporter, relire une réponse gardée | Poser une nouvelle question, demander un parcours |
+| Mise à jour automatique chaque jour (`sans-claude.mjs`) | |
 
 ## Ce que ça ajoute à ton projet
 
@@ -125,7 +130,7 @@ Les corrections sont les bienvenues : [CONTRIBUER.md](CONTRIBUER.md) dit comment
 
 ## Signaler un problème
 
-Pour un défaut de sécurité, lis [SECURITY.md](SECURITY.md). Pour le reste, écris à la personne qui tient ce dépôt. L'auteur d'origine n'a rien à voir avec cette copie : ne lui envoie pas de demande à son sujet.
+Pour un défaut de sécurité, lis [SECURITY.md](SECURITY.md). Pour le reste, ouvre un ticket dans l'onglet **Issues** de ce dépôt. L'auteur d'origine n'a rien à voir avec cette copie : ne lui envoie pas de demande à son sujet.
 
 ## Licence
 
