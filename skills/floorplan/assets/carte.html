@@ -489,9 +489,9 @@ header .btn .badge { background: #2997ff; color: #000; }
 #search-btn { background: #1d1d1f; color: #a1a1a6; height: 34px; }
 #search-btn:hover { background: #2a2a2c; color: #d2d2d7; }
 #search-btn .kbd { background: #333336; color: #a1a1a6; }
-.ico { background: color-mix(in srgb, var(--c) 14%, var(--surface)); border-radius: 8px; color: var(--c); }
+.ico { background: color-mix(in srgb, var(--c) 18%, var(--surface)); border-radius: 8px; color: var(--c); }
 .meta { background: var(--raise); color: var(--text-3); }
-.card { padding: 18px 20px; background: color-mix(in srgb, var(--c) 5%, var(--surface)); }
+.card { padding: 18px 20px; background: color-mix(in srgb, var(--c) 10%, var(--surface)); }
 .card.external { background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, var(--surface)); }
 .node:hover .card { transform: none; box-shadow: var(--shadow-lift); }
 .node.sel .card, .node.sel .card.external { box-shadow: 0 0 0 2px var(--ring); }
@@ -570,19 +570,19 @@ header .btn .badge { background: #2997ff; color: #000; }
   .col-rang.relie { margin-top: 0; }
   .col-rang.relie::before { content: ""; display: block; width: 2px; height: 20px; margin: 0 auto -10px; background: var(--k-import); }
   body:not(.no-panel) #colonne { padding-bottom: 60vh; }
-  .col-bloc { scroll-margin-top: 12px; position: relative; border-radius: var(--r-card); background: var(--surface); overflow: hidden; }
+  .col-bloc { scroll-margin-top: 12px; position: relative; border-radius: var(--r-card); background: color-mix(in srgb, var(--c) 10%, var(--surface)); overflow: hidden; }
   .col-bloc.sel { box-shadow: 0 0 0 2px var(--ring); }
   .col-zone { position: relative; display: block; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .col-zone:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; border-radius: var(--r-card); }
   .col-zone:active { background: var(--raise); }
-  .col-bloc .card { height: auto; box-shadow: none; animation: none; padding: 16px 44px 14px 16px; overflow: visible; }
+  .col-bloc .card, .col-bloc .card.external { height: auto; background: transparent; box-shadow: none; animation: none; padding: 16px 44px 14px 16px; overflow: visible; }
   .col-bloc .card.connector { padding: 12px 44px 12px 12px; }
   .col-bloc .desc { max-height: none; -webkit-line-clamp: unset; display: block; }
   .col-bloc .foot { margin-top: 6px; }
   .col-ouvrir { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); display: grid; place-items: center; width: 24px; height: 24px; }
   .col-titre { flex: 0 0 100%; font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
   .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 0 12px 12px; }
-  .col-lien { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; background: var(--raise); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  .col-lien { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .col-lien svg.i { width: 13px; height: 13px; color: var(--on); }
   .col-plus { font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
@@ -1530,7 +1530,8 @@ function rendreColonne(vue, res) {
   listeColonne.innerHTML = rangsColonne(vue, res).map((r) => `<div class="col-rang${r.relie ? ' relie' : ''}">${r.blocs.map(({ id }) => {
     const estConnecteur = connecteurs.has(id);
     const nom = nomDe(id);
-    return `<div class="col-bloc" data-id="${h(id)}"><div class="col-zone" role="button" tabindex="0" aria-label="${h(nom)}">${estConnecteur ? connecteurHTML(connecteurs.get(id)) : blocHTML(id)}${ouvrable(id) ? `<span class="col-ouvrir">${pictoI('right')}</span>` : ''}</div>${liensColonne(vue, id)}</div>`;
+    const couleur = couleurBloc(infosBloc(estConnecteur ? connecteurs.get(id).entity : id));
+    return `<div class="col-bloc" data-id="${h(id)}" style="--c:${couleur}"><div class="col-zone" role="button" tabindex="0" aria-label="${h(nom)}">${estConnecteur ? connecteurHTML(connecteurs.get(id)) : blocHTML(id)}${ouvrable(id) ? `<span class="col-ouvrir">${pictoI('right')}</span>` : ''}</div>${liensColonne(vue, id)}</div>`;
   }).join('')}</div>`).join('');
   colonne.scrollTop = 0;
 }
