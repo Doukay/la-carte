@@ -1,7 +1,7 @@
 # la carte 0.6.3-fr.1: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
-31aa8cf3e3ac69672e843a4421437d9e2e32cd7065578d739ffbce5277539dc2  .claude-plugin/marketplace.json
-8391aa1f866fe38059149837f99104a24f23ea595e7dfb7d8d7446c771dfc274  .claude-plugin/plugin.json
+5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
+b697efb0726ebcab5da88ac6f8bf4aa91bbcab6b9dda2d450d1c4e2433d9af23  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 18cc4af468c728670495601d7411ee5e658c447bc4bd97f0a8cd4bb8ac572f7f  skills/la-carte/SKILL.md
 d99af7195a42f1dff54f09880ad69638b4977fee7c9fb90e3b6c09045966efaf  skills/la-carte/assets/carte/css/01-jetons.css
