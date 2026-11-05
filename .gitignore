@@ -10,3 +10,6 @@ CLAUDE.local.md
 Thumbs.db
 *.log
 node_modules/
+
+# maquettes et réglages de travail du design
+.impeccable/
