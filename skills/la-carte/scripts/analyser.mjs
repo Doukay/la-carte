@@ -29,14 +29,19 @@ const trouve = decouvrir(racine, { includeWorktrees: !!parametres['include-workt
 const depots = [];
 const listeFichiers = []; // { path, repo }
 const vus = new Set();
-// les dossiers de carte (le nôtre, ou un ancien show-code/) sont un résultat, pas du code
+// les dossiers de carte (le nôtre, un ancien show-code/, ou une carte rangée ailleurs avec LA_CARTE_DOSSIER, reconnue
+// à son .cache/skill.json) sont un résultat, pas du code
 const dossiersCarte = new Map();
+const estCarte = (d) => {
+  const absolu = path.join(racine, d), nom = path.basename(d);
+  if (nom === DOSSIER_CARTE || nom === ANCIEN_DOSSIER_CARTE) return estDossierCarte(absolu);
+  return path.resolve(absolu) === path.resolve(dossierSortie) || fs.existsSync(path.join(absolu, '.cache', 'skill.json'));
+};
 const dansCarte = (p) => {
   const segments = p.split('/');
   for (let i = 0; i < segments.length - 1; i++) {
-    if (segments[i] !== DOSSIER_CARTE && segments[i] !== ANCIEN_DOSSIER_CARTE) continue;
     const d = segments.slice(0, i + 1).join('/');
-    if (!dossiersCarte.has(d)) dossiersCarte.set(d, estDossierCarte(path.join(racine, d)));
+    if (!dossiersCarte.has(d)) dossiersCarte.set(d, estCarte(d));
     if (dossiersCarte.get(d)) return true;
   }
   return false;

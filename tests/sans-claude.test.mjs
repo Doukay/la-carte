@@ -93,6 +93,17 @@ test('découpage automatique : le dossier qui porte l’essentiel est découpé,
   assert.deepEqual(a.nodes.find((n) => n.id === 'racine').paths, ['main.py']);
 });
 
+test('une carte rangée à l’intérieur du dossier cartographié (même sous un autre nom) n’est pas lue comme du code', () => {
+  const racine = projetAvecCommit();
+  const autre = path.join(racine, 'cartes', 'AUTRE');
+  sansClaude(racine, autre);   // une première carte, rangée dans le projet sous un nom quelconque
+  const dossier = dossierAilleurs();
+  sansClaude(racine, dossier);
+  const g = lireJson(path.join(dossier, '.cache', 'graphe.json'));
+  assert.deepEqual(g.files.filter((f) => f.p.startsWith('cartes/')).map((f) => f.p), []);
+  assert.equal(g.files.length, 4);
+});
+
 test('LA_CARTE_DOSSIER vaut aussi pour les autres scripts', () => {
   const racine = projetAvecCommit(), dossier = dossierAilleurs();
   execFileSync(process.execPath, [path.join(DOSSIER_SKILL, 'scripts', 'analyser.mjs'), racine], { env: { ...process.env, LA_CARTE_DOSSIER: dossier }, stdio: 'pipe' });

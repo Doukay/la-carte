@@ -1,7 +1,7 @@
-# la carte 0.6.3-fr.7: SHA-256 de chaque fichier d'où le plugin tourne.
+# la carte 0.6.3-fr.8: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
-4ee915a8b9b5b5c00ff7453c063b3584ca744342f8b4145142ec2c995081ab43  .claude-plugin/plugin.json
+5b67798e08e20787b4dac2731a158cabd155eb92f0b36707881b678eca76f863  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 65a38bbca135a6e04d7b87fe09446379d6b793bb606644f88aff4f64bd27b66d  skills/la-carte/SKILL.md
 4009e0c5b85677d3fef9f733a7b59296b47ae21924b07e97694da2f213bdee1b  skills/la-carte/assets/carte/css/01-jetons.css
@@ -60,7 +60,7 @@ d2ebb7cd9b27ae0ae4297793bbf13caf2f4e2c533625bf53e33eb9f0e647fc98  skills/la-cart
 b50ef7574f20193849301e550275ddf46a67b5d1bef1b4bd3c0acc78201dd267  skills/la-carte/references/plan.md
 f053148e597eca42e5d5fa0c28ea188dcef0f01099abd21343dd10d17fa59c9b  skills/la-carte/references/schema.md
 e0470ed44754a9853ba677df80a977b71753410d7657ed0b920e932635995d5f  skills/la-carte/scripts/actualiser.mjs
-b4f2640b7f5643aec4778f1ccb092307f549048d431bd7d37085ec7fc5bdfb72  skills/la-carte/scripts/analyser.mjs
+4a54817c5a499c7d8bfc9d86b20a460b6373b0ddd058b4e6ec8233843af4242c  skills/la-carte/scripts/analyser.mjs
 3c19451a0c42d68dcc212083a746956075f4108c18e8797287696dd642514e52  skills/la-carte/scripts/construire.mjs
 a91a09d2c5ce1a9d4972529f23de6b6b087f40aef9ec761dd293e0b6f4bcf4f8  skills/la-carte/scripts/decrire.mjs
 83c19492bc7e425ebaf79712f846ba57d432ec0f4c3c12c915c91f85c37a1106  skills/la-carte/scripts/etat.mjs
