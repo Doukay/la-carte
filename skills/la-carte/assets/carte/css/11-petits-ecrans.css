@@ -94,8 +94,12 @@
   .col-plus { min-height: 44px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème reste celui par défaut */
   #btn-export, #filters-btn, #theme-toggle, #ask-engine { display: none; }
-  header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 10px; }
+  header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 44px; height: 50px; padding: 4px 3px; border-radius: 10px; }
+  .hr, .hr-ext { flex-wrap: nowrap; }
   .hr .btn .bl { display: block; font-size: 11px; line-height: 1.2; white-space: nowrap; }
+  #btn-recent .bl, #tour-btn .bl { font-size: 0; }
+  #btn-recent .bl::after { content: "Récent"; font-size: 11px; }
+  #tour-btn .bl::after { content: "Visite"; font-size: 11px; }
   #btn-panel::after { content: "Détails"; font-size: 11px; line-height: 1.2; }
   /* les menus s'ouvrent en blocs pleine largeur sous la barre */
   #flowmenu, #legend { position: fixed; top: calc(var(--hh, 56px) + 4px); left: 8px; right: 8px; width: auto; max-height: 60vh; overflow: auto; }
@@ -103,7 +107,11 @@
 }
 @media (min-width: 701px) and (max-width: 999px) {
   .hr .btn .bl { display: inline; }
-  header .hr .btn { width: auto; padding: 0 10px; gap: 6px; }
+  header .hr .btn { width: auto; padding: 0 7px; gap: 5px; }
+  header .hr .btn .badge { position: static; }
+  #btn-recent .bl, #tour-btn .bl { font-size: 0; }
+  #btn-recent .bl::after { content: "Récent"; font-size: 13.5px; }
+  #tour-btn .bl::after { content: "Visite"; font-size: 13.5px; }
   #btn-panel::after { content: "Détails"; }
   body, body.no-panel { --pw: 0px; }
   #panel { top: auto; left: 16px; right: 16px; bottom: 16px; width: auto; height: 44vh; }

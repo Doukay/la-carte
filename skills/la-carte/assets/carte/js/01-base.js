@@ -46,6 +46,7 @@ function el(balise, attrs = {}, parent) {
 
 // ---------- pictogrammes ----------
 const P = {
+  health: '<path d="M12 3 5 6v6c0 5 3 8 7 9 4-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
   ui: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
   service: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>',
   worker: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',

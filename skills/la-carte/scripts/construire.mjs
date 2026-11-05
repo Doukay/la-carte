@@ -447,7 +447,7 @@ const page = (g) => gabarit
   .replace('<!--__ELK_SCRIPT__-->', () => baliseElk)
   .replace('/*__FONTS__*/', () => cssPolices)
   .replace('/*__LA_CARTE_DATA__*/null', () => JSON.stringify(g).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'))
-  .replace(/__LA_CARTE_TITLE__/g, () => echapperHtml(`Carte de ${archi.projet.name}`))
+  .replace(/__LA_CARTE_TITLE__/g, () => echapperHtml(`${archi.projet.name} : la carte`))
   .replace('<!--__UI_EXTENSIONS__-->', () => scriptsUi);
 const dossierUi = path.join(DOSSIER_SKILL, 'assets', 'ui');
 const scriptsUi = fs.existsSync(dossierUi) ? fs.readdirSync(dossierUi).filter((n) => n.endsWith('.js')).sort().map((n) => `<script>/* ui/${n} */\n${fs.readFileSync(path.join(dossierUi, n), 'utf8').replace(/<\/script/gi, '<\\/script')}</script>`).join('\n') : '';

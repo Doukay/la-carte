@@ -39,3 +39,7 @@ test('la page utilise l’icône choisie pour un bloc, et celle de son type sino
   assert.match(page, /i\.type === 'node' \? \(P\[i\.n\.icon\] \? i\.n\.icon : i\.kind\)/);
   assert.doesNotMatch(page, /\.brand \.mark/); // le logo de l'auteur est retiré, y compris dans la copie exportée
 });
+
+test('les icônes de l’interface existent toutes : un nom manquant laisserait un bouton sans dessin', () => {
+  for (const nom of ['health', 'x', 'right']) assert.match(page, new RegExp(`[\\s,{]'?${nom}'?: '<`), nom);
+});

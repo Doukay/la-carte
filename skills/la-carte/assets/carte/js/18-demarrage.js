@@ -1,6 +1,6 @@
 // ======================= démarrage =======================
 if (COPIE_EXPORTEE) document.body.classList.add('exported');
-document.title = `Carte de ${G.projet.name}`;
+document.title = `${G.projet.name} : la carte`;
 $('#btn-up').onclick = monterNiveau;
 // glisse le bord gauche du panneau pour le redimensionner ; la largeur est conservée d'une visite à l'autre
 const reglerLargeurPanneau = (w) => { document.documentElement.style.setProperty('--panel-w', `${borner(Math.round(w), 300, Math.min(720, innerWidth - 360))}px`); };

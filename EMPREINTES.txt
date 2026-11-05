@@ -17,8 +17,8 @@ f23f1e8482375811849df1c391584c2ff85b8c14a4d7dc579077657923a2b48a  skills/la-cart
 3020311ac1e422cb1c0e5ee040449508aa4c2018c973d47866f012362129a860  skills/la-carte/assets/carte/css/08-palette.css
 802381629086693cb8d292300d6322936cbffcae0b28dc1c2f96db581ff365fb  skills/la-carte/assets/carte/css/09-bulle.css
 85433b7b80e661c18543c46ac497056bbc9856f59e363fee9533845626ca13cd  skills/la-carte/assets/carte/css/10-extensions.css
-32b8cbd654582e3fcb48ebff33f2afbcce7b0b8f4e1d7171756e6f2f712e4515  skills/la-carte/assets/carte/css/11-petits-ecrans.css
-219c04d12e8ee7883bfccfffbf6640fdc0fe45bc72afc44a2d3d327df3272d89  skills/la-carte/assets/carte/js/01-base.js
+726f28aa4c29d396c75e84ce6353fced80d2833fcb05ff32a6ece9e6cd15f0e5  skills/la-carte/assets/carte/css/11-petits-ecrans.css
+d1ba459b1597f8e2c8f7f5df0d2b7df8809f32921be1cb2dfb63adc6cc705514  skills/la-carte/assets/carte/js/01-base.js
 4eaafc59393ea9cf5df8e781195f1a08259b84d942dc2618d2d3fbc08249a99d  skills/la-carte/assets/carte/js/02-modele.js
 0ef40a00abb980f6b3c5d219b197f6913034d54fa83208875f832749f8650121  skills/la-carte/assets/carte/js/03-projection.js
 207b716ebeef367ac15b0902ef12f5d199e35613cca99dd4fbaa071858a20694  skills/la-carte/assets/carte/js/04-blocs.js
@@ -35,7 +35,7 @@ ec354c8ef19bdc4e6ce7d1e5ab2bb77d85d414dc3da939bd17d5db121172d679  skills/la-cart
 239e0f9f19acdd6e4790792589b85aee52036a698754014dbb50b24a6e8e4f87  skills/la-carte/assets/carte/js/15-recherche.js
 8f4bd5121346833dcd46e0247178fb299b719346f19912abe33445e1b5b8e0b5  skills/la-carte/assets/carte/js/16-parcours.js
 5c2572a374e71e9468ec19e4389f84909cace84250baa4069a1d775808bd9dfe  skills/la-carte/assets/carte/js/17-questions.js
-4dd52ee1671bcbc8b89f87ed97097eb74a3eb6c0fa2754e1239851152579d4c9  skills/la-carte/assets/carte/js/18-demarrage.js
+37425204477cfdb568ac5a0727f1cd7922f07598fb99eb430a734410764bc49a  skills/la-carte/assets/carte/js/18-demarrage.js
 ef4ed238c337deeafa5977039fef394e1482debc69d13989599ff98b3c31c062  skills/la-carte/assets/carte/js/19-api.js
 5d238f27b79f56f60926444f532c1f2c47c56bda628cf98e5af1a0d7db555a35  skills/la-carte/assets/carte/page.html
 85dad448514013643d94fecb7a599d993a1f5de0c72b24c9be36a8629ff7eac1  skills/la-carte/assets/requete-cli.mjs
@@ -60,7 +60,7 @@ cd1c8db356627302af9ec452f5fc3bfe1acc9c8b3aee018abe95fe8c3e97fba1  skills/la-cart
 f053148e597eca42e5d5fa0c28ea188dcef0f01099abd21343dd10d17fa59c9b  skills/la-carte/references/schema.md
 3359f8358f9f5075e29aba69454439bcc80f13c692c204dde4323e74671c5ce6  skills/la-carte/scripts/actualiser.mjs
 d6faf807ace0171d796b647a7e35e7c8e8381ccb3f517df692dc2ccd11ea31ae  skills/la-carte/scripts/analyser.mjs
-b0dba6ed8ccbc47d654f469543984dce002a753e5a95905931beb3cb4aebefa9  skills/la-carte/scripts/construire.mjs
+d078b93792143c2c3eefa8ed73b3376fc7b936720164b3fac51be5193523b1e6  skills/la-carte/scripts/construire.mjs
 a91a09d2c5ce1a9d4972529f23de6b6b087f40aef9ec761dd293e0b6f4bcf4f8  skills/la-carte/scripts/decrire.mjs
 83c19492bc7e425ebaf79712f846ba57d432ec0f4c3c12c915c91f85c37a1106  skills/la-carte/scripts/etat.mjs
 efb1d36628a745819954969f9786f9063e6e2d1e0bf3dbdeef548b64ef1219a0  skills/la-carte/scripts/lib/agent.mjs
