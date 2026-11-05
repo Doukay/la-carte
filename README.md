@@ -1,8 +1,6 @@
 <div align="center">
 
-# La carte
-
-**Vois comment ton appli tient vraiment ensemble.**
+<img src="docs/images/partage.png" alt="La carte : vois comment ton appli tient vraiment ensemble. Plugin Claude Code, en français." width="100%">
 
 Claude lit ton code et en dessine une carte interactive. Chaque partie, chaque fichier et chaque appel au serveur reçoit un nom en langage simple, et chaque lien entre eux est montré.
 
