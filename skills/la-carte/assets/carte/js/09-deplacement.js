@@ -2,8 +2,9 @@
 function appliquerTransformation() {
   const { x, y, k } = etatVue.t;
   vp.style.transform = `translate(${x}px,${y}px) scale(${k})`;
+  // les schémas aérés tiennent souvent vers 0,6 sur un portable panneau ouvert : la description reste jusque-là, sinon les blocs sont vides
   svg.classList.toggle('lod-low', k < 0.42);
-  svg.classList.toggle('lod-mid', k >= 0.42 && k < 0.75);
+  svg.classList.toggle('lod-mid', k >= 0.42 && k < 0.6);
   svg.style.setProperty('--contre', Math.min(2.4, 1 / Math.min(k, 1)).toFixed(3));
 }
 const rectScene = () => svg.getBoundingClientRect();

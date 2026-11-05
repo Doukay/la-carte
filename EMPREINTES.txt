@@ -1,7 +1,7 @@
-# la carte 0.6.3-fr.9: SHA-256 de chaque fichier d'où le plugin tourne.
+# la carte 0.6.3-fr.10: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
-0cc19d3a4bb3b84651272b86fd4a044ae100ca7a99513ad7b8bc2117cc6402f5  .claude-plugin/plugin.json
+89b5d6db11353b07dcae8cf6f8b50575895f72539687fe667a34efb3f0ed0f0f  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 65a38bbca135a6e04d7b87fe09446379d6b793bb606644f88aff4f64bd27b66d  skills/la-carte/SKILL.md
 4009e0c5b85677d3fef9f733a7b59296b47ae21924b07e97694da2f213bdee1b  skills/la-carte/assets/carte/css/01-jetons.css
@@ -24,7 +24,7 @@ caed7168a24f81a57bec41e246f09be5827be18d76c09dc91ee9f957de67cd9f  skills/la-cart
 c656abbeb0b75fe4844f54a7987a54e6b0755a9b6974c7210c740789b2429d1f  skills/la-carte/assets/carte/js/06-affichage.js
 8438373f54fafe896e43763508c9b4727191c9210a1e225494bfbc8cb1e16d34  skills/la-carte/assets/carte/js/07-infobulles.js
 c3dec12bab59ccdc3d1f1cb1c9ad4165fec76e0c5d8657f18c45af4eb74c663b  skills/la-carte/assets/carte/js/08-menus.js
-6bbd51cc54d081883653d20b02454ced8644ec501c122648bf4d8118bdc6ba16  skills/la-carte/assets/carte/js/09-deplacement.js
+2b6afd550d1782284a228230b148b398bfa309a7c8fe18793e76db8f9dc0f718  skills/la-carte/assets/carte/js/09-deplacement.js
 ed287ec8b0d526f5b2cf1b17ea4d63c946265fca73e36e3131940e6e23d9ab76  skills/la-carte/assets/carte/js/10-navigation.js
 e672a39541700447d0933d8e1de1d0ba7d1ff3121cf981ed415626efe0eeeb71  skills/la-carte/assets/carte/js/11-telephone.js
 ec354c8ef19bdc4e6ce7d1e5ab2bb77d85d414dc3da939bd17d5db121172d679  skills/la-carte/assets/carte/js/12-selection.js

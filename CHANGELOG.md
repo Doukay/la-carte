@@ -2,6 +2,11 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.10 (2026-11-06)
+
+- **Descriptions visibles dans les schémas** : depuis que les schémas sont aérés, une vue d'ensemble tient souvent vers 60 % de zoom sur un portable panneau ouvert, et ses blocs s'affichaient vides. La description reste maintenant affichée jusqu'à ce zoom (avant : 75 %).
+- **Captures de la doc refaites** avec l'interface actuelle (boutique fictive Atelier Lumière).
+
 ## 0.6.3-fr.9 (2026-11-05)
 
 - **Mise à jour sans Claude** : `--nom "Nom du projet"` donne son nom à une carte faite sans Claude (sinon le nom du dossier, souvent en majuscules). Une carte décrite par Claude garde le sien.
