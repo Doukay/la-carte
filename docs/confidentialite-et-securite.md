@@ -22,7 +22,7 @@ Cette page dit ce qui est vrai pour cette copie française de Floorplan, y compr
 | Poser des questions (application Claude) | ton compte claude.ai | la carte (noms, descriptions, structure), jamais ton code source. Claude te demande avant de la publier là |
 | Exporter une copie | ton ordinateur : le serveur de la carte écrit un seul fichier HTML | rien. C'est toi qui décides à qui va le fichier. Il contient la carte, plus la Santé ou le travail récent seulement si tu les coches, et jamais le chemin de ton dossier, tes dépôts Git distants ni ton code source |
 
-Il n'y a aucune ligne « service de la carte » dans ce tableau, parce qu'il n'y en a aucun. Le moteur de mise en page ([elkjs](https://github.com/kieler/elkjs) 0.9.3, EPL-2.0) et les polices (Inter et JetBrains Mono, licence SIL Open Font) sont intégrés dans `skills/la-carte/assets/vendor/` avec leurs licences, et chaque construction les copie dans la carte. Les quelques liens de la carte vers de la documentation s'ouvrent seulement quand tu cliques dessus.
+Il n'y a aucune ligne « service de la carte » dans ce tableau, parce qu'il n'y en a aucun. Le moteur de mise en page ([elkjs](https://github.com/kieler/elkjs) 0.9.3, EPL-2.0) et la police (Inter) sont intégrés dans `skills/la-carte/assets/vendor/` avec leurs licences, et chaque construction les copie dans la carte. Les quelques liens de la carte vers de la documentation s'ouvrent seulement quand tu cliques dessus.
 
 Ce que Claude Code et Codex gardent de leur côté (historique des conversations, journaux) dépend d'eux et de tes réglages, pas de la carte. Les questions posées par la carte avec Codex sont lancées sans sauvegarde dans l'historique ; pour Claude Code, regarde ses propres réglages.
 
