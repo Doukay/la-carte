@@ -15,7 +15,7 @@ function enteteFiche(i) {
     ${i.desc ? `<p class="pd">${h(i.desc)}</p>` : '<p class="pd empty">Pas encore de description.</p>'}`;
 }
 
-const CREDIT = `<div class="credit">D’après <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div>`;
+const CREDIT = `<div class="credit">D’après <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a></div>`;
 function afficherPanneau() {
   const sel = etatVue.selected;
   let html;

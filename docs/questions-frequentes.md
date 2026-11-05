@@ -1,6 +1,6 @@
 # Questions fréquentes
 
-> Traduction française non officielle de Floorplan, de Hayden Smith. Voir le [README](../README.md).
+> Version française non officielle, adaptée de Floorplan, de Hayden Smith. Voir le [README](../README.md).
 
 <details>
 <summary><b>Est-ce sûr à installer ?</b></summary>

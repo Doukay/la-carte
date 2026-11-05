@@ -1,4 +1,29 @@
 <!doctype html>
+<!--
+La carte est adaptée de Floorplan (https://github.com/haydenschmitty/floorplan).
+
+MIT License
+
+Copyright (c) 2026 Hayden Smith
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -37,7 +62,7 @@
 <script>if (matchMedia('(max-width: 999px)').matches && !/[#&]s=/.test(location.hash)) document.body.classList.add('no-panel'); // un téléphone ou une tablette démarre avec les détails fermés, pour que le panneau ne s'ouvre pas puis ne se referme pas d'un coup</script>
 <div id="stage">
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="viewport"></g></svg>
-  <div id="colonne"><div id="colonne-liste"></div><div class="credit">D’après <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div></div>
+  <div id="colonne"><div id="colonne-liste"></div><div class="credit">D’après <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a></div></div>
   <div id="context"></div>
   <div id="zoom" class="glass">
     <button id="z-out" title="Dézoomer (−)"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>

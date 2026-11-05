@@ -1,6 +1,6 @@
 # Pour commencer
 
-> Traduction française non officielle de Floorplan (de Hayden Smith, licence MIT). Voir le [README](../README.md).
+> Version française non officielle, adaptée de Floorplan (de Hayden Smith, licence MIT). Voir le [README](../README.md).
 
 La carte est un plugin de **Claude Code**. Ce guide t'explique comment l'installer, faire ta première carte et la garder à jour.
 

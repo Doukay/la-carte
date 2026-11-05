@@ -1,6 +1,6 @@
-# Documentation de la carte (traduction française)
+# Documentation de la carte
 
-> Traduction française non officielle de Floorplan, de Hayden Smith ([dépôt d'origine](https://github.com/haydenschmitty/floorplan), licence MIT). Voir le [README](../README.md).
+> Version française non officielle, adaptée de Floorplan, de Hayden Smith ([dépôt d'origine](https://github.com/haydenschmitty/floorplan), licence MIT). Voir le [README](../README.md).
 
 | Guide | Ce qu'il contient |
 |---|---|
