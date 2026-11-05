@@ -22,9 +22,10 @@ Les détails des blocs se simplifient quand tu dézoomes : les descriptions disp
 
 ### Sur un téléphone ou une tablette
 
-- **Fais glisser** avec un doigt pour déplacer la vue, et **pince** avec deux doigts pour zoomer.
+- **Sur un téléphone**, pas de zoom ni de déplacement : les blocs se suivent dans une colonne qui défile. Touche un bloc pour l'ouvrir, ou pour voir ses détails s'il n'a pas d'intérieur. Sous chaque bloc, **Utilise** liste ce à quoi il est relié.
+- **Sur une tablette**, le schéma reste : **fais glisser** avec un doigt pour déplacer la vue, et **pince** avec deux doigts pour zoomer.
 - **Touche un bloc** pour voir ses détails dans une feuille en bas. **Ouvrir** dans la feuille entre dans le bloc. Toucher un espace vide, entrer ou remonter, ou **Échap** range la feuille.
-- La barre du haut passe sur deux lignes et ses boutons n'affichent que leur icône. Sur un téléphone, les boutons de zoom sont sur la première ligne, et la description sous le titre se replie sur une ligne, avec **Plus** pour lire la suite.
+- La barre du haut passe sur deux lignes et ses boutons n'affichent que leur icône, avec un mot dessous sur un téléphone. Sur un téléphone, la description sous le titre se replie sur une ligne, avec **Plus** pour lire la suite.
 
 Rien ne change à la souris dans une fenêtre de 1000 px de large ou plus. Le support des téléphones et des tablettes a été construit par [@menachem-kurkus](https://github.com/menachem-kurkus).
 

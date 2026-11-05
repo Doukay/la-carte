@@ -7,7 +7,7 @@
 /* Thème : s'exécute avant tout affichage pour que la page ne clignote jamais avec les mauvaises couleurs. « auto » suit l'appareil. */
 (() => {
   const CLE = 'floorplan-theme', racine = document.documentElement, mq = matchMedia('(prefers-color-scheme: light)');
-  let memoire = 'auto';
+  let memoire = 'light';
   const valide = (v) => v === 'auto' || v === 'light' || v === 'dark';
   const lire = () => { try { const v = localStorage.getItem(CLE); if (valide(v)) return v; } catch (e) {} return memoire; };
   const appliquer = () => {
@@ -31,64 +31,65 @@
 <style>/*__FONTS__*/</style>
 <style>
 :root {
-  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", ui-sans-serif, system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
-  --bg: #0f0f0f; --bg-rgb: 15, 15, 15; --grid: #1f1f1f;
+  --accent: #2997ff;
+  --bg: #000000; --bg-rgb: 0, 0, 0; --grid: #1c1c1e;
   --ink: 255, 255, 255; /* la couleur dont la page se teinte : blanc sur fond sombre, noir sur fond clair */
-  --surface: #191919; --surface-hover: #1e1e1e; --raise: #232323; --raise-2: #2b2b2b;
-  --elev: rgba(26, 26, 26, .86); --hair: rgba(var(--ink), .06); --hair-2: rgba(var(--ink), .1);
-  --text: #ececec; --text-2: #b4b4b4; --text-3: #8b8b8b; --text-4: #5c5c5c;
-  --recent: #4ade80; --on-recent-text: #0b1f12;
-  --on: #ececec; --on-hover: #fff; --on-text: #0f0f0f; /* boutons pleins, pastilles et points */
-  --on-sev-text: #0f0f0f; /* texte sur une pastille rouge ou orange */
-  --ok: #6fd7a8; --sev-high: #f28b8b; --sev-medium: #f0c36b; --sev-low: #8b8b8b;
-  --warn-bg: rgba(240, 195, 107, .08); --warn-text: #f3d79b; --warn-sheet: rgba(46, 38, 18, .9);
-  --ok-bg: rgba(111, 215, 168, .08); --ok-text: #a9e5c9; --err-text: #f6a5a5;
-  --dir-bg: rgba(25, 25, 25, .7); --menu-solid: rgba(26, 26, 26, .94); --well: rgba(0, 0, 0, .3);
-  --palette-bg: rgba(30, 30, 30, .96); --modal-bg: rgba(30, 30, 30, .97);
-  --scrim: rgba(0, 0, 0, .45); --scrim-2: rgba(0, 0, 0, .5);
-  --shadow-lift: 0 18px 40px -20px rgba(0, 0, 0, 1);
-  --shadow-deep: 0 24px 64px -24px rgba(0, 0, 0, .9);
-  --ring: rgba(var(--ink), .88); --focus: rgba(var(--ink), .16);
-  --r-card: 20px; --r-panel: 24px; --r-ctl: 12px;
+  --surface: #1d1d1f; --surface-hover: #242426; --raise: #272729; --raise-2: #333336;
+  --elev: #1d1d1f; --hair: rgba(var(--ink), .08); --hair-2: rgba(var(--ink), .14);
+  --text: #f5f5f7; --text-2: #d2d2d7; --text-3: #a1a1a6; --text-4: #86868b;
+  --recent: #2997ff; --on-recent-text: #000;
+  --on: #2997ff; --on-hover: #64b0ff; --on-text: #000; /* boutons pleins, pastilles et points */
+  --on-sev-text: #000; /* texte sur une pastille rouge ou orange */
+  --ok: #30d158; --sev-high: #ff6961; --sev-medium: #ffb340; --sev-low: #98989d;
+  --warn-bg: rgba(255, 179, 64, .12); --warn-text: #ffd8a0; --warn-sheet: #3a2c14;
+  --ok-bg: rgba(48, 209, 88, .12); --ok-text: #a8e9bd; --err-text: #ff8a82;
+  --dir-bg: #161618; --menu-solid: #1d1d1f; --well: #000000;
+  --palette-bg: #1d1d1f; --modal-bg: #1d1d1f;
+  --scrim: rgba(0, 0, 0, .55); --scrim-2: rgba(0, 0, 0, .6);
+  --shadow-lift: 0 0 0 1px #48484a;
+  --shadow-deep: 0 24px 64px -24px rgba(0, 0, 0, .8);
+  --ring: #2997ff; --focus: rgba(41, 151, 255, .3);
+  --r-card: 18px; --r-panel: 18px; --r-ctl: 11px;
   --ease: cubic-bezier(.16, 1, .3, 1); --ease-io: cubic-bezier(.65, 0, .35, 1);
-  --shadow-card: 0 1px 0 rgba(var(--ink), .035) inset, 0 12px 32px -20px rgba(0, 0, 0, .95);
-  --shadow-float: 0 0 0 1px rgba(var(--ink), .05), 0 24px 64px -24px rgba(0, 0, 0, .9);
-  --k-import: #6e6e6e; --k-http: #7aa7ff; --k-call: #b49cff; --k-rpc: #8f9bff; --k-event: #f19ac7; --k-queue: #f0c36b; --k-data: #63d2b8; --k-config: #6b7280; --k-contains: #4a4a4a;
-  --n-ui: #7cc4ff; --n-service: #b49cff; --n-worker: #f0c36b; --n-library: #6fd7a8; --n-feature: #8fb4ff; --n-data: #63d2b8; --n-config: #a3a3a3;
-  --n-test: #f19ac7; --n-script: #f5a66b; --n-infra: #f28b8b; --n-external: #e3a6f0; --n-misc: #8b8b8b; --n-dir: #a3a3a3; --n-file: #a3a3a3;
-  --n-module: #a3a3a3; --n-symbol: #c7b8ff; --n-route: #7aa7ff; --n-connector: #8b8b8b;
-  --m-GET: #6fd7a8; --m-POST: #7aa7ff; --m-PUT: #f0c36b; --m-PATCH: #c7a3ff; --m-DELETE: #f28b8b; --m-CALL: #6fcfd9; --m-ANY: #a3a3a3;
+  --shadow-card: none;
+  --shadow-float: 0 0 0 1px #333336;
+  --k-import: #636366; --k-http: #2997ff; --k-call: #98989d; --k-rpc: #98989d; --k-event: #98989d; --k-queue: #98989d; --k-data: #98989d; --k-config: #6b7280; --k-contains: #4a4a4a;
+  --n-ui: #d2d2d7; --n-service: #d2d2d7; --n-worker: #d2d2d7; --n-library: #d2d2d7; --n-feature: #d2d2d7; --n-data: #d2d2d7; --n-config: #98989d;
+  --n-test: #98989d; --n-script: #98989d; --n-infra: #98989d; --n-external: #98989d; --n-misc: #98989d; --n-dir: #98989d; --n-file: #98989d;
+  --n-module: #98989d; --n-symbol: #98989d; --n-route: #2997ff; --n-connector: #98989d;
+  --m-GET: #30d158; --m-POST: #2997ff; --m-PUT: #ffb340; --m-PATCH: #98989d; --m-DELETE: #ff6961; --m-CALL: #2997ff; --m-ANY: #98989d;
   --panel-w: 360px; --pw: calc(var(--panel-w) + 32px); --gutter: 28px;
   color-scheme: dark;
 }
 /* ---------- thème clair : mêmes variables, nouvelles valeurs. Choisi avec le bouton Thème (voir ui/05-theme.js) ---------- */
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f3f3f1; --bg-rgb: 243, 243, 241; --grid: #d2d2ce; --ink: 0, 0, 0;
-  --surface: #ffffff; --surface-hover: #fbfbfa; --raise: #ebebe8; --raise-2: #e0e0dc;
-  --elev: rgba(255, 255, 255, .92); --hair: rgba(0, 0, 0, .09); --hair-2: rgba(0, 0, 0, .15);
-  --text: #161616; --text-2: #3f3f3f; --text-3: #595959; --text-4: #666666;
-  --recent: #157a3a; --on-recent-text: #fff;
-  --on: #161616; --on-hover: #000; --on-text: #fff; --on-sev-text: #fff;
-  --ok: #1a8a5b; --sev-high: #c94a4a; --sev-medium: #946000; --sev-low: #666666;
-  --warn-bg: rgba(217, 160, 40, .16); --warn-text: #6b4500; --warn-sheet: rgba(255, 244, 214, .97);
-  --ok-bg: rgba(26, 138, 91, .12); --ok-text: #14603f; --err-text: #b42323;
-  --dir-bg: rgba(255, 255, 255, .7); --menu-solid: rgba(255, 255, 255, .96); --well: rgba(0, 0, 0, .06);
-  --palette-bg: rgba(255, 255, 255, .98); --modal-bg: rgba(255, 255, 255, .98);
-  --scrim: rgba(20, 20, 20, .32); --scrim-2: rgba(20, 20, 20, .38);
-  --ring: rgba(0, 0, 0, .85); --focus: rgba(0, 0, 0, .14);
-  --shadow-card: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 2px rgba(0, 0, 0, .06), 0 12px 28px -18px rgba(0, 0, 0, .3);
-  --shadow-float: 0 0 0 1px rgba(0, 0, 0, .1), 0 20px 48px -22px rgba(0, 0, 0, .4);
-  --shadow-lift: 0 16px 32px -18px rgba(0, 0, 0, .4);
-  --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .4);
-  --k-import: #50555c; --k-http: #1f5fd6; --k-call: #6a45d6; --k-rpc: #4450cf; --k-event: #c43a85; --k-queue: #a8710c; --k-data: #0b7f6b; --k-config: #4f5661; --k-contains: #8d8d8d;
-  --n-ui: #1f7ac4; --n-service: #7a5ad8; --n-worker: #a8710c; --n-library: #1a8a5b; --n-feature: #3b6fd1; --n-data: #0f8a76; --n-config: #666666;
-  --n-test: #c43c86; --n-script: #c06a1d; --n-infra: #c94a4a; --n-external: #a24dbb; --n-misc: #666666; --n-dir: #666666; --n-file: #666666;
-  --n-module: #666666; --n-symbol: #6a55c4; --n-route: #2f6fe0; --n-connector: #666666;
-  --m-GET: #1a8a5b; --m-POST: #2f6fe0; --m-PUT: #a8710c; --m-PATCH: #7a4fd0; --m-DELETE: #c94a4a; --m-CALL: #0d7f8c; --m-ANY: #666666;
+  --accent: #0066cc;
+  --bg: #f5f5f7; --bg-rgb: 245, 245, 247; --grid: #e4e4e8; --ink: 0, 0, 0;
+  --surface: #ffffff; --surface-hover: #ffffff; --raise: #f0f0f2; --raise-2: #e6e6ea;
+  --elev: #ffffff; --hair: #f0f0f0; --hair-2: #e0e0e0;
+  --text: #1d1d1f; --text-2: #333336; --text-3: #66666b; --text-4: #66666b;
+  --recent: #0066cc; --on-recent-text: #fff;
+  --on: #0066cc; --on-hover: #0071e3; --on-text: #fff; --on-sev-text: #fff;
+  --ok: #248a3d; --sev-high: #d70015; --sev-medium: #b25000; --sev-low: #6e6e73;
+  --warn-bg: #fff4e5; --warn-text: #7a4100; --warn-sheet: #fff4e5;
+  --ok-bg: #e9f6ec; --ok-text: #1a6b2f; --err-text: #d70015;
+  --dir-bg: #fafafc; --menu-solid: #ffffff; --well: #f5f5f7;
+  --palette-bg: #ffffff; --modal-bg: #ffffff;
+  --scrim: rgba(0, 0, 0, .3); --scrim-2: rgba(0, 0, 0, .36);
+  --ring: #0071e3; --focus: rgba(0, 113, 227, .25);
+  --shadow-card: none;
+  --shadow-float: 0 0 0 1px #e8e8ed;
+  --shadow-lift: 0 0 0 1px #d2d2d7;
+  --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .3);
+  --k-import: #aeaeb2; --k-http: #0066cc; --k-call: #8e8e93; --k-rpc: #8e8e93; --k-event: #8e8e93; --k-queue: #8e8e93; --k-data: #8e8e93; --k-config: #4f5661; --k-contains: #8d8d8d;
+  --n-ui: #1d1d1f; --n-service: #1d1d1f; --n-worker: #1d1d1f; --n-library: #1d1d1f; --n-feature: #1d1d1f; --n-data: #1d1d1f; --n-config: #6e6e73;
+  --n-test: #6e6e73; --n-script: #6e6e73; --n-infra: #6e6e73; --n-external: #6e6e73; --n-misc: #6e6e73; --n-dir: #6e6e73; --n-file: #6e6e73;
+  --n-module: #6e6e73; --n-symbol: #6e6e73; --n-route: #0066cc; --n-connector: #6e6e73;
+  --m-GET: #248a3d; --m-POST: #0066cc; --m-PUT: #b25000; --m-PATCH: #6e6e73; --m-DELETE: #d70015; --m-CALL: #0066cc; --m-ANY: #6e6e73;
 }
-:root[data-theme="light"] .mark { filter: invert(1); } /* l'image du logo est blanche, on l'inverse donc en noir */
 :root[data-theme="light"] #search::placeholder { color: var(--text-3); } /* le gris par défaut du navigateur est trop pâle sur du blanc */
 html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: none !important; } /* un changement de thème est instantané, jamais animé */
 body.no-panel { --pw: 0px; }
@@ -98,12 +99,12 @@ button, input { font: inherit; color: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 ::selection { background: rgba(var(--ink), .2); }
 svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.glass { background: var(--elev); backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); box-shadow: var(--shadow-float); }
+.glass { background: var(--elev); box-shadow: var(--shadow-float); }
 .kbd { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); background: rgba(var(--ink), .06); border-radius: 6px; padding: 1px 6px; line-height: 17px; }
 
 /* ---------- barre du haut : marque et chemin à gauche, recherche au centre, actions à droite ---------- */
-header { position: fixed; inset: 0 0 auto 0; height: 64px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px; z-index: 10; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(var(--bg-rgb), .96) 35%, rgba(var(--bg-rgb), 0)); }
+header { position: fixed; inset: 0 0 auto 0; height: 52px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px; z-index: 10; pointer-events: none;
+  background: #000; }
 header > * { pointer-events: auto; }
 .hl { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .hc { display: flex; justify-content: center; }
@@ -118,7 +119,7 @@ header > * { pointer-events: auto; }
 .btn { height: 36px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 999px; border: 0; background: transparent; color: var(--text-2); cursor: pointer; white-space: nowrap; text-decoration: none; font-size: 13px;
   transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease); }
 .btn:hover { background: rgba(var(--ink), .07); color: var(--text); }
-.btn:active { transform: scale(.97); }
+.btn:active { transform: scale(.95); }
 .btn.icon { width: 36px; padding: 0; justify-content: center; }
 .btn.soft { background: rgba(var(--ink), .06); color: var(--text); }
 .btn.soft:hover { background: rgba(var(--ink), .1); }
@@ -147,8 +148,7 @@ header > * { pointer-events: auto; }
 body.in-flow #context { opacity: 0; }
 #context .k { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-3); }
 #context .k .ico { width: 20px; height: 20px; border-radius: 7px; }
-#context::before { content: ""; position: absolute; inset: -28px -60px -28px -40px; background: radial-gradient(closest-side, rgba(var(--bg-rgb), .9), rgba(var(--bg-rgb), 0)); z-index: -1; }
-#context h1 { margin: 6px 0 4px; font-size: 24px; font-weight: 600; letter-spacing: -.025em; }
+#context h1 { margin: 6px 0 6px; font-size: 34px; line-height: 1.1; font-weight: 600; letter-spacing: -.035em; text-wrap: balance; }
 #context p { margin: 0; color: var(--text-2); line-height: 1.55; font-size: 14px; }
 .ctx-more { display: none; } /* le bouton Plus / Moins sous la description est réservé aux téléphones */
 #ask-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -171,7 +171,7 @@ body.in-flow #context { opacity: 0; }
 .head { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ico { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); }
 .ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.title { font-size: 15px; font-weight: 600; letter-spacing: -.015em; line-height: 1.3; overflow: hidden; min-width: 0; flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.title { font-size: 16px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; overflow: hidden; min-width: 0; flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
 .card > .title { flex: none; } /* le nom d'une adresse du serveur, sur sa propre ligne sous la méthode et le chemin */
 /* pied : taille à gauche, pastille de travail récent à droite, collé au bas du bloc */
 .foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 23px; }
@@ -179,7 +179,7 @@ body.in-flow #context { opacity: 0; }
 svg.lod-low .foot .meta { visibility: hidden; }
 .title.mono { font-family: var(--mono); font-size: 13px; font-weight: 500; }
 .meta { font-size: 11.5px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; background: rgba(var(--ink), .05); border-radius: 999px; padding: 2px 8px; }
-.desc { color: var(--text-2); font-size: 13px; line-height: 19px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lines, 2); overflow: hidden; max-height: calc(var(--lines, 2) * 19px); }
+.desc { color: var(--text-3); font-size: 13.5px; line-height: 20px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--lines, 2); overflow: hidden; max-height: calc(var(--lines, 2) * 20px); }
 .desc[style*="--lines:1"] { -webkit-line-clamp: 1; } .desc[style*="--lines:2"] { -webkit-line-clamp: 2; } .desc[style*="--lines:3"] { -webkit-line-clamp: 3; }
 .desc.empty { color: var(--text-4); }
 .method { font-family: var(--mono); font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 8px; color: var(--m); background: color-mix(in srgb, var(--m) 14%, transparent); letter-spacing: .02em; flex: none; }
@@ -313,7 +313,7 @@ svg.dim .edge:not(.hl) { opacity: .1; }
 
 /* ---------- panneau de détails (flottant) ---------- */
 #panel { position: fixed; top: calc(var(--hh, 64px) + 4px); right: 16px; bottom: 16px; width: var(--panel-w); border-radius: var(--r-panel); overflow: auto; z-index: 5;
-  background: var(--elev); backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2); box-shadow: var(--shadow-float);
+  background: var(--elev); box-shadow: var(--shadow-float);
   transition: transform .45s var(--ease), opacity .3s var(--ease); }
 body.no-panel #panel { transform: translateX(24px) scale(.98); opacity: 0; pointer-events: none; }
 #panel-resize { position: fixed; top: calc(var(--hh, 64px) + 20px); bottom: 32px; right: calc(var(--panel-w) + 16px - 6px); width: 12px; cursor: ew-resize; z-index: 6; display: grid; place-items: center; transition: opacity .3s var(--ease); }
@@ -478,6 +478,30 @@ html.wk .card, html.wk .card * { position: static !important; transform: none !i
 html.wk .card { overflow: visible; }
 html.wk svg.dim .node:not(.hl) .card > * { opacity: 1; }
 html.wk svg.dim .node:not(.hl) foreignObject { opacity: .28; }
+/* ---------- barre noire, blocs sans ombre, un seul bleu pour agir ---------- */
+html, body { letter-spacing: -.01em; }
+.mark { filter: none; }
+header, header .btn, header .brand, #crumbs button.cur { color: #f5f5f7; }
+header .btn { font-weight: 400; }
+header .btn:hover { background: #272729; color: #fff; }
+header .btn.soft { background: #272729; color: #f5f5f7; }
+header .btn .badge { background: #2997ff; color: #000; }
+#crumbs button { color: #a1a1a6; }
+#crumbs button:hover { background: #272729; color: #fff; }
+#crumbs .sep { color: #636366; }
+#search-btn { background: #1d1d1f; color: #a1a1a6; height: 34px; }
+#search-btn:hover { background: #2a2a2c; color: #d2d2d7; }
+#search-btn .kbd { background: #333336; color: #a1a1a6; }
+.ico { background: var(--raise); border-radius: 8px; color: var(--c); }
+.meta { background: var(--raise); color: var(--text-3); }
+.card { padding: 18px 20px; }
+.card.external { background: var(--dir-bg); box-shadow: inset 0 0 0 1px var(--hair-2); }
+.card.dir { background: var(--dir-bg); }
+.card.module { background: var(--surface); }
+.node:hover .card { transform: none; box-shadow: var(--shadow-lift); }
+.node.sel .card, .node.sel .card.external { box-shadow: 0 0 0 2px var(--ring); }
+#panel.meme-sujet > .sec:first-child > .ph, #panel.meme-sujet > .sec:first-child > .pt, #panel.meme-sujet > .sec:first-child > .pd:not(.md) { display: none; } /* une information à un seul endroit : le titre et la description sont déjà en haut à gauche */
+#colonne { display: none; }
 /* ---------- téléphones et tablettes : fenêtres sous 1000 px et écrans tactiles sous 1280 px (une souris à 1000 px et plus n'est pas touchée) ---------- */
 @media (max-width: 999px), (max-width: 1279px) and (pointer: coarse) {
   #btn-up, .brand { flex: none; }
@@ -543,7 +567,35 @@ html.wk svg.dim .node:not(.hl) foreignObject { opacity: .28; }
   #flowbar { left: 50%; width: calc(100% - 16px); }
   #toast { left: 50%; max-width: calc(100% - 16px); }
   #loading { left: 50%; }
-  header #zoom { position: static; flex: none; flex-direction: row; padding: 0; gap: 0; border-radius: 22px; } /* déplacé dans la rangée du haut, à gauche de l'icône de recherche */
+  /* pas de zoom ni de déplacement : la colonne qui défile remplace le schéma */
+  #svg, #zoom { display: none; }
+  #colonne { display: block; position: absolute; inset: var(--hh, 56px) 0 0 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 16px 104px; touch-action: pan-y; background: var(--bg); }
+  #colonne #context { position: static; max-width: none; pointer-events: auto; margin-bottom: 18px; }
+  .col-rang { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .col-rang.relie { margin-top: 0; }
+  .col-rang.relie::before { content: ""; display: block; width: 2px; height: 20px; margin: 0 auto -10px; background: var(--k-import); }
+  body:not(.no-panel) #colonne { padding-bottom: 60vh; }
+  .col-bloc { scroll-margin-top: 12px; position: relative; border-radius: var(--r-card); background: var(--surface); overflow: hidden; }
+  .col-bloc.sel { box-shadow: 0 0 0 2px var(--ring); }
+  .col-zone { position: relative; display: block; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .col-zone:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; border-radius: var(--r-card); }
+  .col-zone:active { background: var(--raise); }
+  .col-bloc .card { height: auto; background: transparent; box-shadow: none; animation: none; padding: 16px 44px 14px 16px; overflow: visible; }
+  .col-bloc .card.connector { padding: 12px 44px 12px 12px; }
+  .col-bloc .desc { max-height: none; -webkit-line-clamp: unset; display: block; }
+  .col-bloc .foot { margin-top: 6px; }
+  .col-ouvrir { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); display: grid; place-items: center; width: 24px; height: 24px; }
+  .col-titre { flex: 0 0 100%; font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
+  .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 0 12px 12px; }
+  .col-lien { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; background: var(--raise); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
+  .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .col-lien svg.i { width: 13px; height: 13px; color: var(--on); }
+  .col-plus { font-size: 12.5px; color: var(--text-3); padding: 0 4px; }
+  /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème suit l'appareil */
+  #btn-export, #filters-btn, #theme-toggle, #ask-engine { display: none; }
+  header .hr .btn { flex-direction: column; gap: 2px; width: auto; min-width: 58px; height: 50px; padding: 4px 6px; border-radius: 10px; }
+  .hr .btn .bl { display: block; font-size: 10.5px; line-height: 1.2; white-space: nowrap; }
+  #btn-panel::after { content: "Détails"; font-size: 10.5px; line-height: 1.2; }
   /* les menus s'ouvrent en blocs pleine largeur sous la barre */
   #flowmenu, #legend { position: fixed; top: calc(var(--hh, 56px) + 4px); left: 8px; right: 8px; width: auto; max-height: 60vh; overflow: auto; }
   body #tour { left: 8px; right: 8px; width: auto; }
@@ -558,6 +610,7 @@ html.wk svg.dim .node:not(.hl) foreignObject { opacity: .28; }
 <script>if (matchMedia('(max-width: 700px)').matches && !/[#&]s=/.test(location.hash)) document.body.classList.add('no-panel'); // un téléphone démarre avec les détails fermés, pour que le panneau ne s'ouvre pas puis ne se referme pas d'un coup</script>
 <div id="stage">
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="viewport"></g></svg>
+  <div id="colonne"><div id="colonne-liste"></div></div>
   <div id="context"></div>
   <div id="zoom" class="glass">
     <button id="z-out" title="Dézoomer (−)"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
@@ -915,7 +968,7 @@ function construireVue(conteneur) {
 // Les blocs ne montrent que ce qu'on lit d'un coup d'œil : pictogramme, nom, description, un seul compte. Les chemins, types et
 // tailles sont dans l'infobulle au survol et dans le panneau de détails.
 // [largeur, hauteur minimale]
-const TAILLES = { node: [300, 128], dir: [272, 110], file: [284, 110], module: [284, 110], route: [300, 128], symbol: [260, 100] };
+const TAILLES = { node: [300, 140], dir: [272, 120], file: [284, 120], module: [284, 120], route: [300, 140], symbol: [260, 108] };
 const HAUTEUR_NOTE = 64;
 const HAUTEUR_PIED = 30;   // la ligne du pied : taille à gauche, pastille de travail récent à droite
 const HAUTEUR_TITRE2 = 10; // un titre qui passe sur une deuxième ligne
@@ -938,7 +991,7 @@ function hauteurSupplementaireBloc(element) {
   const [w] = TAILLES[i.type] || TAILLES.file;
   const nom = i.type === 'route' ? i.r.name : i.type === 'symbol' ? i.s[0] : i.name;
   const place = w - 36 - (i.type === 'route' ? 0 : 40); // marges, et le pictogramme à côté du titre
-  return (piedBloc(element) ? HAUTEUR_PIED : 0) + (largeurTexte(nom, 15, 600) > place ? HAUTEUR_TITRE2 : 0);
+  return (piedBloc(element) ? HAUTEUR_PIED : 0) + (largeurTexte(nom, 16, 600) > place ? HAUTEUR_TITRE2 : 0);
 }
 function blocHTML(element) {
   const i = infosBloc(element);
@@ -1066,6 +1119,7 @@ async function afficherVue(options = {}) {
   etatVue.view = vue; etatVue.layout = res;
   queueMicrotask(() => emettre('render', { container: etatVue.container, view: vue }));
   dessiner(vue, res);
+  rendreColonne(vue, res);
   afficherContexte(); afficherFilAriane(); afficherLegende(vue);
   $('#empty').hidden = vue.visible.length > 0;
   $('#empty').textContent = vue.visible.length ? '' : 'Rien à l\'intérieur.';
@@ -1408,15 +1462,76 @@ function centrerSur(element) {
   reglerTransformation({ k, x: a.x + a.w / 2 - (c.x + c.width / 2) * k, y: a.y + a.h / 2 - (c.y + c.height / 2) * k }, true);
 }
 
+// ======================= téléphone : la colonne qui défile =======================
+// Sur un téléphone, on ne zoome pas et on ne déplace pas : les blocs se suivent de haut en bas, dans l'ordre du schéma.
+// Toucher un bloc l'ouvre s'il a un intérieur, sinon montre ses détails.
+const colonne = $('#colonne'), listeColonne = $('#colonne-liste');
+/** Les rangées du schéma, de gauche à droite : deux blocs presque à la même abscisse sont dans la même rangée. */
+function rangsColonne(vue, res) {
+  const relies = new Set(vue.edges.flatMap((e) => [e.a, e.b]));
+  const aLaFin = (id) => !relies.has(id) || (id.startsWith('n:') && ['test', 'script', 'infra'].includes(infosBloc(id).kind));
+  const rangs = [], fin = [];
+  for (const c of res.children.slice().sort((p, q) => p.x - q.x || p.y - q.y)) {
+    if (aLaFin(c.id)) { fin.push(c); continue; }
+    const dernier = rangs[rangs.length - 1];
+    if (dernier && c.x - dernier.x < 60) dernier.blocs.push(c); else rangs.push({ x: c.x, blocs: [c] });
+  }
+  rangs.forEach((r) => r.blocs.sort((p, q) => p.y - q.y));
+  fin.sort((p, q) => p.y - q.y);
+  rangs.forEach((r, i) => {
+    const suivant = rangs[i + 1]; if (!suivant) return;
+    const ici = new Set(r.blocs.map((c) => c.id)), la = new Set(suivant.blocs.map((c) => c.id));
+    suivant.relie = vue.edges.some((e) => (ici.has(e.a) && la.has(e.b)) || (la.has(e.a) && ici.has(e.b)));
+  });
+  return fin.length ? [...rangs, { blocs: fin, relie: false }] : rangs;
+}
+function liensColonne(vue, id) {
+  const cibles = [...new Set(vue.edges.filter((e) => e.a === id).map((e) => e.b))];
+  if (!cibles.length) return '';
+  const montres = cibles.slice(0, 3).map((b) => `<button type="button" class="col-lien" data-vers="${h(b)}">${pictoI('right')}<span>${h(nomDe(b))}</span></button>`).join('');
+  return `<div class="col-liens"><span class="col-titre">Utilise</span>${montres}${cibles.length > 3 ? `<span class="col-plus">+${cibles.length - 3}</span>` : ''}</div>`;
+}
+function rendreColonne(vue, res) {
+  if (!estTelephone()) { listeColonne.innerHTML = ''; return; }
+  const connecteurs = new Map(vue.connectors.map((c) => [c.id, c]));
+  listeColonne.innerHTML = rangsColonne(vue, res).map((r) => `<div class="col-rang${r.relie ? ' relie' : ''}">${r.blocs.map(({ id }) => {
+    const estConnecteur = connecteurs.has(id);
+    const nom = nomDe(id);
+    return `<div class="col-bloc" data-id="${h(id)}"><div class="col-zone" role="button" tabindex="0" aria-label="${h(nom)}">${estConnecteur ? connecteurHTML(connecteurs.get(id)) : blocHTML(id)}${ouvrable(id) ? `<span class="col-ouvrir">${pictoI('right')}</span>` : ''}</div>${liensColonne(vue, id)}</div>`;
+  }).join('')}</div>`).join('');
+  colonne.scrollTop = 0;
+}
+function montrerDansColonne(id, surligner = true) {
+  if (!estTelephone()) return;
+  const bloc = [...listeColonne.querySelectorAll('.col-bloc')].find((x) => x.dataset.id === id);
+  if (!bloc) return false;
+  if (surligner) bloc.classList.add('sel');
+  bloc.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  return true;
+}
+colonne.addEventListener('click', (ev) => {
+  const lien = ev.target.closest('[data-vers]');
+  if (lien) { ev.stopPropagation(); const v = lien.dataset.vers; if (!montrerDansColonne(v)) localiser(v.startsWith('x:') ? entiteConnecteur(v) : v); return; }
+  const zone = ev.target.closest('.col-zone');
+  if (zone) { ev.stopPropagation(); const id = zone.parentElement.dataset.id; if (id.startsWith('x:') || ouvrable(id)) ouvrirBloc(id); else choisir(id); return; }
+  fermerFeuille();
+});
+colonne.addEventListener('keydown', (ev) => {
+  const zone = ev.target.closest?.('.col-zone');
+  if (zone && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); zone.click(); }
+});
+
 // ======================= sélection =======================
 function choisir(sel) {
   perso.panel = null; etatVue.selected = sel; if (typeof sel === 'string' || sel === null) ecrireHash(etatVue.container, sel); appliquerSelection(); afficherPanneau();
   // sur un téléphone, toucher un bloc montre ses détails : on ouvre la feuille, puis on amène le bloc dans la partie de l'écran que la feuille laisse libre
-  if (sel && estTelephone() && document.body.classList.contains('no-panel')) { reglerPanneau(true); if (typeof sel === 'string') amenerDansVue(sel); }
+  if (sel && estTelephone() && document.body.classList.contains('no-panel')) { reglerPanneau(true); if (typeof sel === 'string') { amenerDansVue(sel); montrerDansColonne(sel); } }
 }
 function appliquerSelection() {
   const sel = etatVue.selected;
   svg.classList.remove('dim');
+  listeColonne.querySelectorAll('.col-bloc.sel').forEach((x) => x.classList.remove('sel'));
+  if (typeof sel === 'string') montrerDansColonne(sel);
   for (const g of etatVue.chipEls?.values() || []) g.classList.remove('sel', 'hl');
   for (const { g, pg } of etatVue.edgeEls?.values() || []) { g.classList.remove('hl'); pg.classList.remove('hl'); }
   if (!sel) return;
@@ -1439,9 +1554,9 @@ function afficherContexte() {
     return;
   }
   const i = infosBloc(etatVue.container);
-  const genre = etatVue.container === 'root' ? 'Vue d\'ensemble' : Maj(nomGenre(i.type === 'node' ? i.kind : i.type));
+  const genre = etatVue.container === 'root' ? '' : Maj(nomGenre(i.type === 'node' ? i.kind : i.type));
   const pastilleNombre = etatVue.container === 'root' ? '' : `<span class="ico" style="--c:${couleurBloc(i)}">${picto(clePicto(i))}</span>`;
-  $('#context').innerHTML = `<div class="k">${pastilleNombre}${h(genre)}</div><h1>${h(i.name)}</h1>${i.desc ? `<p class="cd" id="ctx-desc">${h(i.desc)}</p>` : ''}${etatVue.view?.hidden ? `<p class="cx" style="color:var(--text-3);font-size:12.5px;margin-top:8px">${etatVue.view.hidden} export(s) de plus ne sont importés nulle part par leur nom ; ils sont listés dans le panneau de détails.</p>` : ''}${i.desc ? '<button type="button" class="ctx-more" aria-controls="ctx-desc" hidden></button>' : ''}`;
+  $('#context').innerHTML = `${genre ? `<div class="k">${pastilleNombre}${h(genre)}</div>` : ''}<h1>${h(i.name)}</h1>${i.desc ? `<p class="cd" id="ctx-desc">${h(i.desc)}</p>` : ''}${etatVue.view?.hidden ? `<p class="cx" style="color:var(--text-3);font-size:12.5px;margin-top:8px">${etatVue.view.hidden} export(s) de plus ne sont importés nulle part par leur nom ; ils sont listés dans le panneau de détails.</p>` : ''}${i.desc ? '<button type="button" class="ctx-more" aria-controls="ctx-desc" hidden></button>' : ''}`;
   replierContexte();
 }
 /** Sur un téléphone, la description se replie sur une ligne ; le bouton Plus / Moins n'apparaît que s'il y a plus à lire, et le choix est retenu sur cet appareil. */
@@ -1543,6 +1658,7 @@ function afficherPanneau() {
     } catch (e) { console.error('floorplan extension', e); }
   }
   panneau.innerHTML = html || '';
+  panneau.classList.toggle('meme-sujet', !sel && !perso.panel);
   sortiesExt.forEach((o, i) => { try { o.bind?.(o.whole ? panneau : panneau.querySelector(`[data-ext="${i}"]`)); } catch (e) { console.error('floorplan extension', e); } });
   panneau.scrollTop = 0;
   panneau.querySelectorAll('[data-go]').forEach((a) => a.addEventListener('click', (ev) => { ev.preventDefault(); localiser(a.dataset.go); }));
@@ -1881,7 +1997,8 @@ function surlignerParcours(a, b) {
   svg.classList.add('dim');
   for (const g of etatVue.chipEls.values()) g.classList.remove('hl', 'sel');
   for (const x of etatVue.edgeEls.values()) { x.g.classList.remove('hl'); x.pg.classList.remove('hl'); }
-  if (pa) etatVue.chipEls.get(pa)?.classList.add('hl', 'sel');
+  listeColonne.querySelectorAll('.col-bloc.sel').forEach((x) => x.classList.remove('sel'));
+  if (pa) { etatVue.chipEls.get(pa)?.classList.add('hl', 'sel'); montrerDansColonne(pa); }
   if (pb) etatVue.chipEls.get(pb)?.classList.add('hl');
   if (!pa || !pb) return;
   let chemin = null;
@@ -2273,10 +2390,10 @@ $('#btn-panel').setAttribute('aria-expanded', String(!document.body.classList.co
 const elEntete = document.querySelector('header');
 const synchroniserEntete = () => document.documentElement.style.setProperty('--hh', elEntete.offsetHeight + 'px');
 new ResizeObserver(synchroniserEntete).observe(elEntete); synchroniserEntete(); window.addEventListener('resize', synchroniserEntete);
-// sur un téléphone, les boutons de zoom passent dans la rangée du haut, à côté de l'icône de recherche, et reviennent sur la carte sur un écran plus large
-const elZoom = $('#zoom'), zoomOrigine = elZoom.parentNode, zoomSuivant = elZoom.nextSibling;
-const placerZoom = () => { if (estTelephone()) elEntete.insertBefore(elZoom, elEntete.querySelector('.hc')); else zoomOrigine.insertBefore(elZoom, zoomSuivant); synchroniserEntete(); };
-requeteTelephone.addEventListener('change', placerZoom); placerZoom();
+// sur un téléphone, le titre et la description défilent avec la colonne ; sur un écran plus large, ils reviennent au-dessus de la carte
+const elContexte = $('#context'), contexteOrigine = elContexte.parentNode, contexteSuivant = elContexte.nextSibling;
+const placerContexte = () => { if (estTelephone()) colonne.prepend(elContexte); else contexteOrigine.insertBefore(elContexte, contexteSuivant); synchroniserEntete(); };
+requeteTelephone.addEventListener('change', () => { placerContexte(); if (etatVue.view && etatVue.layout) rendreColonne(etatVue.view, etatVue.layout); }); placerContexte();
 $('#btn-panel').onclick = () => reglerPanneau(document.body.classList.contains('no-panel'));
 Object.assign(etatVue.kinds, stockageLocal.get('kinds', {}));
 window.addEventListener('keydown', (ev) => {

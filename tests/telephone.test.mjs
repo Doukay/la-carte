@@ -35,7 +35,7 @@ test('sur téléphone et tablette, la barre du haut passe sur une deuxième lign
 });
 
 test('avec une souris à 1000 px et plus, la barre du haut reste exactement comme avant : chaque changement de la barre est dans une règle téléphone/tablette', () => {
-  assert.match(page, /header \{ position: fixed; inset: 0 0 auto 0; height: 64px; display: grid; grid-template-columns: 1fr auto 1fr;/);
+  assert.match(page, /header \{ position: fixed; inset: 0 0 auto 0; height: 52px; display: grid; grid-template-columns: 1fr auto 1fr;/);
   const dehors = page.replace(/@media [^{]*\{(?:[^{}]|\{[^{}]*\})*\}/g, '');
   assert.doesNotMatch(dehors, /header \{[^}]*flex-wrap/);
   assert.doesNotMatch(dehors, /\.hr \.btn \.bl \{ display: none/);
@@ -75,7 +75,7 @@ test('sur un téléphone, le panneau de détails est une feuille en bas qui dém
 });
 
 test('toucher un bloc sur un téléphone ouvre les détails ; entrer dans un bloc, en sortir ou toucher un espace vide les ferme', () => {
-  assert.match(page, /if \(sel && estTelephone\(\) && document\.body\.classList\.contains\('no-panel'\)\) \{ reglerPanneau\(true\); if \(typeof sel === 'string'\) amenerDansVue\(sel\); \}/);
+  assert.match(page, /if \(sel && estTelephone\(\) && document\.body\.classList\.contains\('no-panel'\)\) \{ reglerPanneau\(true\); if \(typeof sel === 'string'\) \{ amenerDansVue\(sel\); montrerDansColonne\(sel\); \} \}/);
   assert.match(page, /svg\.addEventListener\('click', fermerFeuille\);/);
   assert.match(page, /fermerFeuille\(\);\n  allerVers\(element, \{ zoomFrom: element \}\);/);
   assert.match(page, /function monterNiveau\(\) \{ if \(etatVue\.container === 'root'\) return; fermerFeuille\(\);/);
@@ -150,9 +150,15 @@ test('sur un téléphone, l’avertissement sur la connexion d’un outil d’IA
   assert.match(page, /const on = estTelephone\(\) && champQuestion\.disabled && !alerte\.hidden; if \(on\) \{ formQuestion\.tabIndex = 0;/); // au clavier, on peut atteindre la note quand le champ est désactivé
 });
 
-test('sur un téléphone, les boutons de zoom sont côte à côte dans la rangée du haut, à côté de l’icône de recherche', () => {
-  assert.match(blocMedia('(max-width: 700px)'), /header #zoom \{ position: static; flex: none; flex-direction: row;/);
-  assert.match(page, /if \(estTelephone\(\)\) elEntete\.insertBefore\(elZoom, elEntete\.querySelector\('\.hc'\)\); else zoomOrigine\.insertBefore\(elZoom, zoomSuivant\);/);
+test('sur un téléphone, la colonne qui défile remplace le schéma : ni zoom ni déplacement', () => {
+  const regles = blocMedia('(max-width: 700px)');
+  assert.match(regles, /#svg, #zoom \{ display: none; \}/);
+  assert.match(regles, /#colonne \{ display: block; position: absolute; inset: var\(--hh, 56px\) 0 0 0; overflow-y: auto;[^}]*touch-action: pan-y;/);
+  assert.match(page, /\n#colonne \{ display: none; \}/); // au-dessus d'un téléphone, le schéma reste
+  assert.match(page, /rendreColonne\(vue, res\);/);
+  assert.match(page, /if \(id\.startsWith\('x:'\) \|\| ouvrable\(id\)\) ouvrirBloc\(id\); else choisir\(id\);/); // toucher un bloc l'ouvre ou montre ses détails
+  assert.match(page, /role="button" tabindex="0"/); // atteignable au clavier
+  assert.match(page, /if \(estTelephone\(\)\) colonne\.prepend\(elContexte\); else contexteOrigine\.insertBefore\(elContexte, contexteSuivant\);/);
   assert.match(blocMedia('(max-width: 700px)'), /#crumbs button:not\(\.cur\), #crumbs \.sep \{ display: none; \}/); // le chemin montre où tu es, donc la rangée tient à 360 px
 });
 

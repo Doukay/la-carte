@@ -35,9 +35,10 @@ function demarrer({ enregistre, appareilClair = false, stockageBloque = false } 
   return { attributs, stockage, requete, evenements, theme: fenetre.floorplanTheme, classes };
 }
 
-test('la page a un jeu de couleurs sombre et un jeu clair, et le sombre reste celui par défaut', () => {
-  assert.match(page, /:root \{[^}]*--bg: #0f0f0f;/);
-  assert.match(page, /:root\[data-theme="light"\] \{[^}]*--bg: #f3f3f1;/);
+test('la page a un jeu de couleurs sombre et un jeu clair, et le clair est celui par défaut', () => {
+  assert.match(page, /let memoire = 'light';/);
+  assert.match(page, /:root \{[^}]*--bg: #000000;/);
+  assert.match(page, /:root\[data-theme="light"\] \{[^}]*--bg: #f5f5f7;/);
   assert.match(page, /:root\[data-theme="light"\] \{[^}]*color-scheme: light;/);
   // chaque variable de couleur définie en sombre a aussi une valeur claire
   const variables = (bloc) => new Set([...bloc.matchAll(/(--[\w-]+):/g)].map((m) => m[1]));
@@ -60,9 +61,9 @@ test('le script de démarrage est dans l’en-tête, avant que la page soit dess
 });
 
 test('Auto suit l’appareil, en direct', () => {
-  const sombre = demarrer({ appareilClair: false });
+  const sombre = demarrer({ enregistre: 'auto', appareilClair: false });
   assert.equal(sombre.attributs['data-theme'], 'dark');
-  const clair = demarrer({ appareilClair: true });
+  const clair = demarrer({ enregistre: 'auto', appareilClair: true });
   assert.equal(clair.attributs['data-theme'], 'light');
   sombre.requete.matches = true; sombre.requete.change();
   assert.equal(sombre.attributs['data-theme'], 'light');
@@ -80,7 +81,8 @@ test('un choix enregistré l’emporte sur l’appareil, et un nouveau choix est
 });
 
 test('une valeur enregistrée inconnue est ignorée, et un stockage bloqué marche quand même pour cette visite', () => {
-  assert.equal(demarrer({ enregistre: 'purple', appareilClair: false }).attributs['data-theme'], 'dark');
+  assert.equal(demarrer({ enregistre: 'purple', appareilClair: false }).attributs['data-theme'], 'light'); // le clair par défaut
+  assert.equal(demarrer({ appareilClair: false }).attributs['data-theme'], 'light'); // sans choix enregistré aussi
   const b = demarrer({ stockageBloque: true, appareilClair: false });
   b.theme.set('light');
   assert.equal(b.attributs['data-theme'], 'light');
