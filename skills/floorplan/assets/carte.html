@@ -84,7 +84,7 @@
   --shadow-float: 0 0 0 1px #e8e8ed;
   --shadow-lift: 0 0 0 1px #d2d2d7;
   --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .3);
-  --k-import: #86868b; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
+  --k-import: #6e6e73; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
   --n-ui: #0066cc; --n-service: #8944ab; --n-worker: #8944ab; --n-library: #8944ab; --n-feature: #8944ab; --n-data: #8944ab; --n-config: #8944ab;
   --n-test: #b25000; --n-script: #b25000; --n-infra: #b25000; --n-external: #248a3d; --n-misc: #66666b; --n-dir: #66666b; --n-file: #66666b;
   --n-module: #66666b; --n-symbol: #8944ab; --n-route: #0066cc; --n-connector: #6e6e73;
@@ -228,7 +228,7 @@ svg.dim .node:not(.hl) .card > * { opacity: .28; transition: opacity .3s var(--e
 .cols text { fill: var(--text-3); font: 500 13px Inter, system-ui, sans-serif; letter-spacing: -.005em; dominant-baseline: central; text-anchor: middle; }
 @keyframes fadeIn { from { opacity: 0; } }
 .edge { color: var(--k-import); }
-.edge .trace { fill: none; stroke: currentColor; stroke-opacity: .85; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity .25s var(--ease), stroke-width .25s var(--ease); }
+.edge .trace { fill: none; stroke: currentColor; stroke-opacity: 1; stroke-linecap: round; stroke-linejoin: round; transition: stroke-opacity .25s var(--ease), stroke-width .25s var(--ease); }
 .edge .flow { fill: none; stroke: currentColor; stroke-width: 2; stroke-dasharray: 2 10; stroke-linecap: round; opacity: 0; transition: opacity .25s var(--ease); }
 .edge .hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
 .edge .port { fill: var(--bg); stroke: currentColor; stroke-width: 1.5; opacity: 0; transition: opacity .25s var(--ease); }
@@ -329,7 +329,8 @@ body.resizing #panel-resize::after { background: rgba(var(--ink), .4); }
 body.resizing, body.resizing * { cursor: ew-resize !important; user-select: none; }
 body.resizing #panel, body.resizing #ask, body.resizing #flowbar { transition: none; }
 body.exported #ask { display: none; }
-.credit { padding: 14px 18px 18px; font-size: 12px; line-height: 1.5; color: var(--text-3); }
+.credit { padding: 10px 20px 12px; font-size: 11.5px; line-height: 1.4; color: var(--text-3); }
+#panel > .credit { position: sticky; bottom: 0; background: var(--surface); }
 .credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .xtag { font-size: 11.5px; font-weight: 500; color: var(--text-3); background: rgba(var(--ink), .06); border-radius: 999px; padding: 3px 9px; margin-left: 8px; white-space: nowrap; cursor: default; }
 body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
@@ -344,6 +345,7 @@ body.no-panel #panel-resize { opacity: 0; pointer-events: none; }
 .ph { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .ph .kindlabel { font-size: 12.5px; color: var(--text-3); display: inline-block; }
 .ph .kindlabel::first-letter, .td-genre::first-letter { text-transform: uppercase; }
+.ph .pt { margin: 0; }
 .pt { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; word-break: break-word; }
 .pd { margin: 0; color: var(--text-2); line-height: 1.6; }
 .pd.empty { color: var(--text-4); }
@@ -591,6 +593,7 @@ header .btn .badge { background: #2997ff; color: #000; }
   .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; padding: 0 12px 12px; }
   .col-lien { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding: 0 14px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   .col-lien[hidden] { display: none; }
+  #panel > .credit { display: none; }
   .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .col-plus { min-height: 44px; min-width: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer; }
   /* moins de boutons sur un téléphone : l'export et les filtres n'y servent pas, le thème suit l'appareil */
@@ -609,7 +612,7 @@ header .btn .badge { background: #2997ff; color: #000; }
 </style>
 </head>
 <body>
-<script>if (matchMedia('(max-width: 700px)').matches && !/[#&]s=/.test(location.hash)) document.body.classList.add('no-panel'); // un téléphone démarre avec les détails fermés, pour que le panneau ne s'ouvre pas puis ne se referme pas d'un coup</script>
+<script>if (matchMedia('(max-width: 999px)').matches && !/[#&]s=/.test(location.hash)) document.body.classList.add('no-panel'); // un téléphone ou une tablette démarre avec les détails fermés, pour que le panneau ne s'ouvre pas puis ne se referme pas d'un coup</script>
 <div id="stage">
   <svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="viewport"></g></svg>
   <div id="colonne"><div id="colonne-liste"></div><div class="credit">Faite avec <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div></div>
@@ -1233,14 +1236,23 @@ function dessinerColonnes(g, vue, res) {
   const milieu = res.children.filter((c) => !c.id.startsWith('x:'));
   const y = Math.min(...res.children.map((c) => c.y)) - 26;
   const colonnes = [[etendue(entrees), 'Utilisé par'], [etendue(milieu), `À l'intérieur de ${infosBloc(etatVue.container).name}`], [etendue(sorties), 'Utilise']];
-  for (const [s, libelle] of colonnes) {
-    if (!s) continue;
+  const hautDe = (cs) => {
+    if (!cs.length) return y;
+    const propre = Math.min(...cs.map((c) => c.y)) - 26;
+    const [x0, x1] = etendue(cs);
+    const gene = milieu.some((c) => c.x < x1 && c.x + c.width > x0 && c.y < propre + 12 && c.y + c.height > propre - 12);
+    return gene ? y : propre;
+  };
+  const hauteurs = [hautDe(entrees), y, hautDe(sorties)];
+  colonnes.forEach(([s, libelle], n) => {
+    if (!s) return;
+    const y = hauteurs[n];
     const [x0, x1] = s, cx = (x0 + x1) / 2;
     const half = Math.min(largeurTexte(libelle, 13, 500) / 2 + 10, (x1 - x0) / 2 - 12);
     // ⌐—— libellé ——¬ : les bouts du trait s'incurvent vers les blocs, avec une coupure dans la ligne pour le libellé
     el('path', { d: `M${x0},${y + 9} v-5 q0,-4 4,-4 H${cx - half} M${cx + half},${y} H${x1 - 4} q4,0 4,4 v5` }, g);
     el('text', { x: cx, y }, g).textContent = libelle;
-  }
+  });
 }
 
 // ======================= infobulles =======================
@@ -1577,6 +1589,7 @@ function choisir(sel) {
   perso.panel = null; etatVue.selected = sel; if (typeof sel === 'string' || sel === null) ecrireHash(etatVue.container, sel); appliquerSelection(); afficherPanneau();
   // sur un téléphone, toucher un bloc montre ses détails : on ouvre la feuille, puis on amène le bloc dans la partie de l'écran que la feuille laisse libre
   if (sel && estTelephone() && document.body.classList.contains('no-panel')) { reglerPanneau(true); if (typeof sel === 'string') { amenerDansVue(sel); montrerDansColonne(sel); } }
+  else if (sel && petitEcran() && document.body.classList.contains('no-panel')) reglerPanneau(true); // tablette : toucher un bloc montre ses détails
 }
 function appliquerSelection() {
   const sel = etatVue.selected;
@@ -1676,12 +1689,11 @@ const ligneRoute = (ri, extra = '') => {
 const sectionListe = (titre, rangees, count, max = 30) => rangees.length ? `<div class="sec"><h3>${h(titre)} <span class="c">${count ?? rangees.length}</span></h3><div class="list">${rangees.slice(0, max).join('')}${rangees.length > max ? `<div class="more">+${rangees.length - max} de plus</div>` : ''}</div></div>` : '';
 const boiteChemin = (p) => `<div class="pp"><span>${h(p)}</span><button data-copy="${h(p)}" title="Copier">${pictoI('copy')}</button></div>`;
 function enteteFiche(i) {
-  const genre = i.type === 'node' ? i.kind : i.type === 'symbol' ? i.symKind : i.type === 'route' ? 'route' : i.type === 'module' ? 'file' : i.type;
-  return `<div class="ph"><span class="ico" style="--c:${couleurBloc(i)}">${picto(clePicto(i))}</span><span class="kindlabel">${h(nomGenre(genre))}</span></div>
-    <h2 class="pt">${h(i.name)}</h2>${i.desc ? `<p class="pd">${h(i.desc)}</p>` : '<p class="pd empty">Pas encore de description.</p>'}`;
+  return `<div class="ph"><span class="ico" style="--c:${couleurBloc(i)}">${picto(clePicto(i))}</span><h2 class="pt">${h(i.name)}</h2></div>
+    ${i.desc ? `<p class="pd">${h(i.desc)}</p>` : '<p class="pd empty">Pas encore de description.</p>'}`;
 }
 
-const CREDIT = `<div class="credit">Faite avec <a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div>`;
+const CREDIT = `<div class="credit"><a href="https://github.com/haydenschmitty/floorplan" target="_blank" rel="noopener">Floorplan de Hayden Smith</a> · traduction non officielle</div>`;
 function afficherPanneau() {
   const sel = etatVue.selected;
   let html;
@@ -2387,6 +2399,7 @@ $('#panel-resize').addEventListener('dblclick', () => { reglerLargeurPanneau(360
 // téléphones : les détails s'ouvrent en feuille et démarrent fermés ; le choix n'est pas enregistré, pour ne pas fermer le panneau latéral d'un ordinateur qui partage ce stockage
 const requeteTelephone = matchMedia('(max-width: 700px)');
 const estTelephone = () => requeteTelephone.matches;
+const petitEcran = () => matchMedia('(max-width: 999px)').matches; // tablette comprise : à cette largeur, le panneau ouvert écraserait la carte
 const fermerFeuille = () => { if (estTelephone() && !document.body.classList.contains('no-panel')) reglerPanneau(false); }; // entrer dans un bloc ou en sortir range la feuille pour laisser voir la carte
 svg.addEventListener('click', fermerFeuille); // toucher un espace vide range aussi la feuille
 // sur un téléphone, l'avertissement sur la connexion d'un outil d'IA n'apparaît que pendant qu'on utilise la bulle de questions : la toucher ou la sélectionner l'affiche, la quitter le masque.
@@ -2416,14 +2429,14 @@ const roleFeuille = () => { if (estTelephone()) { panneau.setAttribute('role', '
 requeteTelephone.addEventListener('change', roleFeuille); roleFeuille();
 const reglerPanneau = (on) => {
   const etait = !document.body.classList.contains('no-panel'); document.body.classList.toggle('no-panel', !on); $('#btn-panel').setAttribute('aria-expanded', String(on));
-  if (!estTelephone()) stockageLocal.set('panel', on);
+  if (!petitEcran()) stockageLocal.set('panel', on);
   if (etait !== on && !estTelephone()) ajusterVue(true);
   if (etait !== on && estTelephone()) {
     if (on && utilisateurClavier) { retourFeuille = document.activeElement; panneau.focus({ preventScroll: true }); }
     else if (!on && retourFeuille) { if (panneau.contains(document.activeElement) || document.activeElement === document.body) retourFeuille.focus?.({ preventScroll: true }); retourFeuille = null; }
   }
 };
-document.body.classList.toggle('no-panel', estTelephone() || !stockageLocal.get('panel', true));
+document.body.classList.toggle('no-panel', petitEcran() || !stockageLocal.get('panel', true));
 $('#btn-panel').setAttribute('aria-expanded', String(!document.body.classList.contains('no-panel')));
 // la barre du haut peut faire une ou deux lignes : tout ce qui est dessous suit sa hauteur réelle
 const elEntete = document.querySelector('header');
@@ -2538,7 +2551,7 @@ drapeauTechnique = !!stockageLocal.get('technical', false);
 
 const depart = lireHash();
 etatVue.container = depart.v; etatVue.selected = depart.s;
-if (depart.s && estTelephone()) { document.body.classList.remove('no-panel'); $('#btn-panel').setAttribute('aria-expanded', 'true'); } // un lien partagé vers un bloc ouvre ses détails
+if (depart.s && petitEcran()) { document.body.classList.remove('no-panel'); $('#btn-panel').setAttribute('aria-expanded', 'true'); } // un lien partagé vers un bloc ouvre ses détails
 const policesPretes = document.fonts?.ready ? Promise.race([document.fonts.ready, new Promise((ok) => setTimeout(ok, 1500))]) : Promise.resolve();
 policesPretes.then(() => afficherVue({ after: () => { afficherPanneau(); emettre('ready', {}); if (PLAN && window.FLOORPLAN_SERVER) montrerResultatChangement(); } }));
 })();

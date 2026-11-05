@@ -79,8 +79,18 @@ test('toucher un bloc sur un téléphone ouvre les détails ; entrer dans un blo
   assert.match(page, /svg\.addEventListener\('click', fermerFeuille\);/);
   assert.match(page, /fermerFeuille\(\);\n  allerVers\(element, \{ zoomFrom: element \}\);/);
   assert.match(page, /function monterNiveau\(\) \{ if \(etatVue\.container === 'root'\) return; fermerFeuille\(\);/);
-  // le choix sur un téléphone n’est pas enregistré, donc il ne peut pas fermer le panneau latéral d’un ordinateur qui partage le même stockage
-  assert.match(page, /if \(!estTelephone\(\)\) stockageLocal\.set\('panel', on\);/);
+  // le choix sur un téléphone ou une tablette n’est pas enregistré, donc il ne peut pas fermer le panneau latéral d’un ordinateur qui partage le même stockage
+  assert.match(page, /if \(!petitEcran\(\)\) stockageLocal\.set\('panel', on\);/);
+});
+
+test('sur tablette, le panneau démarre fermé pour laisser la place à la carte et s’ouvre quand on touche un bloc', () => {
+  assert.match(page, /const petitEcran = \(\) => matchMedia\('\(max-width: 999px\)'\)\.matches;/);
+  assert.match(page, /classList\.toggle\('no-panel', petitEcran\(\) \|\| !stockageLocal\.get\('panel', true\)\);/);
+  assert.match(page, /else if \(sel && petitEcran\(\) && document\.body\.classList\.contains\('no-panel'\)\) reglerPanneau\(true\);/);
+});
+
+test('sur téléphone, les liens en trop restent vraiment cachés tant qu’on n’a pas touché « +N »', () => {
+  assert.match(blocMedia('(max-width: 700px)'), /\.col-lien\[hidden\] \{ display: none; \}/); // display: inline-flex écraserait sinon l'attribut hidden
 });
 
 test('la hauteur de la barre du haut est mesurée, et tout ce qui est dessous la suit', () => {
@@ -98,7 +108,7 @@ function demarrage({ phone, hash = '' }) {
   const classes = new Set();
   const scriptDemarrage = page.match(/<body>\s*<script>([\s\S]*?)<\/script>/)[1];
   vm.runInNewContext(scriptDemarrage, {
-    matchMedia: (q) => ({ matches: phone && q.includes('max-width: 700px') }),
+    matchMedia: (q) => ({ matches: phone && q.includes('max-width: 999px') }),
     location: { hash },
     document: { body: { classList: { add: (c) => classes.add(c) } } },
   });
