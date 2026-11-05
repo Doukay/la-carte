@@ -9,8 +9,8 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const DEPOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// d'où le plugin tourne : le skill, les manifestes du plugin et les marketplaces qui pointent vers eux
-const PARTIES = ['skills', '.claude-plugin', '.codex-plugin', '.agents', 'package.json'];
+// d'où le plugin tourne : le skill et le manifeste du plugin
+const PARTIES = ['skills', '.claude-plugin', 'package.json'];
 const indiceListe = process.argv.indexOf('--list');
 const SORTIE = indiceListe > 0 ? path.resolve(process.argv[indiceListe + 1]) : path.join(DEPOT, 'EMPREINTES.txt');
 

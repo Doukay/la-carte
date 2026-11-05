@@ -79,6 +79,8 @@ window.LaCarte = Object.freeze({
   technique: modeTechnique, reglerTechnique: reglerModeTechnique,
   stockage: stockageLocal,
   sur(evenement, fn) { (ext.listeners[evenement] ||= []).push(fn); },
+  reglerAnomalies(fn) { ext.anomalies = fn; },
+  redessiner() { if (etatVue.view) afficherVue({ keepTransform: true }); },
 });
 drapeauTechnique = !!stockageLocal.get('technical', false);
 

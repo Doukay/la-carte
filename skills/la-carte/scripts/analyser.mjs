@@ -14,6 +14,7 @@ import { trouverProblemes } from './lib/sante.mjs';
 import { trouverEcrans } from './lib/ecrans.mjs';
 import { creerResolveur } from './lib/resolution.mjs';
 import { resoudreRoutes, associerAppels } from './lib/routes.mjs';
+import { trouverLiensCasses } from './lib/liens-casses.mjs';
 
 const parametres = lireArguments(process.argv.slice(2));
 const racine = path.resolve(parametres._[0] || '.');
@@ -182,6 +183,7 @@ const analyse = {
   extEdges: dedupliquerExternes(liensExternes),
   routes,
   http: liensHttp,
+  casses: trouverLiensCasses(racine, fichiers, routes),
   hosts: hotes,
 };
 fs.mkdirSync(path.dirname(fichierSortie), { recursive: true });

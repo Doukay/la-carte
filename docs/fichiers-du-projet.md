@@ -1,6 +1,6 @@
 # Ce qu'il y a dans ton projet
 
-La carte n'écrit qu'à un seul endroit de ton projet : le dossier `la-carte/`. Rien d'autre n'est touché : ni `CLAUDE.md`, ni `AGENTS.md`, ni ton `.gitignore`, ni rien ailleurs sur ta machine. **Aucun fichier `.md` n'est nécessaire dans ton projet** : les consignes de l'outil (`SKILL.md`) restent dans le plugin.
+La carte n'écrit qu'à un seul endroit de ton projet : le dossier `la-carte/`. Rien d'autre n'est touché : ni `CLAUDE.md`, ni ton `.gitignore`, ni rien ailleurs sur ta machine. **Aucun fichier `.md` n'est nécessaire dans ton projet** : les consignes de l'outil (`SKILL.md`) restent dans le plugin.
 
 ## Le dossier `la-carte/`
 
@@ -31,11 +31,11 @@ Ces fichiers sont le travail qui coûte des jetons. Enregistrés dans Git, ils s
 | `index.html` | La carte : une seule page autonome, refaite à chaque fois |
 | `.cache/graphe.json` | Tout ce que montre la carte, sous forme de données |
 | `.cache/travail-recent.json` | Ce sur quoi on vient de travailler, et pourquoi |
-| `.cache/serveur.mjs` | Sert la carte en local et répond aux questions par la ligne de commande de Claude Code ou par Codex |
-| `.cache/requete.mjs` | Fait des recherches dans la carte depuis la ligne de commande ; Claude et Codex l'utilisent aussi |
+| `.cache/serveur.mjs` | Sert la carte en local et répond aux questions par la ligne de commande de Claude Code |
+| `.cache/requete.mjs` | Fait des recherches dans la carte depuis la ligne de commande ; Claude l'utilise aussi |
 | `.cache/` (le reste) | L'analyse, les feuilles de travail des descriptions, l'adresse du serveur qui tourne, et, pour un plan, les 20 dernières versions auxquelles **Annuler** revient |
 | `artifact.html` | Une copie à ouvrir dans l'application Claude, seulement si tu en as demandé une |
-| `<projet>-carte.html` | Une copie exportée à partager, seulement si tu en as exporté une depuis Claude ou Codex (le bouton Exporter de la carte la télécharge à la place) |
+| `<projet>-carte.html` | Une copie exportée à partager, seulement si tu en as exporté une depuis Claude (le bouton Exporter de la carte la télécharge à la place) |
 
 Tu peux supprimer `.cache/` : une mise à jour le recrée sans refaire les descriptions. **Annuler** n'aura alors plus rien où revenir.
 
@@ -48,7 +48,7 @@ Tes modifications dans `sources/` sont gardées à chaque mise à jour. Tu peux 
 - épingler une note sur un fichier ;
 - ajouter ou changer des parcours et la visite guidée.
 
-Ou demande simplement à Claude ou à Codex (« renomme "Serveur principal" en "API boutique" dans la carte »).
+Ou demande simplement à Claude (« renomme "Serveur principal" en "API boutique" dans la carte »).
 
 Un plan se modifie de la même façon, ou depuis la carte avec l'interrupteur **Modifier** de la bulle de questions. Le format du plan est dans [`plan.md`](../skills/la-carte/references/plan.md).
 

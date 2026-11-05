@@ -1311,7 +1311,29 @@ export function construireSante({ graph: graphe, scan: analyse, arch: archi, roo
     });
   }
 
-  const ORDRE_TYPES = ['secret', 'public-env-secret', 'database-rules', 'stripe-webhook', 'env-file', 'unprotected-endpoint', 'cors', 'large-file', 'hardcoded-url', 'unused-file'];
+  const parFichierCoupe = new Map();
+  for (const c of analyse.casses || []) {
+    if (!fichierParChemin.has(c.from)) continue;
+    if (!parFichierCoupe.has(c.from)) parFichierCoupe.set(c.from, []);
+    parFichierCoupe.get(c.from).push(c);
+  }
+  const phraseCoupure = (c) => c.kind === 'fichier' ? `cherche ${c.target} (ligne ${c.line}), qui n’existe plus`
+    : c.kind === 'fonction' ? `utilise ${c.target} de ${c.to} (ligne ${c.line}), qui n’y est plus`
+    : c.mauvaiseMethode ? `appelle ${c.target} (ligne ${c.line}), mais le serveur ne répond pas à cette méthode`
+    : `appelle ${c.target} (ligne ${c.line}), une adresse que le serveur n’a pas`;
+  for (const [p, liste] of parFichierCoupe) {
+    const elem = 'f:' + p;
+    listeProblemes.push({
+      id: 'lien-casse:' + p, kind: 'lien-casse', severity: 'high',
+      title: liste.length === 1 ? `Un lien est coupé dans ${nomDe(p)}` : `${liste.length} liens sont coupés dans ${nomDe(p)}`,
+      detail: `${nomDe(p)} (${p}) ${liste.map(phraseCoupure).join(' ; ')}. Cette partie de l’appli risque de ne plus marcher.`,
+      items: [elem], notes: { [elem]: liste.map((c) => c.target).join(', ') },
+      locations: liste.map((c) => ({ file: p, line: c.line })),
+      fix: [`Des liens sont coupés dans ${p} :`, ...liste.map((c) => `- ${phraseCoupure(c)}`), ``, `Trouve ce qui a été renommé, déplacé ou supprimé, puis répare ces liens sans changer ce que fait le code. Réponds-moi en français, en me tutoyant, en langage simple.`],
+    });
+  }
+
+  const ORDRE_TYPES = ['lien-casse', 'secret', 'public-env-secret', 'database-rules', 'stripe-webhook', 'env-file', 'unprotected-endpoint', 'cors', 'large-file', 'hardcoded-url', 'unused-file'];
   listeProblemes.sort((a, b) => ORDRE_GRAVITE[a.severity] - ORDRE_GRAVITE[b.severity] || ORDRE_TYPES.indexOf(a.kind) - ORDRE_TYPES.indexOf(b.kind) || (b.locations?.length || 0) - (a.locations?.length || 0));
   const retenus = listeProblemes.slice(0, 40);
   const resume = { high: 0, medium: 0, low: 0 };

@@ -13,12 +13,10 @@ import { assemblerPage } from './lib/page.mjs';
 import { construireSante, avecRejets, rejetPour } from './lib/sante.mjs';
 import { construireSantePlan } from './lib/ebauche.mjs';
 import { construireEcrans } from './lib/ecrans.mjs';
-import { detecterAgent } from './lib/agent.mjs';
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
 const DOSSIER_SKILL = path.resolve(ICI, '..');
 const params = lireArguments(process.argv.slice(2));
-const agent = detecterAgent(params);
 const racine = path.resolve(params._[0] || '.');
 const dossierSortie = path.resolve(params.out || dossierCarte(racine));
 const fichierArchi = path.resolve(params.arch || path.join(dossierSortie, 'sources', 'architecture.json'));
@@ -168,6 +166,11 @@ const ajouterLien = (a, b, k, supplement = {}) => {
   if (supplement.desc) l.desc = supplement.desc;
   if (supplement.route !== undefined) { l.calls = l.calls || []; if (l.calls.length < 80) l.calls.push([supplement.route, supplement.callLine || 0]); }
 };
+
+// ---------- liens cassés : ils restent visibles sur la carte, coupés, jusqu'à ce que le code soit réparé ----------
+const lienCasse = (c) => ensembleInclus.has(c.from) && !(c.kind === 'fonction' && !ensembleInclus.has(c.to));
+const cassesRetenues = (analyse.casses || []).filter(lienCasse);
+const blocIntrouvable = cassesRetenues.some((c) => c.kind !== 'fonction');
 
 // ---------- routes ----------
 const indexRoutes = new Map();
@@ -374,12 +377,25 @@ if (fichiersDecrits < fichiersInclus.length || routesDecrites < routesRetenues.l
 if (erreurs.length) { console.log(rapport.join('\n')); console.log('\nCorrige les erreurs ci-dessus et relance build.'); process.exit(1); }
 if (params.check) { console.log(rapport.join('\n')); process.exit(0); }
 
+function liensCoupes() {
+  const coupes = new Map();
+  for (const c of cassesRetenues) {
+    const a = `f:${c.from}`, b = c.kind === 'fonction' ? `f:${c.to}` : 'n:casse';
+    const cle = `${a}|${b}`;
+    if (!coupes.has(cle)) coupes.set(cle, { a, b, k: 'casse', w: 0, labels: [] });
+    const l = coupes.get(cle);
+    l.w++;
+    if (l.labels.length < 40) l.labels.push(c.target);
+  }
+  return [...coupes.values()];
+}
+
 // ---------- écrire .cache/graphe.json et index.html ----------
 const graphe = {
   schema: 'la-carte/graph@1',
   meta: {
     generatedAt: new Date().toISOString(), scanAt: analyse.generatedAt, rootName: analyse.rootName, root: analyse.root,
-    audience: publicCible, agent,
+    audience: publicCible,
     ...(analyse.ebauche ? { ebauche: { source: analyse.ebauche.source, stack: analyse.ebauche.stack, assumptions: analyse.ebauche.assumptions } } : {}),
     repos: analyse.repos.map(({ path: p, name: nom, branch: branche, head: tete, remote: distant }) => ({ path: p, name: nom, branch: branche, head: tete, remote: distant })),
     counts: { files: fichiersInclus.length, loc: fichiersInclus.reduce((s, f) => s + f.loc, 0), unassigned: nonAffectes.length },
@@ -391,6 +407,7 @@ const graphe = {
       tags: n.tags || [], paths: n.paths || [], packages: n.packages || [], hosts: n.hosts || [],
       stats: { ...statistiques.get(n.id), repos: [...statistiques.get(n.id).repos] },
     })),
+    ...(blocIntrouvable ? [{ id: 'casse', parent: null, label: 'Introuvable', kind: 'casse', icon: 'casse', summary: 'Ce que le code cherche et qui n’existe plus : un fichier ou une adresse du serveur.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { files: 0, loc: 0, repos: [], langs: {} } }] : []),
     ...(nonAffectes.length ? [{ id: 'unassigned', parent: null, label: 'Non affectés', kind: 'misc', summary: 'Fichiers qu’aucune partie ne revendique. Ajoute des motifs dans sources/architecture.json pour les placer.', details: '', tags: [], paths: [], packages: [], hosts: [], stats: { ...statistiques.get('unassigned'), repos: [...statistiques.get('unassigned').repos] } }] : []),
   ],
   files: fichiersInclus.map((f) => {
@@ -410,7 +427,7 @@ const graphe = {
     const d = descRoutes.get(cleRoute(r));
     return { f: r.file, m: r.method, p: r.path, l: r.line, h: r.handler || null, name: d?.name || r.name || nomRouteParDefaut(r), d: d?.d || r.desc || r.doc || '', ...(d?.d || r.desc ? {} : { auto: true }), ...(d?.review ? { review: d.review } : {}), ...(r.doc ? { doc: r.doc } : {}), ...(r.access ? { access: r.access } : {}), ...(r.who ? { who: r.who } : {}), ...(r.publicBecause ? { publicBecause: r.publicBecause } : {}) };
   }),
-  links: [...liens.values()],
+  links: [...liens.values(), ...liensCoupes()],
   parcours: parcoursSortie,
   visite: visiteSortie,
   ...(recentSortie?.items.length ? { recent: recentSortie } : {}),
@@ -456,15 +473,16 @@ fs.writeFileSync(path.join(dossierSortie, 'index.html'), html);
 // --artifact : une copie à publier dans l’application Claude, sans le chemin absolu de cet ordinateur (liens vers l’éditeur)
 // (et sans les raisons des problèmes de santé rejetés, qui sont des notes personnelles)
 const santePartagee = graphe.sante?.dismissed ? { ...graphe.sante, dismissed: graphe.sante.dismissed.map(({ reason: raison, ...d }) => d) } : graphe.sante;
-if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null, agent: 'claude' } }));
-// Outils autonomes à côté de la carte : poser des questions via la CLI Claude Code ou Codex (serveur.mjs)
+if (params.artifact) fs.writeFileSync(path.join(dossierSortie, 'artifact.html'), page({ ...graphe, ...(santePartagee ? { sante: santePartagee } : {}), meta: { ...graphe.meta, root: null } }));
+// Outils autonomes à côté de la carte : poser des questions via la CLI Claude Code (serveur.mjs)
 // et les recherches dans le graphe qu’il leur confie (requete.mjs). Ils n’ont besoin que de Node, pas de ce skill.
 fs.writeFileSync(path.join(dossierSortie, '.cache', 'requete.mjs'), `${codeRequetes}
 // ---- cli ----
 ${fs.readFileSync(path.join(DOSSIER_SKILL, 'assets', 'requete-cli.mjs'), 'utf8')}`);
 fs.copyFileSync(path.join(DOSSIER_SKILL, 'assets', 'serveur.mjs'), path.join(dossierSortie, '.cache', 'serveur.mjs'));
 // un plan peut être modifié depuis la carte : serveur.mjs le redessine avec plan.mjs et construire.mjs de ce skill
-if (analyse.ebauche) { fs.mkdirSync(path.join(dossierSortie, '.cache'), { recursive: true }); fs.writeFileSync(path.join(dossierSortie, '.cache', 'skill.json'), JSON.stringify({ dir: DOSSIER_SKILL })); }
+// le bouton Mettre à jour et les modifications de plan relancent les scripts de ce skill depuis le serveur
+{ fs.mkdirSync(path.join(dossierSortie, '.cache'), { recursive: true }); fs.writeFileSync(path.join(dossierSortie, '.cache', 'skill.json'), JSON.stringify({ dir: DOSSIER_SKILL })); }
 function echapperHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
 
 const resumeSante = graphe.sante?.summary;
@@ -476,9 +494,6 @@ if (graphe.ecrans?.length) rapport.push(`ÉCRANS  ${graphe.ecrans.length} détec
 rapport.push(graphe.recent
   ? `TRAVAIL RÉCENT  ${graphe.recent.items.length} bloc(s) mis en avant sur ${graphe.recent.tasks.length} tâche(s)`
   : `TRAVAIL RÉCENT  rien de mis en avant${fs.existsSync(fichierRecent) ? '' : ' (pas de .cache/travail-recent.json)'}`);
-// orienter les futures sessions Claude Code de ce projet vers la carte. Codex n’a pas d’équivalent personnel
-// hors Git (AGENTS.md est partagé avec l’équipe) : une carte construite par Codex laisse donc les notes du projet tranquilles.
-if (agent === 'codex') rapport.push('AGENT  Codex : les questions posées sur la carte passent par Codex');
 if (analyse.ebauche) rapport.push('PLAN  prévu, pas encore construit : dessiné d’après la-carte/sources/plan.json');
 rapport.push(avertissementSuivi ? `GIT  ! ${avertissementSuivi}` : 'GIT  seul la-carte/sources/ est à enregistrer avec le projet, le reste s’ignore tout seul');
 if (alerteDocker) rapport.push(`DOCKER  ! ${alerteDocker}`);

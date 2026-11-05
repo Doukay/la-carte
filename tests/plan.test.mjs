@@ -54,22 +54,16 @@ test('les écrans appellent des adresses du serveur, et les fichiers atteignent 
   ]);
 });
 
-test('la construction d’un plan indique que les fichiers sont prévus, avec les deux agents de code', async (t) => {
-  for (const agent of ['codex', 'claude']) {
-    await t.test(agent, () => {
-      const r = creerProjet({});
-      try {
-        fs.cpSync(EXEMPLE, r, { recursive: true });
-        executer('plan.mjs', r, '--agent', agent);
-        const sortie = executer('construire.mjs', r, '--agent', agent, '--claude-md');
-        assert.equal(lireGraphe(r).meta.agent, agent);
-        assert.match(sortie, /PLAN {2}prévu, pas encore construit/);
-        if (agent === 'codex') assert.match(sortie, /AGENT {2}Codex/);
-        assert.doesNotMatch(sortie, /CLAUDE\.LOCAL\.MD/);
-        assert.ok(!fs.existsSync(path.join(r, 'CLAUDE.local.md')), 'un plan n’ajoute pas de notes au projet');
-      } finally { nettoyer(r); }
-    });
-  }
+test('la construction d’un plan indique que les fichiers sont prévus, et n’ajoute pas de notes au projet', () => {
+  const r = creerProjet({});
+  try {
+    fs.cpSync(EXEMPLE, r, { recursive: true });
+    executer('plan.mjs', r);
+    const sortie = executer('construire.mjs', r, '--claude-md');
+    assert.match(sortie, /PLAN {2}prévu, pas encore construit/);
+    assert.doesNotMatch(sortie, /CLAUDE\.LOCAL\.MD/);
+    assert.ok(!fs.existsSync(path.join(r, 'CLAUDE.local.md')), 'un plan n’ajoute pas de notes au projet');
+  } finally { nettoyer(r); }
 });
 
 test('Écrans montre ce sur quoi chaque page prévue s’appuie, jusqu’à Stripe', () => {

@@ -138,7 +138,7 @@ before(async () => {
   executer('construire.mjs', racine, '--no-claude-md');
   const port = 20000 + Math.floor(Math.random() * 20000);
   serveur = spawn(process.execPath, [fichierCarte('serveur.mjs'), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(racine, 'no-such-codex') },
+    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli') },
   });
   base = await new Promise((resoudre, rejeter) => {
     let sortie = '';

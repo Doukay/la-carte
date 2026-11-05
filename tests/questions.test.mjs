@@ -1,6 +1,6 @@
-// Poser des questions sur la carte : serveur.mjs lance la CLI de Claude Code ou Codex avec la connexion de la personne,
-// en lecture seule, et transforme leur flux d’événements en lignes de progression et en tableau de réponse. De fausses CLI
-// (fixtures/fake-cli) notent ce qu’on leur donne : ces tests tournent donc sans qu’aucune des deux soit installée.
+// Poser des questions sur la carte : serveur.mjs lance la CLI de Claude Code avec la connexion de la personne,
+// en lecture seule, et transforme son flux d’événements en lignes de progression et en tableau de réponse. Une fausse CLI
+// (fixtures/fake-cli) note ce qu’on lui donne : ces tests tournent donc sans que Claude Code soit installé.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -17,7 +17,7 @@ async function servir(env) {
   const journal = path.join(racine, `fake-${serveurs.length}.log`);
   const port = 20000 + Math.floor(Math.random() * 20000);
   const serveur = spawn(process.execPath, [path.join(racine, 'la-carte', '.cache', 'serveur.mjs'), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', LA_CARTE_ENGINE: '', FAKE_LOG: journal, ...env }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', FAKE_LOG: journal, ...env }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   serveurs.push(serveur);
   const base = await new Promise((resoudre, rejeter) => {
@@ -38,80 +38,21 @@ async function demander(s, question, session) {
 }
 const choisir = (evenements, nom) => evenements.filter((e) => e.event === nom).map((e) => e.data);
 
-// construite « par Claude Code » quel que soit l’agent qui lance les tests, pour que l’ordre des moteurs ci-dessous soit prévisible
-before(() => { racine = appliBoutique(); executer('analyser.mjs', racine); executer('construire.mjs', racine, '--no-claude-md', '--agent', 'claude'); });
+before(() => { racine = appliBoutique(); executer('analyser.mjs', racine); executer('construire.mjs', racine, '--no-claude-md'); });
 after(async () => {
   // attendre d’abord l’arrêt des serveurs : sous Windows, leur dossier de travail ne peut pas être supprimé tant qu’ils tournent
   await Promise.all(serveurs.filter((s) => s.exitCode === null).map((s) => new Promise((resoudre) => { s.once('exit', resoudre); s.kill(); })));
   nettoyer(racine);
 });
 
-test('avec Codex seul installé, les questions passent par Codex, en lecture seule et hors de son historique', async () => {
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
-  assert.equal(s.page.engine, 'codex');
+test('la CLI de Claude Code répond avec des outils en lecture seule, depuis la racine du code, et les questions de suite reprennent la session', async () => {
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs') });
   assert.equal(s.page.cli, true);
-
-  const evenements = await demander(s, 'How do refunds work?');
-  assert.deepEqual(choisir(evenements, 'progress').map((p) => p.text), ['Recherche de "refund" dans la carte', 'Lecture de shop-api/routes/orders.js']);
-  const [reponse] = choisir(evenements, 'answer');
-  assert.equal(reponse.title, 'Refunds');
-  assert.deepEqual(reponse.items.map((i) => i.id), ['f:shop-api/routes/orders.js']);
-  assert.match(reponse.session, /^[0-9a-f]{16}$/);
-
-  const [appel] = s.calls();
-  const option = (nom) => appel.args[appel.args.indexOf(nom) + 1];
-  assert.equal(appel.args[0], 'exec');
-  assert.equal(option('--sandbox'), 'read-only');
-  assert.ok(appel.args.includes('--ephemeral'), 'rien n’est enregistré dans l’historique de Codex');
-  // Node lance serveur.mjs depuis son vrai chemin, et sous macOS le dossier temporaire /var/… est en réalité /private/var/…
-  assert.equal(fs.realpathSync(option('-C')), fs.realpathSync(racine));
-  assert.match(appel.input, /How do refunds work\?/);
-  assert.match(appel.input, /node la-carte\/\.cache\/requete\.mjs/);
-});
-
-test('Codex reçoit un schéma de réponse qu’il accepte : toutes les propriétés obligatoires, rien en plus', async () => {
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
-  await demander(s, 'What is this?');
-  const { schema } = s.calls()[0];
-  const verifier = (node, endroit) => {
-    if (node.type === 'object') {
-      assert.equal(node.additionalProperties, false, endroit);
-      assert.deepEqual([...node.required].sort(), Object.keys(node.properties).sort(), endroit);
-      for (const [k, v] of Object.entries(node.properties)) verifier(v, `${endroit}.${k}`);
-    }
-    if (node.type === 'array') verifier(node.items, `${endroit}[]`);
-  };
-  verifier(schema, 'answer');
-  assert.ok(schema.required.includes('steps') && schema.required.includes('followups'));
-});
-
-test('une question de suite à Codex porte la conversation jusque-là', async () => {
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
-  const [premier] = choisir(await demander(s, 'How do refunds work?'), 'answer');
-  const [deuxieme] = choisir(await demander(s, 'Who can ask for one?', premier.session), 'answer');
-  assert.equal(deuxieme.session, premier.session);
-  const appels = s.calls();
-  assert.doesNotMatch(appels[0].input, /Plus tôt dans cette conversation/);
-  assert.match(appels[1].input, /Plus tôt dans cette conversation :\nQ : How do refunds work\?\nR : Refunds go through/);
-  // une session inconnue démarre une nouvelle conversation
-  const [autre] = choisir(await demander(s, 'Start over', 'not-a-session'), 'answer');
-  assert.notEqual(autre.session, premier.session);
-  assert.doesNotMatch(s.calls()[2].input, /Plus tôt dans cette conversation/);
-});
-
-test('un Codex déconnecté le dit, pour que la carte puisse demander à la personne de se connecter', async () => {
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
-  const [echec] = choisir(await demander(s, 'SIGNED-OUT question'), 'failure');
-  assert.equal(echec.code, 'not_logged_in');
-  assert.equal(choisir(await demander(s, 'SIGNED-OUT again'), 'answer').length, 0);
-});
-
-test('la CLI de Claude Code passe en premier pour une carte construite par Claude, avec des outils en lecture seule, et les questions de suite reprennent la session', async () => {
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), LA_CARTE_CODEX: path.join(FAUX, 'fake-codex.mjs') });
-  assert.equal(s.page.engine, 'claude');
   const evenements = await demander(s, 'How do refunds work?');
   assert.deepEqual(choisir(evenements, 'progress').map((p) => p.text), ['Lecture de l’aperçu de la carte', 'Lecture de shop-api/routes/orders.js']);
   const [reponse] = choisir(evenements, 'answer');
+  assert.equal(reponse.title, 'Refunds');
+  assert.deepEqual(reponse.items.map((i) => i.id), ['f:shop-api/routes/orders.js']);
   assert.equal(reponse.session, 'test-session');
   await demander(s, 'And then?', reponse.session);
   const [premier, deuxieme] = s.calls();
@@ -119,17 +60,45 @@ test('la CLI de Claude Code passe en premier pour une carte construite par Claud
   assert.deepEqual(premier.args.slice(premier.args.indexOf('--allowedTools') + 1, premier.args.indexOf('--disallowedTools')), ['Bash(node la-carte/.cache/requete.mjs:*)', 'Read', 'Grep', 'Glob']);
   assert.ok(premier.args.includes('Read(**/.env)') && premier.args.includes('Read(**/.env.*)'), 'les fichiers secrets restent fermés');
   assert.ok(premier.args.includes('--strict-mcp-config'), "les serveurs MCP de la machine restent hors de la demande");
+  // Node lance serveur.mjs depuis son vrai chemin, et sous macOS le dossier temporaire /var/… est en réalité /private/var/…
+  assert.equal(fs.realpathSync(premier.cwd), fs.realpathSync(racine));
   assert.equal(premier.input, 'How do refunds work?');
   assert.equal(deuxieme.args[deuxieme.args.indexOf('--resume') + 1], 'test-session');
 });
 
-test('--engine choisit une seule CLI et ne se rabat jamais sur l’autre', async () => {
-  const s = await servir({ LA_CARTE_ENGINE: 'codex', LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli') });
+test('Claude reçoit un schéma de réponse JSON, et le modèle demandé est transmis', async () => {
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs'), LA_CARTE_MODEL: 'modele-de-test' });
+  assert.equal(s.page.model, 'modele-de-test');
+  await demander(s, 'What is this?');
+  const [appel] = s.calls();
+  const schema = JSON.parse(appel.args[appel.args.indexOf('--json-schema') + 1]);
+  assert.equal(schema.type, 'object');
+  assert.ok(schema.properties.answer && schema.properties.items, 'la réponse a un texte et un tableau');
+  assert.equal(appel.args[appel.args.indexOf('--model') + 1], 'modele-de-test');
+});
+
+test('les commandes que Claude lance sont racontées en mots simples', async () => {
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs') });
+  const evenements = await demander(s, 'SEARCH-COMMANDS How do refunds work?');
+  assert.deepEqual(choisir(evenements, 'progress').map((p) => p.text), [
+    'Recherche de "refund" dans la carte', 'Recherche de "refund" dans le code', 'Lecture de shop-api/routes/orders.js', 'Liste des fichiers',
+  ]);
+  assert.equal(choisir(evenements, 'answer').length, 1);
+});
+
+test('un Claude Code déconnecté le dit, pour que la carte puisse demander à la personne de se connecter', async () => {
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(FAUX, 'fake-claude.mjs') });
+  const [echec] = choisir(await demander(s, 'SIGNED-OUT question'), 'failure');
+  assert.equal(echec.code, 'not_logged_in');
+  assert.equal(choisir(await demander(s, 'SIGNED-OUT again'), 'answer').length, 0);
+});
+
+test('sans Claude Code installé, la carte le dit au lieu de répondre', async () => {
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli') });
   assert.equal(s.page.cli, false);
-  assert.equal(s.page.want, 'codex');
   const [echec] = choisir(await demander(s, 'Anything?'), 'failure');
   assert.equal(echec.code, 'cli_missing');
-  assert.match(echec.message, /Codex est introuvable/);
+  assert.match(echec.message, /Claude Code est introuvable/);
 });
 
 // Windows : une installation npm récente de Claude Code a le vrai programme dans <npm>/node_modules/@anthropic-ai/claude-code/bin/claude.exe, sans cli.js, et seulement
@@ -142,7 +111,7 @@ test('sous Windows, une installation npm de Claude Code avec seulement bin/claud
   const fauxExe = path.join(paquet, 'claude.exe');
   fs.copyFileSync(process.execPath, fauxExe); // un programme qui répond à --version (une copie, pas un lien : un lien ne peut pas être supprimé ensuite sur certains Windows)
   fs.chmodSync(fauxExe, 0o666); // la copie garde l’attribut lecture seule de Node, ce qui empêche de nettoyer le dossier
-  const s = await servir({ LA_CARTE_CLAUDE: path.join(npm, 'claude'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli') });
-  assert.equal(s.page.engine, 'claude');
+  const s = await servir({ LA_CARTE_CLAUDE: path.join(npm, 'claude') });
+  assert.equal(s.page.cli, true);
   assert.equal(s.page.version, process.version);
 });

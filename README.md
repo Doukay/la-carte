@@ -4,7 +4,7 @@
 
 **Vois comment ton appli tient vraiment ensemble.**
 
-Claude ou Codex lit ton code et en dessine une carte interactive. Chaque partie, chaque fichier et chaque appel au serveur reçoit un nom en langage simple, et chaque lien entre eux est montré.
+Claude lit ton code et en dessine une carte interactive. Chaque partie, chaque fichier et chaque appel au serveur reçoit un nom en langage simple, et chaque lien entre eux est montré.
 
 Licence MIT · Node 18 ou plus · aucune dépendance
 
@@ -20,11 +20,11 @@ Licence MIT · Node 18 ou plus · aucune dépendance
 
 Tu as construit une appli, probablement avec beaucoup d'aide de l'IA, et elle marche. Mais si on te demande « que se passe-t-il quand quelqu'un passe commande ? » ou « qu'est-ce qui casse si je change ça ? », la réponse honnête est *aucune idée*.
 
-La carte te donne le schéma que personne n'a dessiné. Demande une carte à Claude Code ou à Codex : quelques minutes plus tard tu as une carte que tu peux explorer, interroger, et garder à jour au fil de ton travail.
+La carte te donne le schéma que personne n'a dessiné. Demande une carte à Claude Code : quelques minutes plus tard tu as une carte que tu peux explorer, interroger, et garder à jour au fil de ton travail.
 
 - **Pour toi qui construis :** comprendre l'appli que tu as faite, avec tes mots, sans lire le code.
 - **Pour une équipe :** accueillir quelqu'un en quelques minutes, de la vue d'ensemble jusqu'au fichier précis.
-- **Pour travailler avec une IA :** après chaque modification de Claude ou de Codex, voir exactement quelles parties il a touchées et pourquoi.
+- **Pour travailler avec une IA :** après chaque modification de Claude, voir exactement quelles parties il a touchées et pourquoi.
 
 
 ## Fonctions
@@ -136,17 +136,18 @@ Ces captures montrent une boutique fictive, Atelier Lumière.
 <img src="docs/images/phone.png" alt="La carte sur téléphone : les blocs se suivent dans une colonne qui défile" width="280">
 <p><b>Sur téléphone.</b> Une colonne qui défile, sans zoom ni déplacement.</p>
 </td>
-<td></td>
+<td valign="top">
+<img src="docs/images/coupes.png" alt="Un lien rouge en pointillés avec une croix mène au bloc Introuvable, et une pastille rouge indique les points à voir sur le serveur">
+<p><b>L'état du code à l'instant T.</b> Les liens coupés se voient en rouge, les blocs concernés portent une pastille. <b>Mettre à jour</b> refait la carte en quelques secondes, sans consommer de jetons.</p>
+</td>
 </tr>
 </table>
 
 ## Installation
 
-Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code ou Codex. La carte marche avec l'abonnement que tu as déjà, sans clé d'API.
+Il te faut [Node.js 18 ou plus](https://nodejs.org) et Claude Code. La carte marche avec l'abonnement que tu as déjà, sans clé d'API.
 
 Cette copie ne passe par aucune boutique de plugins : tu l'installes depuis son dossier sur ta machine ou depuis son dépôt Git. Le plugin et la source s'appellent tous deux `la-carte`.
-
-### Claude Code
 
 Dans l'onglet Code de l'application de bureau ou en ligne de commande, depuis le dossier de cette copie :
 
@@ -159,30 +160,13 @@ claude plugin install la-carte@la-carte
 
 Ouvre une nouvelle session et c'est prêt. Installer la ligne de commande de Claude Code est conseillé même si tu utilises l'application de bureau, parce que c'est elle qui permet à la bulle de questions de lire ton vrai code. La suite est dans [Pour commencer](docs/bien-demarrer.md).
 
-### Codex
-
-Connecté avec ChatGPT. Pas besoin de terminal :
-
-1. Dans l'application Codex, ouvre **Plugins** et choisis **Add a marketplace**.
-2. Pour **Source**, entre le chemin du dossier de cette copie (ou son dépôt Git) et clique sur **Add marketplace**.
-3. Trouve **La carte** et clique sur **+** pour l'installer.
-
-Ou depuis un terminal :
-
-```bash
-codex plugin marketplace add /chemin/vers/la-carte
-codex plugin add la-carte@la-carte
-```
-
-Ouvre une nouvelle discussion et demande une carte, ou tape `$la-carte`. La bulle de questions de la carte utilise ta propre connexion à Codex, sans clé d'API. La suite est dans [la carte dans Codex](docs/codex.md).
-
 ## Démarrage rapide
 
-1. Ouvre ton projet dans Claude Code ou Codex. Si l'interface et le serveur sont dans des dépôts séparés, ouvre le dossier qui contient les deux.
+1. Ouvre ton projet dans Claude Code. Si l'interface et le serveur sont dans des dépôts séparés, ouvre le dossier qui contient les deux.
 2. Demande :
    > Fais-moi une carte de cette appli.
 
-   (Dans Claude Code tu peux aussi taper `/la-carte:la-carte`, et dans Codex `$la-carte`.)
+   (Tu peux aussi taper `/la-carte:la-carte`.)
 3. Explore. La carte s'ouvre toute seule, en commençant par une courte visite guidée.
 
 Quand tu as avancé, demande :
@@ -199,7 +183,7 @@ Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du systèm
 
 ### À essayer
 
-| Demande à Claude Code ou à Codex | Demande à la carte |
+| Demande à Claude Code | Demande à la carte |
 |---|---|
 | « Fais-moi une carte de cette appli » | « Que se passe-t-il quand quelqu'un passe commande ? » |
 | « Mets à jour la carte » | « Où parle-t-on à Stripe ? » |
@@ -213,13 +197,13 @@ Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du systèm
 ```mermaid
 flowchart LR
     code["Ton code<br/>un dépôt ou plusieurs"] --> scan["Analyse<br/>fichiers, imports, routes, appels"]
-    scan --> agent["Claude ou Codex<br/>nomme les parties, décrit chaque fichier"]
-    agent --> build["Construction<br/>carte, santé, écrans, travail récent"]
+    scan --> claude["Claude<br/>nomme les parties, décrit chaque fichier"]
+    claude --> build["Construction<br/>carte, santé, écrans, travail récent"]
     build --> map["la-carte/index.html<br/>s'ouvre dans ton navigateur"]
     map -. "mets à jour la carte" .-> scan
 ```
 
-Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude ou Codex fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/comment-ca-marche.md).
+Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/comment-ca-marche.md).
 
 **Langages :** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, plus les fichiers Vue, Svelte et Astro, avec une prise en charge plus légère des autres.<br>
 **Adresses du serveur :** Express, Fastify, Koa, Hono, Next.js, Firebase Cloud Functions, Flask, FastAPI, Django, net/http de Go, Gin, Echo et chi, Actix, Axum, Spring, et les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.<br>
@@ -234,8 +218,8 @@ Un dossier `la-carte/` qui contient la carte, et rien d'autre. **Seul `la-carte/
 - L'analyse, la carte et son petit serveur local tournent sur ton ordinateur. Le serveur n'accepte que les connexions venant de ta propre machine (`127.0.0.1`).
 - La carte elle-même n'envoie rien sur Internet : pas de statistiques, pas de suivi, pas de liste d'attente. La carte marche hors connexion, son moteur de mise en page et ses polices sont intégrés.
 - Pas de dépendances ni de scripts d'installation.
-- **Mais Claude lit ton code pour le décrire, et ce code part chez Anthropic** (ou chez OpenAI avec Codex), sur ton compte, comme n'importe quelle tâche que tu lui donnes.
-- Les questions posées sur la carte passent par la ligne de commande de Claude Code ou par Codex, qui peuvent lire ton code mais pas le modifier. Avec Claude Code, la bulle de questions ne peut pas ouvrir les fichiers de secrets (`.env`, `*.pem`, `*.key`…), mais elle lit le reste de tes fichiers.
+- **Mais Claude lit ton code pour le décrire, et ce code part chez Anthropic**, sur ton compte, comme n'importe quelle tâche que tu lui donnes.
+- Les questions posées sur la carte passent par la ligne de commande de Claude Code, qui peut lire ton code mais pas le modifier. La bulle de questions ne peut pas ouvrir les fichiers de secrets (`.env`, `*.pem`, `*.key`…), mais elle lit le reste de tes fichiers.
 - Le contrôle de santé ne garde aucune partie d'une clé (seulement sa longueur). Il donne des fausses alertes et n'est pas un audit de sécurité.
 
 Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-securite.md). Pour savoir si ce plugin est sûr à installer, [Est-ce sûr à installer ?](docs/est-ce-sur.md) liste tout ce que la carte fait sur ton ordinateur et ses limites.
@@ -245,7 +229,6 @@ Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-s
 | | |
 |---|---|
 | [Pour commencer](docs/bien-demarrer.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
-| [la carte dans Codex](docs/codex.md) | Installer et utiliser la carte dans Codex |
 | [Utiliser la carte](docs/utiliser-la-carte.md) | Chaque bouton, vue, raccourci et menu |
 | [Comment ça marche](docs/comment-ca-marche.md) | Le déroulé, la mise en relation des appels, les mises à jour |
 | [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md) | Chaque fichier créé par la carte, et comment le modifier |
@@ -265,19 +248,19 @@ Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne téléch
 <details>
 <summary><b>Mon code quitte-t-il mon ordinateur ?</b></summary>
 
-Oui, de la façon dont Claude Code et Codex fonctionnent toujours : l'IA lit les fichiers dont elle a besoin pour décrire ton appli, et ils partent chez Anthropic (ou OpenAI) sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. La carte elle-même n'envoie rien.
+Oui, de la façon dont Claude Code fonctionne toujours : Claude lit les fichiers dont il a besoin pour décrire ton appli, et ils partent chez Anthropic sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. La carte elle-même n'envoie rien.
 </details>
 
 <details>
 <summary><b>Combien de temps ça prend, et combien ça coûte ?</b></summary>
 
-Une première carte prend quelques minutes pour une petite appli et plus pour une grosse, parce que chaque fichier et chaque adresse du serveur est décrit. Ça consomme ton abonnement Claude ou ChatGPT comme n'importe quelle autre tâche. Les gros projets sont répartis entre plusieurs aides en parallèle. Les mises à jour ne relisent que ce qui a changé : elles sont rapides et légères.
+Une première carte prend quelques minutes pour une petite appli et plus pour une grosse, parce que chaque fichier et chaque adresse du serveur est décrit. Ça consomme ton abonnement Claude comme n'importe quelle autre tâche. Les gros projets sont répartis entre plusieurs aides en parallèle. Les mises à jour ne relisent que ce qui a changé : elles sont rapides et légères.
 </details>
 
 <details>
 <summary><b>Faut-il la ligne de commande pour la bulle de questions ?</b></summary>
 
-Non, la carte marche sans. La bulle de questions répond grâce à la ligne de commande de Claude Code ou à Codex, qui peuvent lire ton vrai code. L'application de bureau de Codex contient déjà ce qu'il faut. Avec Claude, sans la ligne de commande, tu peux poser tes questions depuis l'application Claude, à partir de la carte seule.
+Non, la carte marche sans. La bulle de questions répond grâce à la ligne de commande de Claude Code, qui peut lire ton vrai code. Sans la ligne de commande, tu peux poser tes questions depuis l'application Claude, à partir de la carte seule.
 </details>
 
 <details>
@@ -290,12 +273,6 @@ Elle n'écrit que dans son propre dossier `la-carte/`, dont seul `sources/` est 
 <summary><b>Les noms choisis ne sont pas ceux qu'on utilise chez nous. Puis-je les changer ?</b></summary>
 
 Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans la carte »), ou modifie toi-même `la-carte/sources/architecture.json` et `la-carte/sources/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
-</details>
-
-<details>
-<summary><b>Est-ce que ça marche avec Codex comme avec Claude Code ?</b></summary>
-
-Oui. C'est le même plugin, la même carte et le même contrôle de santé. Chaque application le fait tourner sur ton propre abonnement : Claude Code sur ton compte Claude, Codex sur ta connexion ChatGPT. Une carte faite avec l'un s'ouvre sans problème avec l'autre. Une limite, honnête : le blocage des fichiers de secrets de la bulle de questions n'existe qu'avec Claude Code. Voir [la carte dans Codex](docs/codex.md).
 </details>
 
 <details>

@@ -1,7 +1,7 @@
 // Plans : une carte (la-carte) d’un système pas encore construit, prévue à partir d’un cahier des charges (PRD) ou d’une description.
 //
 // planVersAnalyse(plan, root) — transforme la-carte/sources/plan.json (les fichiers, adresses du serveur et appels prévus,
-//                          écrits par l’agent) en la même forme de analyse.json que analyser.mjs écrit pour du vrai code, de sorte que
+//                          écrits par Claude) en la même forme de analyse.json que analyser.mjs écrit pour du vrai code, de sorte que
 //                          construire.mjs et le visualiseur marchent sans changement. Renvoie { scan, errors, warnings }.
 // construireSantePlan(ctx) — appelée par construire.mjs à la place de construireSante pour un plan : une revue du plan
 //                          (qui peut appeler chaque adresse du serveur, bouts qui ne mènent nulle part, questions ouvertes)

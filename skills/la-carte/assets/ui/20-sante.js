@@ -1,12 +1,12 @@
 // Panneau du contrôle de santé : des avertissements en langage simple tirés de graphe.sante (lib/sante.mjs) — clés qui fuient,
 // adresses du serveur ouvertes à tous, fichiers inutilisés ou trop gros — chacun avec « Voir sur la carte » et une demande
-// toute prête à coller dans Claude Code ou Codex. Ne parle au visualiseur que par window.LaCarte.
+// toute prête à coller dans Claude Code. Ne parle au visualiseur que par window.LaCarte.
 (() => {
   const CARTE = window.LaCarte;
   // une copie exportée sans la Santé laisse le bouton de côté : une liste vide se lirait comme « tout va bien »
   if (!CARTE || (CARTE.exporte && !CARTE.graphe.sante)) return;
   const { h } = CARTE;
-  const A = CARTE.agent || { name: 'Claude', app: 'Claude Code' };
+  const A = CARTE.agent;
   const problemes = (CARTE.graphe.sante && CARTE.graphe.sante.problemes) || [];
   // un plan (prévu, pas construit) a droit à une revue du plan plutôt qu'à un contrôle du code
   const PLAN = !!CARTE.graphe.meta.ebauche;
@@ -42,6 +42,7 @@
       rejetes = [...rejetes.filter((x) => x.id !== issue.id), { ...enregistrement, at: new Date().toISOString() }];
       CARTE.stockage.set(CLE_STOCKAGE, rejetes);
     }
+    CARTE.redessiner();
     return true;
   }
   async function annulerRejet(issue) {
@@ -53,6 +54,7 @@
       rejetes = rejetes.filter((x) => x.id !== issue.id);
       CARTE.stockage.set(CLE_STOCKAGE, rejetes);
     }
+    CARTE.redessiner();
     actualiser();
   }
 
@@ -238,6 +240,11 @@
     bind: (el) => el.querySelector('[data-hc-open]')?.addEventListener('click', (ev) => { ev.preventDefault(); ouvrirListe(); }),
   }));
 
+  // une pastille sur chaque bloc concerné, ou qui contient un bloc concerné. Les points mineurs restent dans le panneau.
+  CARTE.reglerAnomalies((idElement) => {
+    const touches = actifs().filter((i) => i.severity !== 'low' && (i.items || []).some((id) => id === idElement || (CARTE.existe(id) && CARTE.chaine(id).includes(idElement))));
+    return touches.length ? { n: touches.length, gravite: touches.some((i) => i.severity === 'high') ? 'high' : 'medium' } : null;
+  });
   CARTE.ajouterSectionPanneau('item', (idElement) => {
     if (!idElement || typeof idElement !== 'string' || !problemes.length) return '';
     const touches = [];

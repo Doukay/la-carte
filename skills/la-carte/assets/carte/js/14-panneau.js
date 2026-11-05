@@ -63,6 +63,7 @@ function panneauReponse() {
 
 // Parties de premier niveau, regroupées sous des noms compréhensibles plutôt que de simples points de couleur.
 const GROUPES_SYSTEMES = [
+  { label: 'À réparer', kinds: ['casse'] },
   { label: 'Applications utilisées', kinds: ['ui'] },
   { label: 'Dans les coulisses', kinds: ['service', 'worker', 'library', 'feature', 'data', 'config'] },
   { label: 'Services extérieurs', kinds: ['external'] },
@@ -86,7 +87,7 @@ function panneauApercu() {
   const nonDecrits = G.files.filter((f) => f.auto).length + routes.filter((r) => r.auto).length;
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--accent)">${picto('feature')}</span><span class="kind">${PLAN ? 'Plan' : 'Projet'}</span></div><h2 class="pt">${h(p.name)}</h2>${p.summary ? `<p class="pd">${h(p.summary)}</p>` : ''}
       <div class="stats" style="margin-top:14px"><div><b>${formaterNombre(G.meta.counts.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? `<div><b>${formaterNombre((G.ecrans || []).length)}</b><span>écrans</span></div>` : `<div><b>${formaterNombre(G.meta.counts.loc)}</b><span>lignes</span></div>`}${routes.length ? `<div><b>${formaterNombre(routes.length)}</b><span>adresses du serveur</span></div>` : ''}</div>
-      ${nonDecrits ? `<div class="callout">${nonDecrits} fichiers et adresses du serveur gardent encore des noms générés. Demande à Claude ou à Codex de mettre à jour la carte pour les décrire.</div>` : ''}</div>
+      ${nonDecrits ? `<div class="callout">${nonDecrits} fichiers et adresses du serveur gardent encore des noms générés. Demande à Claude de mettre à jour la carte pour les décrire.</div>` : ''}</div>
     ${sectionParties(racines)}
     ${sectionListe('Parcours guidés', G.parcours.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} étapes</span></a>`))}
     ${sectionListe('Dépôts', G.meta.repos.map((r) => `<div class="row" style="cursor:default"><span class="dot" style="background:var(--text-4)"></span><span class="rt"><div class="rn">${h(r.name)}</div><div class="rp">${h(r.branch || '')} @ ${h((r.head || '').slice(0, 7))}</div></span></div>`))}
@@ -141,7 +142,7 @@ function panneauElement(element, viaConnecteur) {
   } else if (i.type === 'file' || i.type === 'module') {
     const f = i.f, fid = 'f:' + f.p, url = urlEditeur(f.p);
     if (f.note) html += `<div class="callout">${h(f.note)}</div>`;
-    if (f.tooLarge) html += `<div class="callout">Trop gros pour que la carte le lise : ce qu’il utilise, ses adresses du serveur et d’éventuels secrets n’ont pas été vérifiés. Demande à Claude ou à Codex de mettre à jour la carte avec une limite de taille de fichier plus grande pour l’inclure.</div>`;
+    if (f.tooLarge) html += `<div class="callout">Trop gros pour que la carte le lise : ce qu’il utilise, ses adresses du serveur et d’éventuels secrets n’ont pas été vérifiés. Demande à Claude de mettre à jour la carte avec une limite de taille de fichier plus grande pour l’inclure.</div>`;
     if (modeTechnique()) html += boiteChemin(f.p);
     if (url && modeTechnique()) actions.push(`<a class="btn soft" href="${url}">${pictoI('open')}Ouvrir dans l'éditeur</a>`);
     if (actions.length) html += `<div class="actions">${actions.join('')}</div>`;
@@ -182,7 +183,7 @@ function panneauLien(e) {
   if (!e) return '';
   const eps = adressesDe(e);
   const noms = [...new Set(e.links.flatMap((l) => l.names || []))];
-  const desc = e.links.map((l) => l.desc).filter(Boolean);
+  const desc = e.k === 'casse' ? [`Ce lien est coupé : ${[...new Set(e.links.flatMap((l) => l.labels || []))].join(', ')} n’existe plus ou ne répond plus.`] : e.links.map((l) => l.desc).filter(Boolean);
   const ep = (id) => id.startsWith('x:') ? entiteConnecteur(id) : id;
   const paires = e.links.filter((l) => l.a.startsWith('f:') || l.b.startsWith('f:'));
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--k-${e.k})">${picto(e.k === 'http' ? 'route' : 'feature')}</span><span class="kind">Connexion · ${LIBELLE_TYPE[e.k]}</span></div>
@@ -192,6 +193,6 @@ function panneauLien(e) {
     ${sectionListe('Adresses du serveur', eps.map((x) => ligneRoute(x.i, accorder(x.n, 'appel'))), eps.length, 40)}
     ${noms.length && modeTechnique() ? `<div class="sec"><h3>Noms importés <span class="c">${noms.length}</span></h3><div class="tags">${noms.slice(0, 60).map((x) => `<span class="tag">${h(x)}</span>`).join('')}</div></div>` : ''}
     ${sectionListe('Fichiers concernés', paires.map((l) => { const a = l.a.startsWith('f:') ? fichiersParChemin.get(l.a.slice(2)) : null, b = l.b.startsWith('f:') ? fichiersParChemin.get(l.b.slice(2)) : null;
-      return `<a class="row" data-go="${h(l.a)}"><span class="dot" style="background:var(--k-${l.k})"></span><span class="rt"><div class="rn">${h(a ? a.name : nomDe(l.a))} → ${h(b ? b.name : nomDe(l.b))}</div><div class="rp">${h(a ? a.p : '')}</div></span><span class="rc">${l.w}</span></a>`; }), paires.length, 40)}`;
+      return `<a class="row" data-go="${h(l.a)}"><span class="dot" style="background:var(--k-${l.k})"></span><span class="rt"><div class="rn">${h(a ? a.name : nomDe(l.a))} → ${h(b ? b.name : nomDe(l.b))}</div>${modeTechnique() ? `<div class="rp">${h(a ? a.p : '')}</div>` : ''}</span><span class="rc">${l.w}</span></a>`; }), paires.length, 40)}`;
 }
 

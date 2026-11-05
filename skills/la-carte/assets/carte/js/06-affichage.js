@@ -57,6 +57,14 @@ function dessiner(vue, res) {
     el('path', { class: 'trace', d, 'stroke-width': largeur.toFixed(2) }, g);
     el('path', { class: 'flow', d }, g);
     el('path', { class: 'hit', d }, g);
+    if (e.k === 'casse') {
+      // la marque de coupure, au milieu du plus long morceau du lien
+      const [p, q] = points.slice(1).map((b, n) => [points[n], b]).sort(([a1, b1], [a2, b2]) => Math.hypot(b2.x - a2.x, b2.y - a2.y) - Math.hypot(b1.x - a1.x, b1.y - a1.y))[0];
+      const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+      const m = el('g', { class: 'coupure' }, g);
+      el('circle', { cx: mx, cy: my, r: 10 }, m);
+      el('path', { d: `M${mx - 4},${my - 4}L${mx + 4},${my + 4}M${mx + 4},${my - 4}L${mx - 4},${my + 4}` }, m);
+    }
     const pg = el('g', { class: `edge k-${e.k}`, style: `color:var(--k-${e.k})` }, gPorts);
     el('circle', { class: 'port', cx: s.startPoint.x, cy: s.startPoint.y, r: 3.4 }, pg);
     el('circle', { class: 'port', cx: s.endPoint.x, cy: s.endPoint.y, r: 3.4 }, pg);

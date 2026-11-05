@@ -1,10 +1,10 @@
-// ======================= demander (Claude Code en ligne de commande ou Codex via serveur.mjs, ou l'application Claude) =======================
+// ======================= demander (Claude Code en ligne de commande via serveur.mjs, ou l'application Claude) =======================
 const Q = creerRequetesGraphe(G);
 const etatQuestion = { engine: null, sample: null, busy: false, ctl: null, session: null, turns: [], last: null };
 const champQuestion = $('#ask-input'), boutonEnvoyer = $('#ask-send'), feuille = $('#ask-sheet'), alerte = $('#ask-warn');
 const DOC_INSTALLATION = 'https://docs.claude.com/en/docs/claude-code/overview'; // le conseil de l'application Claude : installer la ligne de commande
 const AVERTISSEMENTS = {
-  no_engine: `Pour poser une question, il faut <b>${AGENT.cli}</b>. Depuis la racine du projet, lance <code>node la-carte/.cache/serveur.mjs</code>${AGENT.id === 'claude' ? ', ou ouvre cette carte dans l\'application Claude' : ''}.`,
+  no_engine: `Pour poser une question, il faut <b>${AGENT.cli}</b>. Depuis la racine du projet, lance <code>node la-carte/.cache/serveur.mjs</code>, ou ouvre cette carte dans l\'application Claude.`,
   cli_missing: `Il faut que <b>${AGENT.cli}</b> soit installé pour que ça marche. <a href="${AGENT.docs}" target="_blank" rel="noopener">Installe-le</a>, puis relance <code>serveur.mjs</code>.`,
   not_logged_in: `${Maj(AGENT.cli)} n'est pas connecté. ${AGENT.signIn}`,
   app_unavailable: `Claude n'est pas disponible pour cette carte dans cette vue.`,
@@ -128,12 +128,11 @@ function annulerQuestion() {
 }
 
 // ---------- modifier un plan depuis la carte (servi par serveur.mjs) ----------
-// La bulle de questions reçoit un interrupteur Demander / Modifier. Une modification part vers l'agent, le serveur vérifie et enregistre le
+// La bulle de questions reçoit un interrupteur Demander / Modifier. Une modification part vers Claude, le serveur vérifie et enregistre le
 // plan mis à jour et redessine la carte, chaque onglet ouvert se recharge, et les blocs nouveaux et modifiés sont mis en valeur
 // comme travail récent. Ce qui a changé est gardé pendant ce rechargement dans sessionStorage, avec un bouton Annuler.
 const CLE_CHANGEMENT = 'la-carte-change';
-// un serveur dont le moteur ne peut pas respecter le format du plan répond change: false
-const changementPossible = () => PLAN && etatQuestion.engine === 'cli' && window.LA_CARTE_SERVER?.change !== false;
+const changementPossible = () => PLAN && etatQuestion.engine === 'cli';
 function reglerModeQuestion(m) {
   etatQuestion.mode = changementPossible() && m === 'change' ? 'change' : 'ask';
   $('#ask-mode')?.querySelectorAll('button').forEach((b) => { b.classList.toggle('on', b.dataset.m === etatQuestion.mode); b.setAttribute('aria-pressed', String(b.dataset.m === etatQuestion.mode)); });

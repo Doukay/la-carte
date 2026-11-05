@@ -2,13 +2,13 @@
 
 > Traduction française non officielle de Floorplan (de Hayden Smith, licence MIT). Voir le [README](../README.md).
 
-La carte marche dans **Claude Code** et dans **Codex**. Faire une carte et s'en servir est pareil dans les deux ; seule l'installation change. Ce guide montre Claude Code, et [la carte dans Codex](codex.md) donne les étapes pour Codex.
+La carte est un plugin de **Claude Code**. Ce guide t'explique comment l'installer, faire ta première carte et la garder à jour.
 
 ## Ce qu'il te faut
 
-- **Claude Code** (l'onglet Code de l'application de bureau Claude, ou la ligne de commande Claude Code dans un terminal), ou **Codex** (l'application ou la ligne de commande, connecté avec ChatGPT).
+- **Claude Code** (l'onglet Code de l'application de bureau Claude, ou la ligne de commande Claude Code dans un terminal).
 - **[Node.js](https://nodejs.org) 18 ou plus.** Les scripts de la carte tournent dessus. Vérifie avec `node --version`.
-- **Avec Claude Code, conseillé : la [ligne de commande de Claude Code](https://code.claude.com/docs/en/overview)**, même si tu utilises surtout l'application de bureau. Grâce à elle, la bulle de questions de la carte peut lire ton vrai code pour répondre. Codex n'a besoin de rien de plus : son application contient ce qu'utilise la bulle de questions.
+- **Conseillé : la [ligne de commande de Claude Code](https://code.claude.com/docs/en/overview)**, même si tu utilises surtout l'application de bureau. Grâce à elle, la bulle de questions de la carte peut lire ton vrai code pour répondre.
 
 ## Installation
 
@@ -23,15 +23,13 @@ claude plugin install la-carte@la-carte
 
 La première commande ajoute le dossier de cette copie comme source de plugins (pour le dépôt Git : `claude plugin marketplace add <compte>/la-carte`). La seconde installe la carte pour tous tes projets. L'application de bureau et la ligne de commande partagent les mêmes réglages : il apparaît donc dans les deux.
 
-**Dans Codex**, ouvre **Plugins → Add a marketplace**, entre le chemin du dossier (ou l'adresse du dépôt) de cette copie, et installe la carte. Détails dans [la carte dans Codex](codex.md#installation).
-
 **Ouvre une nouvelle session** ensuite. Les plugins se chargent au démarrage d'une session.
 
 > Dans l'application de bureau Claude, tu peux aussi parcourir les plugins avec le bouton **+** à côté de la zone de saisie (**Add plugins**, ou **Plugins → Browse plugins**). Elle liste les plugins des sources que tu as déjà ajoutées.
 
 ## Fais ta première carte
 
-1. **Ouvre ton projet.** Dans l'onglet Code de l'application de bureau Claude, choisis le dossier de ton projet dans la ligne sous la zone de saisie avant d'envoyer ton premier message. Dans l'application Codex, ouvre le dossier du projet. Dans un terminal, lance `claude` ou `codex` depuis le dossier du projet.
+1. **Ouvre ton projet.** Dans l'onglet Code de l'application de bureau Claude, choisis le dossier de ton projet dans la ligne sous la zone de saisie avant d'envoyer ton premier message. Dans un terminal, lance `claude` depuis le dossier du projet.
 
    Si ton appli est répartie dans plusieurs dépôts (disons `web/` et `api/` côte à côte), ouvre le dossier qui les contient tous. La carte les cartographie ensemble et relie les appels de l'un à l'autre.
 
@@ -39,15 +37,15 @@ La première commande ajoute le dossier de cette copie comme source de plugins (
 
    > Fais-moi une carte de cette appli.
 
-   Dans Claude Code tu peux aussi choisir **la-carte** dans le menu **/**, ou taper `/la-carte:la-carte`. Dans Codex, tape `$la-carte`.
+   Tu peux aussi choisir **la-carte** dans le menu **/**, ou taper `/la-carte:la-carte`.
 
 3. **Laisse-le travailler.** Voici ce qui se passe :
    - Une analyse liste chaque fichier, import, adresse du serveur et appel au serveur. Elle prend quelques secondes et ne coûte aucun jeton.
-   - Claude ou Codex lit tes README, tes fichiers de réglages et tes points d'entrée, puis décide des grandes parties de ton appli et de leur rôle.
+   - Claude lit tes README, tes fichiers de réglages et tes points d'entrée, puis décide des grandes parties de ton appli et de leur rôle.
    - Il écrit un nom en langage simple et une description d'une ligne pour chaque fichier et chaque adresse du serveur. Dans Claude Code, les projets de plus de 150 fichiers environ sont répartis entre plusieurs aides en parallèle.
    - La carte est construite et contrôlée : liens, problèmes de santé et écrans.
 
-   Une petite appli prend quelques minutes, une grosse plus longtemps. On peut te demander l'autorisation de lancer les scripts de la carte (`node …`) : accepte. Codex demande aussi à lancer le serveur de la carte hors de son bac à sable, pour que la carte reste active et que la bulle de questions puisse joindre Codex.
+   Une petite appli prend quelques minutes, une grosse plus longtemps. On peut te demander l'autorisation de lancer les scripts de la carte (`node …`) : accepte.
 
 4. **Regarde autour de toi.** La carte s'ouvre toute seule, dans le navigateur de l'application ou dans ton navigateur web. Une visite guidée **Commencer ici** d'une minute se lance la première fois. La réponse résume comment ton appli tient ensemble et signale ce que le contrôle de santé a trouvé de sérieux.
 
@@ -67,14 +65,14 @@ Tout ce qui précède concerne le travail principal de la carte : cartographier 
 
 > Voici mon cahier des charges. Fais-moi une carte de ce qu'il faudrait construire.
 
-Tu obtiens un **plan** : la même carte, avec chaque partie, fichier, adresse du serveur et écran dont l'appli aurait besoin, comment ils se relient, et les services extérieurs dont ils dépendent. Ses blocs ont un contour en pointillés pour que tu voies que c'est un plan. La réponse nomme la technologie choisie par Claude ou Codex, ce qu'il a supposé, et les questions que ton cahier des charges laisse ouvertes.
+Tu obtiens un **plan** : la même carte, avec chaque partie, fichier, adresse du serveur et écran dont l'appli aurait besoin, comment ils se relient, et les services extérieurs dont ils dépendent. Ses blocs ont un contour en pointillés pour que tu voies que c'est un plan. La réponse nomme la technologie choisie par Claude, ce qu'il a supposé, et les questions que ton cahier des charges laisse ouvertes.
 
 Sur la carte :
 - **Revue du plan** liste ce que le plan doit encore décider, comme les adresses du serveur que tout le monde pourrait utiliser ou les questions ouvertes. **Résoudre sur la carte** en règle une : pour une question, tu tapes simplement ta réponse.
 - Passe la bulle de questions sur **Modifier** pour remodeler le plan (« prévois aussi les remboursements »). La carte se redessine en montrant ce qui a changé, et **Annuler** remet l'ancien plan.
-- Chaque partie a **Construire ça avec Claude** (ou Codex), une demande toute prête pour construire cette seule partie.
+- Chaque partie a **Construire ça avec Claude**, une demande toute prête pour construire cette seule partie.
 
-Quand le code existe, demande à Claude ou à Codex de « cartographier le vrai code maintenant », et le plan devient une carte normale. Voir [Les plans](comment-ca-marche.md#les-plans) pour le fonctionnement.
+Quand le code existe, demande à Claude de « cartographier le vrai code maintenant », et le plan devient une carte normale. Voir [Les plans](comment-ca-marche.md#les-plans) pour le fonctionnement.
 
 ## Ouvrir la carte toi-même
 
@@ -93,8 +91,6 @@ node la-carte/.cache/serveur.mjs --stop
 ```
 
 ## Mettre le plugin à jour
-
-Pour Codex, voir [Mettre à jour ou retirer](codex.md#mettre-à-jour-ou-retirer).
 
 Cette copie **ne se met pas à jour toute seule avec l'auteur** : elle n'est reliée à aucune de ses versions. Ce que tu mets à jour ici, ce sont seulement les changements faits dans cette copie. Si tu l'as installée depuis son dépôt Git, dans Claude Code :
 
@@ -135,7 +131,7 @@ git checkout fr-1
 
 (`fr-1` est un exemple : remplace-le par une marque de la liste.)
 
-Si le plugin est installé depuis ce dossier, ouvre une nouvelle session pour que ce soit pris en compte (avec Codex, relance `codex plugin add la-carte@la-carte`). Pour revenir à la dernière version : `git checkout main`. Si tu l'as installé depuis le dépôt Git, indique la marque comme référence quand tu ajoutes la source (c'est le champ **Git ref** dans l'application Codex ; pour Claude Code, regarde `claude plugin marketplace add --help`).
+Si le plugin est installé depuis ce dossier, ouvre une nouvelle session pour que ce soit pris en compte. Pour revenir à la dernière version : `git checkout main`. Si tu l'as installé depuis le dépôt Git, indique la marque comme référence quand tu ajoutes la source (regarde `claude plugin marketplace add --help`).
 
 Les cartes déjà faites restent dans le dossier `la-carte/` de chaque projet : revenir en arrière ne les efface pas. Demande une mise à jour de la carte pour les refaire avec la version retrouvée.
 
@@ -146,4 +142,4 @@ claude plugin uninstall la-carte@la-carte
 claude plugin marketplace remove la-carte
 ```
 
-Dans Codex, voir [Mettre à jour ou retirer](codex.md#mettre-à-jour-ou-retirer). Supprime ensuite le dossier `la-carte/` de chaque projet où tu l'as utilisé.
+Supprime ensuite le dossier `la-carte/` de chaque projet où tu l'as utilisé.

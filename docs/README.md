@@ -5,7 +5,6 @@
 | Guide | Ce qu'il contient |
 |---|---|
 | [Pour commencer](bien-demarrer.md) | Installer, faire ta première carte, la garder à jour, planifier une appli avant qu'elle existe, mettre à jour, reprendre une correction de l'auteur, revenir en arrière, retirer le plugin |
-| [la carte dans Codex](codex.md) | Installer et utiliser la carte dans Codex, et ce qui change par rapport à Claude Code |
 | [Utiliser la carte](utiliser-la-carte.md) | Chaque bouton, vue, panneau, raccourci et menu du clic droit, et ce qu'ajoute un plan |
 | [Comment ça marche](comment-ca-marche.md) | Le déroulé de l'analyse à la carte, comment les liens sont trouvés, comment les mises à jour restent légères, comment les plans sont dessinés et modifiés |
 | [Ce qu'il y a dans ton projet](fichiers-du-projet.md) | Chaque fichier créé par la carte, ceux que tu peux modifier, et ceux à garder dans Git |

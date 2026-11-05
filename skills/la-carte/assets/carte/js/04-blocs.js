@@ -27,6 +27,12 @@ function hauteurSupplementaireBloc(element) {
   const place = w - 36 - (i.type === 'route' ? 0 : 40); // marges, et le pictogramme à côté du titre
   return (piedBloc(element) ? HAUTEUR_PIED : 0) + (largeurTexte(nom, 16, 600) > place ? HAUTEUR_TITRE2 : 0);
 }
+/** Le nombre de points de santé à voir sur ce bloc ou à l'intérieur. La Santé dit lesquels (ui/20-sante.js). */
+function pastilleAnomalie(element) {
+  const a = ext.anomalies?.(element);
+  if (!a?.n) return '';
+  return `<span class="alerte ${a.gravite}" title="${a.n === 1 ? '1 point à voir' : `${a.n} points à voir`}">${a.n}</span>`;
+}
 function blocHTML(element) {
   const i = infosBloc(element);
   let tete = '', titre = '', desc = '', cls = i.type;
@@ -57,7 +63,7 @@ function blocHTML(element) {
   const noteHTML = note ? `<div class="anote"><b>${note.n}</b><span>${h(note.text)}</span></div>` : '';
   if (recentsDe(element)) cls += ' recent';
   else if (recentsDans.get(element.startsWith('m:') ? 'f:' + element.slice(2) : element)) cls += ' recent-in';
-  return `<div class="card ${cls}" style="--c:${couleurBloc(i)}"><div class="head">${tete}</div>${titre}${desc}${noteHTML}${piedBloc(element)}</div>`;
+  return `<div class="card ${cls}" style="--c:${couleurBloc(i)}"><div class="head">${tete}${pastilleAnomalie(element)}</div>${titre}${desc}${noteHTML}${piedBloc(element)}</div>`;
 }
 function connecteurHTML(c) {
   const i = infosBloc(c.entity);

@@ -1,10 +1,7 @@
 const G = window.LA_CARTE;
-// qui répond aux questions et reçoit les demandes « Corriger avec … » : la ligne de commande que lance le serveur de la carte, sinon l'agent qui a construit la carte
-const AGENT = (window.LA_CARTE_SERVER?.engine || window.LA_CARTE_SERVER?.want || G.meta.agent) === 'codex'
-  ? { id: 'codex', name: 'Codex', app: 'Codex', cli: 'Codex', docs: 'https://developers.openai.com/codex',
-      signIn: 'Ouvre l\'application Codex (ou lance <code>codex login</code> dans un terminal) pour te connecter, puis pose ta question à nouveau.' }
-  : { id: 'claude', name: 'Claude', app: 'Claude Code', cli: 'Claude Code en ligne de commande', docs: 'https://docs.claude.com/en/docs/claude-code/overview',
-      signIn: 'Lance <code>claude</code> une fois dans un terminal pour te connecter, puis pose ta question à nouveau.' };
+// qui répond aux questions et reçoit les demandes « Corriger avec … » : Claude
+const AGENT = { name: 'Claude', app: 'Claude Code', cli: 'Claude Code en ligne de commande', docs: 'https://docs.claude.com/en/docs/claude-code/overview',
+  signIn: 'Lance <code>claude</code> une fois dans un terminal pour te connecter, puis pose ta question à nouveau.' };
 const Maj = (t) => t[0].toUpperCase() + t.slice(1);
 if (!G) { document.body.innerHTML = '<p style="padding:2rem">Aucune donnée. Lance construire.mjs.</p>'; return; }
 // un plan : prévu à partir d'un cahier des charges, donc ses fichiers n'existent pas encore (pas de nombre de lignes, rien à ouvrir dans un éditeur)
@@ -12,7 +9,7 @@ const PLAN = !!G.meta.ebauche;
 const requeteTelephone = matchMedia('(max-width: 700px)');
 const estTelephone = () => requeteTelephone.matches;
 const petitEcran = () => matchMedia('(max-width: 999px)').matches; // tablette comprise : à cette largeur, le panneau ouvert écraserait la carte
-// une copie exportée (serveur.mjs --export, ou le bouton Exporter) : en lecture seule, pour les personnes sans Claude ni Codex
+// une copie exportée (serveur.mjs --export, ou le bouton Exporter) : en lecture seule, pour les personnes sans Claude
 const COPIE_EXPORTEE = G.meta.exported || null;
 if (typeof ELK === 'undefined') { document.body.innerHTML = '<p style="padding:2rem">Impossible de charger le moteur de mise en page ELK. Reconstruis la carte avec construire.mjs.</p>'; return; }
 
@@ -20,10 +17,10 @@ const NS = 'http://www.w3.org/2000/svg';
 const $ = (s) => document.querySelector(s);
 const svg = $('#svg'), vp = $('#viewport'), panneau = $('#panel');
 const elk = new ELK();
-const TYPES_CONNEXION = ['import', 'http', 'call', 'rpc', 'event', 'queue', 'data', 'config'];
+const TYPES_CONNEXION = ['casse', 'import', 'http', 'call', 'rpc', 'event', 'queue', 'data', 'config'];
 // noms des connexions : simples par défaut, termes de développeur quand « Afficher le détail technique » est activé
-const TYPE_TECHNIQUE = { contains: 'Contient', import: 'Importe', http: 'HTTP', call: 'Appelle', rpc: 'RPC', event: 'Événements', queue: 'Files d\'attente', data: 'Données', config: 'Configuration' };
-const TYPE_SIMPLE = { contains: 'Contient', import: 'Utilise', http: 'Appels au serveur', call: 'Appelle', rpc: 'Appelle', event: 'Événements', queue: 'Tâches de fond', data: 'Lit et écrit des données', config: 'Réglages' };
+const TYPE_TECHNIQUE = { casse: 'Lien coupé', contains: 'Contient', import: 'Importe', http: 'HTTP', call: 'Appelle', rpc: 'RPC', event: 'Événements', queue: 'Files d\'attente', data: 'Données', config: 'Configuration' };
+const TYPE_SIMPLE = { casse: 'Lien coupé', contains: 'Contient', import: 'Utilise', http: 'Appels au serveur', call: 'Appelle', rpc: 'Appelle', event: 'Événements', queue: 'Tâches de fond', data: 'Lit et écrit des données', config: 'Réglages' };
 const LIBELLE_TYPE = new Proxy({}, { get: (_, k) => (modeTechnique() ? TYPE_TECHNIQUE : TYPE_SIMPLE)[k] || k });
 let drapeauTechnique = false;
 // noms des types affichés à la place des mots techniques de la carte (un type inconnu s'affiche tel quel)
@@ -46,6 +43,7 @@ function el(balise, attrs = {}, parent) {
 
 // ---------- pictogrammes ----------
 const P = {
+  casse: '<path d="M9.5 14.5 7 17a3 3 0 0 1-4-4l2.5-2.5M14.5 9.5 17 7a3 3 0 0 1 4 4l-2.5 2.5M9 5V3M15 21v-2M5 9H3M21 15h-2"/>',
   health: '<path d="M12 3 5 6v6c0 5 3 8 7 9 4-1 7-4 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
   ui: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
   service: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>',

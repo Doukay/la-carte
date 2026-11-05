@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 // la-carte/.cache/serveur.mjs : sert cette carte en local et répond aux questions sur le code par la
-// CLI Claude Code ou par Codex. Généré par construire.mjs ; n’a besoin que de Node 18+ et d’un `claude` ou d’un `codex` connecté.
+// CLI Claude Code. Généré par construire.mjs ; n’a besoin que de Node 18+ et d’un `claude` connecté.
 //
-// usage : node la-carte/.cache/serveur.mjs [--port 4378] [--engine claude|codex] [--model <modèle>] [--claude <chemin>] [--codex <chemin>]
+// usage : node la-carte/.cache/serveur.mjs [--port 4378] [--model <modèle>] [--claude <chemin>]
 //                                 [--no-open] [--idle-exit <minutes>]
 //        node la-carte/.cache/serveur.mjs --stop
 //        node la-carte/.cache/serveur.mjs --export [<fichier>] [--include flows,notes,recent,health]   (une copie à partager ; par défaut flows,notes)
 //
 // Le serveur n’écoute que sur 127.0.0.1. Chaque question s’exécute à la racine du code, avec ton propre compte :
-// `claude -p` avec des outils en lecture seule (Read, Grep, Glob, et Bash limité à la-carte/.cache/requete.mjs), ou
-// `codex exec` dans son bac à sable en lecture seule. Il utilise celui qui a construit la carte, sinon celui qui est installé.
+// `claude -p` avec des outils en lecture seule (Read, Grep, Glob, et Bash limité à la-carte/.cache/requete.mjs).
 // Quand la carte est reconstruite, les onglets ouverts se rechargent sur place. Le serveur en cours est noté dans .cache/server.json.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -47,7 +46,7 @@ const nettoyerRejet = (d) => ({
 });
 
 // ---------- export : une copie de la carte à partager ----------
-// La même page autonome, marquée comme exportée : pas de bulle de questions, aucune demande à Claude ou Codex, aucun lien vers
+// La même page autonome, marquée comme exportée : pas de bulle de questions, aucune demande à Claude, aucun lien vers
 // cet ordinateur, et seulement les options demandées. Utilisé par le bouton Exporter de la carte et par --export.
 const EXPORT_PARTIES = ['flows', 'notes', 'recent', 'health'];
 const EXPORT_PAR_DEFAUT = ['flows', 'notes'];
@@ -55,7 +54,7 @@ const DEBUT_DONNEES = '<script>window.LA_CARTE = ';
 function exporterCarte(inclus, parcoursSupplementaires = []) {
   const html = fs.readFileSync(path.join(ici, 'index.html'), 'utf8');
   const a = html.indexOf(DEBUT_DONNEES), b = html.indexOf(';</script>', a);
-  if (a < 0 || b < 0) throw Object.assign(new Error('Cette carte est trop ancienne pour être exportée. Demande à Claude ou à Codex de mettre d’abord la carte à jour.'), { plain: true });
+  if (a < 0 || b < 0) throw Object.assign(new Error('Cette carte est trop ancienne pour être exportée. Demande à Claude de mettre d’abord la carte à jour.'), { plain: true });
   const g = JSON.parse(html.slice(a + DEBUT_DONNEES.length, b));
   const retenues = EXPORT_PARTIES.filter((p) => inclus.includes(p));
   const sortie = {
@@ -67,7 +66,12 @@ function exporterCarte(inclus, parcoursSupplementaires = []) {
     files: retenues.includes('notes') ? g.files : g.files.map(({ note, ...f }) => f),
   };
   if (!retenues.includes('recent')) delete sortie.recent;
-  if (!retenues.includes('health')) delete sortie.sante;
+  if (!retenues.includes('health')) {
+    delete sortie.sante;
+    // un lien coupé est une information de santé : il ne part pas sans elle
+    sortie.nodes = g.nodes.filter((n) => n.id !== 'casse');
+    sortie.links = g.links.filter((l) => l.k !== 'casse');
+  }
   // les rejets faits depuis la dernière construction voyagent avec la copie (la page les applique ; sans les raisons, qui sont des notes personnelles)
   else if (sortie.sante) { const liste = lireRejets().map(({ reason: raison, ...d }) => d); if (liste.length) sortie.sante = { ...sortie.sante, dismissed: liste }; else delete sortie.sante.dismissed; }
   const json = JSON.stringify(sortie).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
@@ -104,7 +108,7 @@ const modele = option('model', process.env.LA_CARTE_MODEL || '');
 const jeton = crypto.randomBytes(16).toString('hex');
 const TYPES_MIME = { '.html': 'text/html; charset=utf-8', '.json': 'application/json', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
 
-// ---------- trouver la CLI qui répond : Claude Code ou Codex ----------
+// ---------- trouver la CLI Claude Code qui répond ----------
 function trouverCommande(sousCommande) {
   try {
     const sortie = execFileSync(process.platform === 'win32' ? 'where' : 'which', [sousCommande], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
@@ -132,49 +136,17 @@ function resoudreCli(candidats, entreeNpm) {
   return null;
 }
 const DOSSIER_PERSO = process.env.HOME || process.env.USERPROFILE || '';
-const fourni = (nom) => { const p = option(nom, process.env['LA_CARTE_' + nom.toUpperCase()]); return p ? [p] : null; };
-/** L’application de bureau Codex garde sa CLI dans un dossier versionné ; le plus récent d’abord. */
-function applicationCodex() {
-  if (process.platform === 'darwin') return ['/Applications/Codex.app/Contents/Resources/codex'];
-  if (process.platform !== 'win32') return [];
-  const base = path.join(process.env.LOCALAPPDATA || '', 'OpenAI', 'Codex', 'bin');
-  try {
-    return fs.readdirSync(base).map((d) => path.join(base, d, 'codex.exe')).filter((f) => fs.existsSync(f))
-      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-  } catch { return []; }
-}
-// Les agents qui peuvent répondre, une entrée chacun : son nom, où l’obtenir, comment trouver sa CLI, comment
-// lancer une demande (run, plus bas), et si ses réponses suivent un schéma (structured). Modifier un
-// plan depuis la carte en a besoin : Modifier n’est donc proposé qu’avec un moteur structuré. schemaFile : la
-// CLI lit son schéma dans un fichier plutôt que sur la ligne de commande.
-const MOTEURS = {
-  claude: {
-    name: 'Claude Code CLI', site: 'https://docs.claude.com/en/docs/claude-code', structured: true,
-    find: () => resoudreCli(fourni('claude') || [
-      ...trouverCommande('claude'),
-      path.join(DOSSIER_PERSO, '.local', 'bin', process.platform === 'win32' ? 'claude.exe' : 'claude'),
-      ...(process.platform === 'win32' ? [path.join(process.env.APPDATA || '', 'npm', 'claude.cmd')] : []),
-    ], ['@anthropic-ai', 'claude-code', 'cli.js']),
-    run: lancerClaude,
-  },
-  codex: {
-    name: 'Codex', site: 'https://developers.openai.com/codex', structured: true, schemaFile: true,
-    find: () => resoudreCli(fourni('codex') || [...trouverCommande('codex'), ...applicationCodex()], ['@openai', 'codex', 'bin', 'codex.js']),
-    run: lancerCodex,
-  },
-};
-// --engine (ou LA_CARTE_ENGINE) décide ; sinon l’agent qui a construit la carte, puis les autres dans l’ordre
-const construitPar = (() => { try { return JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'graphe.json'), 'utf8')).meta?.agent; } catch { return null; } })();
-const moteurDemande = option('engine', process.env.LA_CARTE_ENGINE);
-const estMoteur = (k) => typeof k === 'string' && Object.hasOwn(MOTEURS, k);
-const souhaite = estMoteur(moteurDemande) ? moteurDemande : estMoteur(construitPar) ? construitPar : 'claude';
-let moteur = null, cli = null;
-for (const k of estMoteur(moteurDemande) ? [moteurDemande] : [souhaite, ...Object.keys(MOTEURS).filter((k) => k !== souhaite)]) { cli = MOTEURS[k].find(); if (cli) { moteur = k; break; } }
-const peutChanger = !moteur || MOTEURS[moteur].structured;
-// Lancé depuis une session Claude Code ou Codex ? Ne pas laisser la CLI croire qu’elle y est imbriquée.
+// --claude <chemin> (ou LA_CARTE_CLAUDE) indique une installation inhabituelle ; sinon on cherche `claude` aux endroits habituels
+const claudeFourni = option('claude', process.env.LA_CARTE_CLAUDE);
+const cli = resoudreCli(claudeFourni ? [claudeFourni] : [
+  ...trouverCommande('claude'),
+  path.join(DOSSIER_PERSO, '.local', 'bin', process.platform === 'win32' ? 'claude.exe' : 'claude'),
+  ...(process.platform === 'win32' ? [path.join(process.env.APPDATA || '', 'npm', 'claude.cmd')] : []),
+], ['@anthropic-ai', 'claude-code', 'cli.js']);
+// Lancé depuis une session Claude Code ? Ne pas laisser la CLI croire qu’elle y est imbriquée.
 function environnementCli() {
   const env = { ...process.env };
-  for (const k of Object.keys(env)) if (/^CLAUDE_?CODE_(SESSION|ENTRYPOINT|CHILD|MESSAGING|HOST|SDK)|^CLAUDECODE$|^CODEX_(THREAD_ID|SESSION_ID|TOOL_CALL_ID|CI$|SANDBOX)/.test(k)) delete env[k];
+  for (const k of Object.keys(env)) if (/^CLAUDE_?CODE_(SESSION|ENTRYPOINT|CHILD|MESSAGING|HOST|SDK)|^CLAUDECODE$/.test(k)) delete env[k];
   return env;
 }
 let version = null;
@@ -182,7 +154,7 @@ if (cli) { try { version = execFileSync(cli.cmd, [...cli.args, '--version'], { e
 
 // La page, le graphe, et les consignes et le schéma de réponse (tirés du graph-query intégré à requete.mjs).
 // Chargés au démarrage, puis à chaque reconstruction de la carte.
-const injection = `<script>window.LA_CARTE_SERVER=${JSON.stringify({ token: jeton, cli: !!cli, engine: moteur, want: souhaite, version, model: modele || null, change: peutChanger })};</script>`;
+const injection = `<script>window.LA_CARTE_SERVER=${JSON.stringify({ token: jeton, cli: !!cli, version, model: modele || null })};</script>`;
 let page, G, noyau, MODES;
 function charger() {
   const html = fs.readFileSync(path.join(ici, 'index.html'), 'utf8');
@@ -192,23 +164,12 @@ function charger() {
   c.q = c.creerRequetesGraphe(g);
   page = html.replace('</head>', injection + '</head>');
   G = g; noyau = c;
-  // types de demande : une question (réponse + tableau), un nouveau parcours guidé et, pour un plan, une modification du
-  // plan. Codex lit son schéma dans un fichier.
+  // types de demande : une question (réponse + tableau), un nouveau parcours guidé et, pour un plan, une modification du plan
   MODES = {
-    ask: { instructions: noyau.laCarteConsignesQuestion(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_REPONSE, file: path.join(ici, '.cache', 'answer-schema.json') },
-    flow: { instructions: noyau.laCarteConsignesParcours(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_PARCOURS, file: path.join(ici, '.cache', 'flow-schema.json') },
-    ...(G.meta?.ebauche && peutChanger ? { change: { instructions: noyau.laCarteConsignesChangement(G), schema: noyau.LA_CARTE_SCHEMA_CHANGEMENT, file: path.join(ici, '.cache', 'change-schema.json') } } : {}),
+    ask: { instructions: noyau.laCarteConsignesQuestion(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_REPONSE },
+    flow: { instructions: noyau.laCarteConsignesParcours(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_PARCOURS },
+    ...(G.meta?.ebauche ? { change: { instructions: noyau.laCarteConsignesChangement(G), schema: noyau.LA_CARTE_SCHEMA_CHANGEMENT } } : {}),
   };
-  if (MOTEURS[moteur]?.schemaFile) {
-    fs.mkdirSync(path.join(ici, '.cache'), { recursive: true });
-    for (const m of Object.values(MODES)) fs.writeFileSync(m.file, JSON.stringify(stricte(m.schema)));
-  }
-}
-/** Les sorties structurées d’OpenAI veulent toutes les propriétés obligatoires et rien en plus ; les listes facultatives reviennent simplement vides. */
-function stricte(s) {
-  if (s?.type === 'object' && s.properties) return { ...s, properties: Object.fromEntries(Object.entries(s.properties).map(([k, v]) => [k, stricte(v)])), required: Object.keys(s.properties), additionalProperties: false };
-  if (s?.type === 'array') return { ...s, items: stricte(s.items) };
-  return s;
 }
 charger();
 
@@ -233,12 +194,9 @@ const enCours = new Map();
 const cheminRelatif = (p) => String(p || '').replace(/\\/g, '/').replace(racine.replace(/\\/g, '/') + '/', '');
 /** Une commande shell, en mots : recherches dans la carte par nom, puis recherches, lectures de fichiers et listes. */
 function decrireCommande(commandeBrute) {
-  let c = String(commandeBrute || '');
-  // Codex enveloppe chaque commande dans un shell : bash -lc '…' ou powershell.exe -Command "…"
-  const enveloppee = /\s-(?:l?c|Command)\s+(["'])([\s\S]*)\1\s*$/i.exec(c);
-  if (enveloppee) c = enveloppee[2].replace(/\\(["'])/g, '$1');
+  const c = String(commandeBrute || '');
   const commandes = c.split(/\s*(?:&&|;|\|\|?)\s*/).filter(Boolean);
-  // les agents enchaînent souvent plusieurs recherches dans une commande ; décrire chacune, par son nom
+  // Claude enchaîne souvent plusieurs recherches dans une commande ; décrire chacune, par son nom
   const morceaux = commandes.map((x) => /requete\.mjs\s+(\w+)\s*(.*)$/.exec(x)).filter(Boolean);
   if (morceaux.length) {
     const decrireUne = ([, sousCommande, reste]) => {
@@ -298,40 +256,11 @@ function lancerClaude(corps, mode) {
     },
   };
 }
-// Codex : `codex exec` dans son bac à sable en lecture seule, qui répond dans le schéma. Les exécutions sont éphémères (rien n’arrive
-// dans l’historique Codex de la personne) : une question de suite emporte donc avec elle les dernières questions et réponses.
-const conversations = new Map();
-function lancerCodex(corps, mode) {
-  const session = conversations.has(corps.session) ? corps.session : crypto.randomBytes(8).toString('hex');
-  const echanges = conversations.get(session) || [];
-  const question = String(corps.question || '').slice(0, 4000);
-  const precedents = echanges.length ? `\n\nPlus tôt dans cette conversation :\n${echanges.map((t) => `Q : ${t.q}\nR : ${t.a}`).join('\n\n')}` : '';
-  const params = [...cli.args, 'exec', '--json', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral',
-    '--output-schema', mode.file, '-C', racine];
-  if (modele) params.push('--model', modele);
-  params.push('-');
-  let dernier = '', erreur = '';
-  return {
-    args: params, input: `${mode.instructions}${precedents}\n\nLa question :\n${question}`,
-    onEvent(evenement, sortie) {
-      if (evenement.type === 'item.started' && evenement.item?.type === 'command_execution') sortie.progress(decrireCommande(evenement.item.command));
-      if (evenement.type === 'item.completed' && evenement.item?.type === 'agent_message') dernier = String(evenement.item.text || '');
-      if (evenement.type === 'error') erreur = String(evenement.message || erreur);
-      if (evenement.type === 'turn.failed') sortie.fail(String(evenement.error?.message || erreur || 'Codex a signalé une erreur'));
-      if (evenement.type === 'turn.completed') {
-        const a = lireReponse({ result: dernier });
-        conversations.set(session, [...echanges, { q: question.slice(0, 500), a: String(a.answer || '').slice(0, 1500) }].slice(-4));
-        sortie.answer({ ...a, session });
-      }
-    },
-    lastError: () => erreur,
-  };
-}
 const FERME = Symbol('closed'); // le navigateur est parti en pleine demande
-/** Lance l’agent une fois pour une demande et rend sa réponse, en envoyant l’avancement par `send`. */
+/** Lance Claude une fois pour une demande et rend sa réponse, en envoyant l’avancement par `send`. */
 function lancerAgent(reponse, envoyer, corps) {
   return new Promise((resoudre, rejeter) => {
-    const execution = MOTEURS[moteur].run(corps, MODES[corps.mode] || MODES.ask);
+    const execution = lancerClaude(corps, MODES[corps.mode] || MODES.ask);
     const enfant = spawn(cli.cmd, execution.args, { cwd: racine, env: environnementCli(), stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     const id = crypto.randomBytes(6).toString('hex');
     enCours.set(id, enfant);
@@ -362,7 +291,7 @@ function lancerAgent(reponse, envoyer, corps) {
     enfant.on('error', (e) => sortie.fail(e.message));
     enfant.on('close', (code) => {
       enCours.delete(id);
-      sortie.fail(execution.lastError?.() || stderr.trim() || `${moteur} s’est arrêté avec le code ${code}`);
+      sortie.fail(stderr.trim() || `Claude Code s’est arrêté avec le code ${code}`);
     });
     // le navigateur est parti (onglet fermé, Arrêter) : ne pas laisser la CLI travailler. Note : req 'close' se déclenche dès que
     // le corps est lu, donc surveiller plutôt la réponse.
@@ -372,7 +301,7 @@ function lancerAgent(reponse, envoyer, corps) {
 function demander(requete, reponse, corps) {
   reponse.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });
   const envoyer = (nomEvenement, donnees) => { if (!reponse.writableEnded) reponse.write(`event: ${nomEvenement}\ndata: ${JSON.stringify(donnees)}\n\n`); };
-  if (!cli) { envoyer('failure', { code: 'cli_missing', message: `${MOTEURS[souhaite].name} est introuvable.` }); return reponse.end(); }
+  if (!cli) { envoyer('failure', { code: 'cli_missing', message: 'Claude Code est introuvable.' }); return reponse.end(); }
   if (corps.mode === 'change') return changerPlan(reponse, envoyer, corps);
   lancerAgent(reponse, envoyer, corps)
     .then((a) => envoyer('answer', a), (e) => { if (e !== FERME) envoyer('failure', { code: codeErreur(e.message), message: e.message }); })
@@ -380,7 +309,7 @@ function demander(requete, reponse, corps) {
 }
 
 // ---------- modifier un plan depuis la carte ----------
-// L’agent reste en lecture seule : il renvoie les plan.json et architecture.json mis à jour en entier, et ce serveur
+// Claude reste en lecture seule : il renvoie les plan.json et architecture.json mis à jour en entier, et ce serveur
 // les vérifie avec plan.mjs et construire.mjs du skill (construire.mjs note où ils sont), les enregistre et
 // redessine la carte, ce qui recharge tous les onglets ouverts. Chaque modification garde les fichiers qu’elle a remplacés, pour Annuler.
 const dossierHistorique = path.join(ici, '.cache', 'history');
@@ -397,11 +326,55 @@ function prendreInstantane() {
 function restaurer(dossier) {
   for (const f of FICHIERS_PLAN) { const origine = path.join(dossier, f), vers = cheminPlan(f); if (fs.existsSync(origine)) fs.copyFileSync(origine, vers); else fs.rmSync(vers, { force: true }); }
 }
+// ---------- état du code et mise à jour : aucun appel à Claude, donc aucun jeton ----------
+/** Attend la fin d'un programme lancé, sans bloquer le serveur pendant ce temps : les onglets continuent d'être servis. */
+const attendreFin = (enfant, delai) => new Promise((resoudre) => {
+  let stdout = '';
+  enfant.stdout.on('data', (d) => { stdout += d; });
+  const minuteur = setTimeout(() => enfant.kill(), delai);
+  enfant.on('error', () => { clearTimeout(minuteur); resoudre({ code: 1, stdout }); });
+  enfant.on('close', (code) => { clearTimeout(minuteur); resoudre({ code, stdout }); });
+});
+const sortieGit = async (dossier, ...params) => { const r = await attendreFin(spawn('git', ['-C', dossier, ...params], { windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }), 8000); return r.code === 0 ? r.stdout : null; };
+/** Combien de fichiers ont changé depuis la dernière construction de la carte. `suivi` est faux quand le projet n’est pas dans git. */
+async function fraicheur() {
+  const construite = Date.parse(G.meta?.generatedAt || '') || 0;
+  const connus = new Set((G.files || []).map((f) => f.p));
+  const changes = new Set();
+  let suivi = false;
+  for (const r of G.meta?.repos || []) {
+    const dossier = path.join(racine, r.path), prefixe = r.path === '.' ? '' : `${r.path}/`;
+    const tete = (await sortieGit(dossier, 'rev-parse', 'HEAD'))?.trim();
+    if (!tete) continue;
+    suivi = true;
+    if (r.head && tete !== r.head) for (const p of ((await sortieGit(dossier, 'diff', '--name-only', r.head, tete)) || '').split('\n').filter(Boolean)) changes.add(prefixe + p);
+    for (const l of ((await sortieGit(dossier, 'status', '--porcelain=v1', '-uall')) || '').split('\n').filter(Boolean)) {
+      const p = prefixe + l.slice(3).replace(/^.* -> /, '').replace(/"/g, '');
+      try { if (fs.statSync(path.join(racine, p)).mtimeMs > construite) changes.add(p); } catch { if (connus.has(p)) changes.add(p); }
+    }
+  }
+  return { suivi, fichiers: [...changes].filter((p) => !/(^|\/)la-carte\//.test(p)).length };
+}
+let miseAJourEnCours = null;
+function mettreAJour() {
+  if (changementEnCours) return { ok: false, error: 'Une modification est encore en cours.' };
+  miseAJourEnCours ||= (async () => {
+    let dossier;
+    try { dossier = JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'skill.json'), 'utf8')).dir; } catch {}
+    const script = dossier && path.join(dossier, 'scripts', 'actualiser.mjs');
+    if (!script || !fs.existsSync(script)) return { ok: false, error: 'Le serveur de cette carte ne trouve plus les scripts de la carte. Demande à Claude de la mettre à jour.' };
+    const { code, stdout: sortie } = await attendreFin(spawn(process.execPath, [script, racine], { windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }), 300000);
+    if (code !== 0) return { ok: false, error: `La mise à jour n’a pas abouti. ${sortie.split('\n').filter((l) => /^✗|^ {2}- /.test(l)).slice(0, 4).join(' ')}`.trim() };
+    const provisoires = /fichiers (\d+)\/(\d+)/.exec(sortie);
+    return { ok: true, sansDescription: provisoires ? Number(provisoires[2]) - Number(provisoires[1]) : 0 };
+  })().finally(() => { miseAJourEnCours = null; });
+  return miseAJourEnCours;
+}
 /** Lance un des scripts du skill sur ce projet ; lève une erreur avec sa sortie s’il échoue. */
 function scriptSkill(nom, ...params) {
   let dossier;
   try { dossier = JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'skill.json'), 'utf8')).dir; } catch {}
-  if (!dossier || !fs.existsSync(path.join(dossier, 'scripts', nom))) throw new Error('Le serveur de cette carte ne trouve pas les scripts de la carte. Demande à Claude Code ou à Codex de mettre la carte à jour une fois, puis réessaie.');
+  if (!dossier || !fs.existsSync(path.join(dossier, 'scripts', nom))) throw new Error('Le serveur de cette carte ne trouve pas les scripts de la carte. Demande à Claude Code de mettre la carte à jour une fois, puis réessaie.');
   try { return execFileSync(process.execPath, [path.join(dossier, 'scripts', nom), racine, ...params], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 120000 }); }
   catch (e) { throw Object.assign(new Error(String(e.stdout || '') + String(e.stderr || '') || e.message), { checks: true }); }
 }
@@ -446,7 +419,7 @@ function appliquerChangement(donnees, demande, dernierEssai) {
 }
 async function changerPlan(reponse, envoyer, corps) {
   const demande = String(corps.question || '').slice(0, 4000);
-  if (!MODES.change) { envoyer('failure', { code: 'cli_error', message: G.meta?.ebauche ? `${MOTEURS[moteur].name} ne peut pas modifier un plan depuis la carte.` : 'Seul un plan peut être modifié depuis la carte.' }); return reponse.end(); }
+  if (!MODES.change) { envoyer('failure', { code: 'cli_error', message: 'Seul un plan peut être modifié depuis la carte.' }); return reponse.end(); }
   if (changementEnCours) { envoyer('failure', { code: 'busy', message: 'Une autre modification de ce plan est encore en cours. Réessaie quand elle sera terminée.' }); return reponse.end(); }
   changementEnCours = true;
   let session, erreurs = null;
@@ -505,7 +478,7 @@ const serveur = http.createServer((requete, reponse) => {
       return;
     }
     if (requete.method === 'GET' && url.pathname === '/api/status') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); return reponse.end(JSON.stringify({ tabs: onglets.size, pid: process.pid, hash: empreinteCourante, root: racine })); }
-    if (requete.method === 'GET' && url.pathname === '/api/health') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); return reponse.end(JSON.stringify({ cli: !!cli, engine: moteur, want: souhaite, version, path: cli?.path || null })); }
+    if (requete.method === 'GET' && url.pathname === '/api/health') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); return reponse.end(JSON.stringify({ cli: !!cli, version, path: cli?.path || null })); }
     // les parcours demandés sont enregistrés à côté de la carte ; construire.mjs les range dans graphe.json
     if (url.pathname === '/api/flows') {
       if (requete.method === 'GET') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); return reponse.end(JSON.stringify({ parcours: lireParcours() })); }
@@ -538,6 +511,8 @@ const serveur = http.createServer((requete, reponse) => {
         return;
       }
     }
+    if (requete.method === 'GET' && url.pathname === '/api/fraicheur') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); fraicheur().then((r) => reponse.end(JSON.stringify(r))); return; }
+    if (requete.method === 'POST' && url.pathname === '/api/update') { reponse.writeHead(200, { 'Content-Type': 'application/json' }); Promise.resolve(mettreAJour()).then((r) => reponse.end(JSON.stringify(r))); return; }
     if (requete.method === 'POST' && url.pathname === '/api/plan/undo') {
       const r = changementEnCours ? { ok: false, error: 'Une modification est encore en cours.' } : annulerChangement();
       reponse.writeHead(200, { 'Content-Type': 'application/json' }); return reponse.end(JSON.stringify(r));
@@ -595,8 +570,8 @@ serveur.on('listening', () => {
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => process.exit(0));
   console.log(`la carte: ${u}`);
   console.log(cli
-    ? `questions via ${MOTEURS[moteur].name} ${version || ''} (${cli.path})${modele ? `, modèle ${modele}` : ''}`
-    : `${MOTEURS[souhaite].name} est introuvable : la carte marche, mais poser des questions en a besoin (${MOTEURS[souhaite].site}). Ajoute --${souhaite} <chemin> s’il est installé dans un endroit inhabituel.`);
+    ? `questions via Claude Code ${version || ''} (${cli.path})${modele ? `, modèle ${modele}` : ''}`
+    : 'Claude Code est introuvable : la carte marche, mais poser des questions en a besoin (https://docs.claude.com/en/docs/claude-code). Ajoute --claude <chemin> s’il est installé dans un endroit inhabituel.');
   if (!aOption('no-open')) {
     const ouvreur = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', u]] : process.platform === 'darwin' ? ['open', [u]] : ['xdg-open', [u]];
     try { spawn(ouvreur[0], ouvreur[1], { stdio: 'ignore', detached: true }).unref(); } catch {}

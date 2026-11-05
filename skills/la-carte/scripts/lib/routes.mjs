@@ -117,6 +117,7 @@ function dedupliquer(liste, cle) {
 }
 
 /** Note à quel point le chemin d'un appel correspond au chemin d'une route ; null quand ils ne peuvent pas correspondre. */
+export const noterAppel = (c, r) => noter(c, r);
 function noter(c, r) {
   const n = Math.min(c.length, r.length);
   if (n === 0) return null;

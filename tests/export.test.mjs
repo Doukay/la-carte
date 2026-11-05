@@ -35,7 +35,7 @@ before(async () => {
 
   const port = 20000 + Math.floor(Math.random() * 20000);
   serveur = spawn(process.execPath, [serveurJs(), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_CODEX: path.join(racine, 'no-such-cli'), LA_CARTE_NO_PROMPTS: '1' }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: racine, env: { ...process.env, LA_CARTE_CLAUDE: path.join(racine, 'no-such-cli'), LA_CARTE_NO_PROMPTS: '1' }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   base = await new Promise((resoudre, rejeter) => {
     let sortie = '';

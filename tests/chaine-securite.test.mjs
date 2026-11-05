@@ -46,11 +46,8 @@ test('le plugin n’est qu’un skill : ni hooks, ni serveurs MCP, ni commandes 
   assert.deepEqual(tous.filter((f) => /(^|\/)(hooks\.json|\.mcp\.json|\.lsp\.json)$/.test(f) || /(^|\/)hooks\//.test(f)), [], `ni hooks ni serveurs MCP/LSP. ${MISE_A_JOUR}`);
   // documentationUrl, privacyPolicyUrl et supportUrl ne sont que des liens, affichés dans la fiche de l’annuaire des plugins Claude
   assert.deepEqual(Object.keys(json('.claude-plugin/plugin.json')).sort(), ['author', 'description', 'documentationUrl', 'homepage', 'keywords', 'license', 'name', 'privacyPolicyUrl', 'repository', 'supportUrl', 'version'], `Manifeste Claude Code : rien en dehors du skill. ${MISE_A_JOUR}`);
-  assert.deepEqual(Object.keys(json('.codex-plugin/plugin.json')).sort(), ['author', 'description', 'homepage', 'interface', 'keywords', 'license', 'name', 'repository', 'requires_local_executor', 'skills', 'version'], `Manifeste Codex : rien en dehors du skill. ${MISE_A_JOUR}`);
-  assert.equal(json('.codex-plugin/plugin.json').skills, './skills/');
-  // les deux places de marché installent depuis ce dépôt lui-même, jamais depuis ailleurs
+  // la place de marché installe depuis ce dépôt lui-même, jamais depuis ailleurs
   assert.deepEqual(json('.claude-plugin/marketplace.json').plugins.map((p) => p.source), ['./']);
-  for (const p of json('.agents/plugins/marketplace.json').plugins) assert.equal(typeof p.source === 'string' ? p.source : p.source?.path, './', `Source de la place de marché Codex. ${MISE_A_JOUR}`);
 });
 
 test('rien à installer : aucune dépendance et aucun script d’installation', () => {
@@ -101,7 +98,7 @@ test('il lance une liste fixe de programmes, et jamais par un shell', () => {
   assert.deepEqual([...new Set(noms)].sort(), ['execFileSync', 'spawn'], `fonctions de child_process utilisées. ${MISE_A_JOUR}`);
   assert.deepEqual(trouver(/(?<![.\w])(exec|execSync|fork|spawnSync|execFile)\(/).map((x) => `${x.file}:${x.line} ${x.text}`), [], `autres moyens de lancer des programmes. ${MISE_A_JOUR}`);
   assert.deepEqual(trouver(/shell:\s*true/).map((x) => `${x.file}:${x.line}`), [], 'jamais par un shell');
-  // ce que lance chaque appel : where/which, la CLI Claude Code ou Codex, Node qui exécute les scripts du skill,
+  // ce que lance chaque appel : where/which, la CLI Claude Code, Node qui exécute les scripts du skill,
   // git, et la commande du système « ouvrir cette adresse dans le navigateur »
   const AUTORISES = new Set([
     "process.platform === 'win32' ? 'where' : 'which'",

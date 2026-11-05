@@ -14,6 +14,9 @@
 .node.flash .card { animation: flash 1.2s var(--ease) 2; }
 @keyframes flash { 50% { box-shadow: 0 0 0 1.5px rgba(var(--ink), .6), 0 0 0 10px rgba(var(--ink), .08); } }
 .head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.alerte { margin-left: auto; flex: none; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; display: grid; place-items: center; background: var(--sev-medium); color: var(--on-sev-text); font-size: 11.5px; font-weight: 600; }
+.alerte.high { background: var(--sev-high); }
+svg.lod-mid .alerte, svg.lod-low .alerte { min-width: calc(20px * var(--contre, 1)); height: calc(20px * var(--contre, 1)); font-size: calc(11.5px * var(--contre, 1)); }
 .ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 18%, var(--surface)); }
 .ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .title { font-size: 16px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; overflow: hidden; min-width: 0; flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }

@@ -8,7 +8,7 @@ Tu écris deux fichiers dans `la-carte/` :
 - `sources/plan.json` : les fichiers, les adresses du serveur et les liens que le système aurait (ce fichier).
 - `sources/architecture.json` : les parties, les services extérieurs, les parcours et la visite, exactement comme pour une carte de code ([schema.md](schema.md)).
 
-`plan.mjs` transforme `sources/plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire ça avec Claude** (ou Codex) avec une demande toute prête pour la construire. Dans .cache/graphe.json, le plan est rangé sous la clé `ebauche` (.cache/graphe.json est généré : n'y touche pas).
+`plan.mjs` transforme `sources/plan.json` en le scan que `construire.mjs` attend, et tout ce qui suit marche donc comme pour du vrai code. Les blocs sont dessinés avec un contour en pointillés et une étiquette **Plan**, la Santé devient une **revue du plan**, et chaque partie a un bouton **Construire ça avec Claude** avec une demande toute prête pour la construire. Dans .cache/graphe.json, le plan est rangé sous la clé `ebauche` (.cache/graphe.json est généré : n'y touche pas).
 
 Sommaire : [Bien planifier](#bien-planifier) · [sources/plan.json](#planjson) · [Contrôles](#ce-que-la-revue-du-plan-contrôle)
 
@@ -75,7 +75,7 @@ Les « appels à des adresses prévues » de plan.mjs comptent chaque appel ; le
 
 ## Changements depuis la carte
 
-Quand la carte est ouverte par son serveur (ouvrir.mjs), la bulle de questions a un sélecteur **Demander / Modifier**. Une demande de changement (« prévois aussi les remboursements », « enlève la page d'administration ») va au même agent, en lecture seule. Il répond avec le sources/plan.json et l'architecture.json complets et mis à jour, et le serveur les vérifie avec plan.mjs et construire.mjs. Si les contrôles échouent, ou si de nouveaux fichiers ne tombent sous aucune partie, il renvoie les problèmes une fois. Ensuite il enregistre les fichiers, redessine la carte (les onglets ouverts se rechargent) et met en avant les blocs nouveaux et modifiés comme travail récent, avec **Annuler**. Les fichiers remplacés sont gardés dans `la-carte/.cache/history/`. Chaque élément de la revue du plan a **Résoudre sur la carte**, qui place une demande toute prête en mode Modifier : la demande d'une question ouverte se termine par « Ma réponse : » que la personne complète, et l'agent retire alors la question et intègre la réponse au plan. Les changements que tu fais à la main ou par ce skill marchent de la même façon : modifie les fichiers et lance actualiser.mjs.
+Quand la carte est ouverte par son serveur (ouvrir.mjs), la bulle de questions a un sélecteur **Demander / Modifier**. Une demande de changement (« prévois aussi les remboursements », « enlève la page d'administration ») va à Claude, en lecture seule. Il répond avec le sources/plan.json et l'architecture.json complets et mis à jour, et le serveur les vérifie avec plan.mjs et construire.mjs. Si les contrôles échouent, ou si de nouveaux fichiers ne tombent sous aucune partie, il renvoie les problèmes une fois. Ensuite il enregistre les fichiers, redessine la carte (les onglets ouverts se rechargent) et met en avant les blocs nouveaux et modifiés comme travail récent, avec **Annuler**. Les fichiers remplacés sont gardés dans `la-carte/.cache/history/`. Chaque élément de la revue du plan a **Résoudre sur la carte**, qui place une demande toute prête en mode Modifier : la demande d'une question ouverte se termine par « Ma réponse : » que la personne complète, et Claude retire alors la question et intègre la réponse au plan. Les changements que tu fais à la main ou par ce skill marchent de la même façon : modifie les fichiers et lance actualiser.mjs.
 
 ## Ce que la revue du plan contrôle
 
@@ -85,6 +85,6 @@ Quand la carte est ouverte par son serveur (ouvrir.mjs), la bulle de questions a
 - les adresses du serveur qu'aucun écran ni service prévu n'appelle ;
 - les fichiers prévus qui ne sont reliés à rien.
 
-Chacun a **Résoudre sur la carte** quand la carte est servie (voir plus haut), et sinon **Résoudre avec Claude/Codex**, une demande à coller dans l'agent.
+Chacun a **Résoudre sur la carte** quand la carte est servie (voir plus haut), et sinon **Résoudre avec Claude**, une demande à coller dans Claude Code.
 
 Rappel : la revue du plan, comme la Santé d'une carte de code, est un contrôle rapide avec de fausses alertes, pas un audit. Ne la présente pas autrement.

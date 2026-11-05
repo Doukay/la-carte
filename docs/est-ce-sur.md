@@ -1,6 +1,6 @@
 # Est-ce sûr à installer ?
 
-Les plugins de Claude Code et de Codex peuvent lancer du code sur ton ordinateur, donc la question se pose. Certains plugins malveillants ont l'air inoffensifs à l'installation, puis téléchargent et lancent autre chose plus tard (une « seconde étape »). La carte est construit pour ne pas pouvoir faire ça, un test le vérifie à chaque changement, et tu peux tout confirmer toi-même.
+Les plugins de Claude Code peuvent lancer du code sur ton ordinateur, donc la question se pose. Certains plugins malveillants ont l'air inoffensifs à l'installation, puis téléchargent et lancent autre chose plus tard (une « seconde étape »). La carte est construite pour ne pas pouvoir faire ça, un test le vérifie à chaque changement, et tu peux tout confirmer toi-même.
 
 Cette page dit ce qui est vrai pour **cette copie française**, y compris ce qu'elle ne garantit pas. Lis les limites à la fin avant de décider.
 
@@ -22,15 +22,15 @@ Cette page dit ce qui est vrai pour **cette copie française**, y compris ce qu'
 - **La page de la carte ne charge rien depuis Internet.** Son moteur de mise en page et ses polices sont intégrés au fichier. Elle contient seulement des liens vers de la documentation, qui s'ouvrent quand tu cliques.
 - **Le bouton « Pas un problème »** du contrôle de santé reste sur ta machine : il écrit seulement dans `la-carte/`. Il n'envoie plus rien à l'auteur.
 
-Poser des questions sur la carte lance Claude Code ou Codex, qui parlent à Anthropic ou à OpenAI comme ils le font toujours, avec ton compte. La carte elle-même n'envoie rien. Mais **ce que ces outils lisent part chez eux** : voir les limites plus bas.
+Poser des questions sur la carte lance Claude Code, qui parle à Anthropic comme il le fait toujours, avec ton compte. La carte elle-même n'envoie rien. Mais **ce que Claude lit part chez Anthropic** : voir les limites plus bas.
 
 ### Les programmes qu'il lance
 
 | Programme | Quand | Pourquoi |
 |---|---|---|
 | `git` | analyse | En lecture seule : quels fichiers sont suivis, la branche et le commit actuels, ce qui a changé depuis la dernière carte |
-| `where` (Windows) ou `which` | démarrage du serveur de la carte | Trouver la ligne de commande de Claude Code ou de Codex |
-| `claude` ou `codex` | quand tu poses une question sur la carte | Y répondre, en lecture seule : `claude -p` limité à la lecture de fichiers et au script de recherche de la carte (avec les fichiers de secrets interdits et sans les serveurs MCP de ta machine), ou `codex exec --sandbox read-only` |
+| `where` (Windows) ou `which` | démarrage du serveur de la carte | Trouver la ligne de commande de Claude Code |
+| `claude` | quand tu poses une question sur la carte | Y répondre, en lecture seule : `claude -p` limité à la lecture de fichiers et au script de recherche de la carte (avec les fichiers de secrets interdits et sans les serveurs MCP de ta machine) |
 | `node` | partout | Lancer les scripts de la carte |
 | `cmd /c start`, `open` ou `xdg-open` | ouverture de la carte | Ouvrir l'adresse locale de la carte dans ton navigateur |
 
@@ -38,7 +38,7 @@ Chacun est lancé directement avec ses arguments, jamais comme une ligne de comm
 
 ### Ce qui se lance sans demander
 
-Dans Claude Code, quand la compétence est utilisée, elle autorise d'avance une seule sorte de commande : `node` qui lance un de ses propres scripts, chacun nommé exactement (`scripts/construire.mjs`, `decrire.mjs`, `ouvrir.mjs`, `plan.mjs`, `recents.mjs`, `actualiser.mjs`, `analyser.mjs` et `etat.mjs`). Cette liste est fixée par les tests plus bas. Tout le reste que fait Claude demande une autorisation selon tes réglages, comme d'habitude. Codex demande selon tes réglages d'approbation.
+Dans Claude Code, quand la compétence est utilisée, elle autorise d'avance une seule sorte de commande : `node` qui lance un de ses propres scripts, chacun nommé exactement (`scripts/construire.mjs`, `decrire.mjs`, `ouvrir.mjs`, `plan.mjs`, `recents.mjs`, `actualiser.mjs`, `analyser.mjs` et `etat.mjs`). Cette liste est fixée par les tests plus bas. Tout le reste que fait Claude demande une autorisation selon tes réglages, comme d'habitude.
 
 ### Trois choses qui méritent une explication
 
@@ -72,8 +72,8 @@ Dans cette copie, les tests se lancent avec `node --test` sur l'ordinateur de la
 
 ## Les limites honnêtes
 
-- **Claude lit ton code et l'envoie à Anthropic.** La carte fonctionne parce que Claude (ou Codex, chez OpenAI) lit ton code pour le décrire. Ça part sous ton compte, selon les conditions du fournisseur, comme n'importe quelle tâche que tu lui donnes. Aucune vérification de ce plugin ne change ça. Si ton code est confidentiel, décide-le avant.
-- **La bulle de questions lit le reste de tes fichiers.** Avec Claude Code, elle ne peut pas ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et elle ne charge pas tes serveurs MCP. Mais un secret écrit dans un fichier au nom banal, ou dans le code, peut être lu et envoyé. **Avec Codex, ce blocage n'existe pas.**
+- **Claude lit ton code et l'envoie à Anthropic.** La carte fonctionne parce que Claude lit ton code pour le décrire. Ça part sous ton compte, selon les conditions du fournisseur, comme n'importe quelle tâche que tu lui donnes. Aucune vérification de ce plugin ne change ça. Si ton code est confidentiel, décide-le avant.
+- **La bulle de questions lit le reste de tes fichiers.** Avec Claude Code, elle ne peut pas ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et elle ne charge pas tes serveurs MCP. Mais un secret écrit dans un fichier au nom banal, ou dans le code, peut être lu et envoyé.
 - **Le contrôle de santé donne des fausses alertes et n'est pas un audit.** Il repère des motifs, il en rate, et il se trompe. « Rien trouvé » ne veut pas dire « sûr ».
 - **Le serveur local écoute sur `127.0.0.1`.** Les autres machines ne le voient pas, et les pages web d'autres sites sont refusées. Mais un programme déjà installé sur ton ordinateur peut s'y connecter comme n'importe quel programme local.
 - **Les tests ne prouvent pas l'absence de défauts.** Ils vérifient une liste précise de choses (celles du haut de cette page). Ils ne remplacent pas une relecture du code.

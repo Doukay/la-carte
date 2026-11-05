@@ -12,6 +12,9 @@
 .edge .port { fill: var(--bg); stroke: currentColor; stroke-width: 1.5; opacity: 0; transition: opacity .25s var(--ease); }
 .edge:hover .port, .edge.hl .port { opacity: 1; }
 .edge.k-config .trace { stroke-dasharray: 5 5; }
+.edge.k-casse .trace { stroke-dasharray: 7 6; }
+.coupure circle { fill: var(--surface); stroke: currentColor; stroke-width: 1.5; }
+.coupure path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .edge.k-contains .trace { stroke-dasharray: 2 6; stroke-opacity: .9; }
 .edge:hover .trace, .edge.hl .trace { stroke-opacity: 1; }
 .edge:hover .flow, .edge.hl .flow { opacity: .95; animation: flow 1.1s linear infinite; }

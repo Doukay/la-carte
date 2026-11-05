@@ -1,6 +1,6 @@
 # Comment ça marche
 
-La carte partage le travail entre des scripts et l'IA dans laquelle tu le lances, Claude Code ou Codex. Les scripts font tout le travail mécanique : trouver les fichiers, lire le code, relier les appels aux adresses du serveur, disposer la carte. Ce sont des scripts Node.js sans dépendance, et ils ne coûtent aucun jeton. L'IA fait ce que seul un lecteur du code peut faire : décider ce que les parties de ton appli *sont*, et les expliquer simplement.
+La carte partage le travail entre des scripts et Claude Code, dans lequel tu la lances. Les scripts font tout le travail mécanique : trouver les fichiers, lire le code, relier les appels aux adresses du serveur, disposer la carte. Ce sont des scripts Node.js sans dépendance, et ils ne coûtent aucun jeton. L'IA fait ce que seul un lecteur du code peut faire : décider ce que les parties de ton appli *sont*, et les expliquer simplement.
 
 ```mermaid
 flowchart TD
@@ -13,6 +13,18 @@ flowchart TD
     refresh --> describe
     recent --> open["open : servir la carte et l'afficher"]
 ```
+
+## Ce qui consomme des jetons
+
+| Action | Claude | Jetons |
+|---|---|---|
+| Analyser le code, contrôle de santé, liens coupés, bouton **Mettre à jour** | Non, ce sont des scripts sur ton ordinateur | **Aucun** |
+| Ouvrir, parcourir, chercher, exporter la carte | Non | **Aucun** |
+| Première carte : choisir les parties, nommer et décrire les fichiers | Oui | Sur ton compte Claude, plus c'est gros, plus ça coûte |
+| Décrire les fichiers nouveaux ou modifiés, à ta demande | Oui, seulement ceux-là | Sur ton compte Claude |
+| Poser une question dans la bulle, demander un parcours | Oui, à chaque question | Sur ton compte Claude |
+
+Un nouveau fichier apparaît donc tout de suite après **Mettre à jour**, avec un nom provisoire. Il garde ce nom tant que tu ne demandes pas à Claude de le décrire.
 
 ## 1. L'analyse
 
@@ -43,7 +55,7 @@ C'est de la reconnaissance de motifs, pas un compilateur : elle trouve la plupar
 
 ## 3. L'IA décrit le système
 
-Claude ou Codex lit le résumé de l'analyse, les README, les fichiers de réglages et les points d'entrée, puis écrit `sources/architecture.json` :
+Claude lit le résumé de l'analyse, les README, les fichiers de réglages et les points d'entrée, puis écrit `sources/architecture.json` :
 
 - les grandes parties de ton appli, chacune avec un résumé en langage simple ;
 - les services extérieurs avec lesquels elle parle vraiment (bases de données, paiement, e-mail) ;
@@ -63,7 +75,7 @@ Par défaut, tout est écrit pour la personne qui possède l'appli, pas pour un 
 - relie les parties, grâce aux imports, aux appels associés et aux liens explicites de l'IA ;
 - lance le **contrôle de santé** ;
 - détecte les **écrans** : Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack ;
-- écrit `.cache/graphe.json` et le fichier autonome `index.html`, en notant si c'est Claude Code ou Codex qui l'a fait, pour que la bulle de questions de la carte et les demandes de correction nomment le bon.
+- écrit `.cache/graphe.json` et le fichier autonome `index.html`.
 
 La carte se dispose toute seule dans ton navigateur avec [ELK](https://eclipse.dev/elk/), donc la construction elle-même est rapide.
 
@@ -97,20 +109,15 @@ Tout ce qui précède décrit comment la carte cartographie du code existant, so
 
 - les blocs ont un contour en pointillés et le tableau porte l'étiquette **Plan** ;
 - la Santé devient une **revue du plan** : adresses du serveur que tout le monde pourrait utiliser pour changer des données, adresses sans décision sur qui peut les utiliser, questions ouvertes, et éléments reliés à rien ;
-- chaque partie a **Construire ça avec Claude** (ou Codex) : une demande pour construire cette partie comme prévu, qui liste ses fichiers, ses adresses du serveur et ce dont elle dépend ;
+- chaque partie a **Construire ça avec Claude** : une demande pour construire cette partie comme prévu, qui liste ses fichiers, ses adresses du serveur et ce dont elle dépend ;
 - la bulle de questions répond à partir du plan et du cahier des charges, puisqu'il n'y a pas de code à lire ;
-- l'interrupteur **Modifier** de la bulle de questions prend des demandes comme « prévois aussi les remboursements » : l'agent renvoie le plan mis à jour, le serveur de la carte le vérifie avec `plan.mjs` et `construire.mjs` (en renvoyant une fois les problèmes), l'enregistre et redessine la carte en mettant les changements en avant, et **Annuler** remet le plan précédent. Le bouton **Résoudre sur la carte** de chaque point de la revue du plan remplit cette demande à ta place : une question ouverte n'attend que ta réponse. L'agent reste en lecture seule : seul le serveur écrit, et seulement `sources/plan.json`, `sources/architecture.json` et `.cache/travail-recent.json`.
+- l'interrupteur **Modifier** de la bulle de questions prend des demandes comme « prévois aussi les remboursements » : Claude renvoie le plan mis à jour, le serveur de la carte le vérifie avec `plan.mjs` et `construire.mjs` (en renvoyant une fois les problèmes), l'enregistre et redessine la carte en mettant les changements en avant, et **Annuler** remet le plan précédent. Le bouton **Résoudre sur la carte** de chaque point de la revue du plan remplit cette demande à ta place : une question ouverte n'attend que ta réponse. L'agent reste en lecture seule : seul le serveur écrit, et seulement `sources/plan.json`, `sources/architecture.json` et `.cache/travail-recent.json`.
 
 Mettre à jour un plan le redessine à partir de `sources/plan.json`. Quand le code existe, `actualiser.mjs --from-code` cartographie le vrai code à la place, et `sources/plan.json` reste.
 
 ## Poser des questions
 
-Le serveur de la carte répond à chaque question avec l'IA qui est sur ton ordinateur, dans ton projet :
-
-- **Claude Code :** il lance `claude -p` avec seulement des outils en lecture : lire et chercher dans les fichiers, et `la-carte/.cache/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine.
-- **Codex :** il lance `codex exec` dans le bac à sable en lecture seule de Codex, avec les mêmes recherches. Ces exécutions ne sont pas gardées dans ton historique Codex, donc une question de suite emmène avec elle les dernières questions et réponses. Le blocage des fichiers de secrets ci-dessus n'existe pas côté Codex.
-
-Il utilise celui qui a fait la carte, et l'autre si celui-là n'est pas installé. Dans les deux cas il répond par du texte plus les blocs à montrer, donc les réponses peuvent citer du vrai code.
+Le serveur de la carte répond à chaque question avec Claude Code, qui est sur ton ordinateur, dans ton projet : il lance `claude -p` avec seulement des outils en lecture, c'est-à-dire lire et chercher dans les fichiers, et `la-carte/.cache/requete.mjs`, qui fait des recherches dans la carte. Il lui interdit d'ouvrir les fichiers de secrets (`.env`, `.env.*`, `*.pem`, `*.key`, et tout nom qui contient `secret`, `token` ou `credential`), et ne charge pas les serveurs MCP de ta machine. Une question de suite reprend la même session. Claude répond par du texte plus les blocs à montrer, donc les réponses peuvent citer du vrai code.
 
 Dans l'application Claude, la carte interroge Claude par l'application, avec les mêmes recherches mais sans accès à ton code source.
 

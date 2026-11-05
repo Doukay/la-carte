@@ -24,7 +24,8 @@ function rangsColonne(vue, res) {
 function liensColonne(vue, id) {
   const cibles = [...new Set(vue.edges.filter((e) => e.a === id).map((e) => e.b))];
   if (!cibles.length) return '';
-  const bouton = (b, cache) => `<button type="button" class="col-lien" data-vers="${h(b)}"${cache ? ' hidden' : ''}><span>${h(nomDe(b))}</span></button>`;
+  const coupes = new Set(vue.edges.filter((e) => e.a === id && e.k === 'casse').map((e) => e.b));
+  const bouton = (b, cache) => `<button type="button" class="col-lien${coupes.has(b) ? ' coupe' : ''}" data-vers="${h(b)}"${cache ? ' hidden' : ''}><span>${h(nomDe(b))}</span></button>`;
   return `<div class="col-liens"><span class="col-titre">Utilise</span>${cibles.map((b, n) => bouton(b, n >= 2)).join('')}${cibles.length > 2 ? `<button type="button" class="col-plus" aria-label="Montrer les ${cibles.length - 2} autres liens">+${cibles.length - 2}</button>` : ''}</div>`;
 }
 function rendreColonne(vue, res) {

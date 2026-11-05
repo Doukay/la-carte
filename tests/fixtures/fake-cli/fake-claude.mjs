@@ -1,5 +1,6 @@
 // Stands in for `claude` in tests: answers --version, and for `-p` logs its arguments and prompt to
-// $FAKE_LOG, then prints the stream-json events a real run would.
+// $FAKE_LOG, then prints the stream-json events a real run would. A prompt containing "SIGNED-OUT" fails the way
+// Claude Code does when nobody is signed in; "SEARCH-COMMANDS" makes it run shell searches, to check their progress lines.
 import fs from 'node:fs';
 
 const args = process.argv.slice(2);
@@ -7,9 +8,13 @@ if (args[0] === '--version') { console.log('2.0.0 (Claude Code, test)'); process
 let input = '';
 process.stdin.on('data', (d) => { input += d; });
 process.stdin.on('end', () => {
-  fs.appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, input }) + '\n');
+  fs.appendFileSync(process.env.FAKE_LOG, JSON.stringify({ args, input, cwd: process.cwd() }) + '\n');
   const out = (ev) => console.log(JSON.stringify(ev));
   out({ type: 'system', subtype: 'init', session_id: 'test-session' });
+  if (input.includes('SIGNED-OUT')) {
+    out({ type: 'result', subtype: 'success', is_error: true, session_id: 'test-session', result: 'Not logged in · Please run /login' });
+    return;
+  }
   // a change to a blueprint: answer with the next reply in $FAKE_CHANGES (a JSON array), one per run
   const schema = args[args.indexOf('--json-schema') + 1] || '';
   if (process.env.FAKE_CHANGES && schema.includes('"architecture"')) {
@@ -21,8 +26,16 @@ process.stdin.on('end', () => {
     out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: replies[Math.min(n, replies.length - 1)] });
     return;
   }
-  out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command: 'node la-carte/.cache/requete.mjs overview' } }] } });
-  out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'shop-api/routes/orders.js' } }] } });
+  const bash = (command) => out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command } }] } });
+  if (input.includes('SEARCH-COMMANDS')) {
+    bash('node la-carte/.cache/requete.mjs find "refund"');
+    bash('grep -rn "refund" shop-api');
+    bash('cat shop-api/routes/orders.js');
+    bash('ls shop-api');
+  } else {
+    bash('node la-carte/.cache/requete.mjs overview');
+    out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'shop-api/routes/orders.js' } }] } });
+  }
   out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: {
     title: 'Refunds', answer: 'Refunds go through [[f:shop-api/routes/orders.js]].',
     items: [{ id: 'f:shop-api/routes/orders.js', note: 'Holds the refund endpoint.' }],

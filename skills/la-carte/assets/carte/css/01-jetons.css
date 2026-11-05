@@ -23,7 +23,7 @@
   --ease: cubic-bezier(.16, 1, .3, 1);
   --shadow-card: none;
   --shadow-float: 0 0 0 1px #333336;
-  --k-import: #8e8e93; --k-http: #2997ff; --k-call: #bf5af2; --k-rpc: #7d7aff; --k-event: #ff375f; --k-queue: #ff9f0a; --k-data: #64d2ff; --k-config: #6b7280; --k-contains: #4a4a4a;
+  --k-casse: #ff453a; --n-casse: #ff453a; --k-import: #8e8e93; --k-http: #2997ff; --k-call: #bf5af2; --k-rpc: #7d7aff; --k-event: #ff375f; --k-queue: #ff9f0a; --k-data: #64d2ff; --k-config: #6b7280; --k-contains: #4a4a4a;
   --n-ui: #2997ff; --n-service: #bf5af2; --n-worker: #bf5af2; --n-library: #bf5af2; --n-feature: #bf5af2; --n-data: #bf5af2; --n-config: #bf5af2;
   --n-test: #ff9f0a; --n-script: #ff9f0a; --n-infra: #ff9f0a; --n-external: #30d158; --n-misc: #98989d; --n-dir: #98989d; --n-file: #98989d;
   --n-module: #98989d; --n-symbol: #bf5af2; --n-route: #2997ff; --n-connector: #98989d;
@@ -52,7 +52,7 @@
   --shadow-float: 0 0 0 1px #e8e8ed;
   --shadow-lift: 0 0 0 1px #d2d2d7;
   --shadow-deep: 0 20px 48px -22px rgba(0, 0, 0, .3);
-  --k-import: #6e6e73; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
+  --k-casse: #d70015; --n-casse: #d70015; --k-import: #6e6e73; --k-http: #0066cc; --k-call: #8944ab; --k-rpc: #3634a3; --k-event: #d30f45; --k-queue: #b25000; --k-data: #0071a4; --k-config: #4f5661; --k-contains: #8d8d8d;
   --n-ui: #0066cc; --n-service: #8944ab; --n-worker: #8944ab; --n-library: #8944ab; --n-feature: #8944ab; --n-data: #8944ab; --n-config: #8944ab;
   --n-test: #b25000; --n-script: #b25000; --n-infra: #b25000; --n-external: #248a3d; --n-misc: #66666b; --n-dir: #66666b; --n-file: #66666b;
   --n-module: #66666b; --n-symbol: #8944ab; --n-route: #0066cc; --n-connector: #6e6e73;

@@ -14,7 +14,7 @@ function afficherMenuParcours() {
 function montrerFormulaireParcours() {
   fm.innerHTML = `<form class="ff"><label>Décris ce qu'il faut suivre, et ${AGENT.name} construit un parcours pas à pas à travers la carte.</label>
     <textarea placeholder="par ex. Comment une commande est-elle facturée via Stripe ?" spellcheck="false"></textarea>
-    ${etatQuestion.engine ? '' : `<div class="note">Il faut ${AGENT.cli} (lance node la-carte/.cache/serveur.mjs)${AGENT.id === 'claude' ? ' ou l\'application Claude' : ''}.</div>`}
+    ${etatQuestion.engine ? '' : `<div class="note">Il faut ${AGENT.cli} (lance node la-carte/.cache/serveur.mjs) ou l\'application Claude.</div>`}
     <div class="ffa"><button type="button" class="btn" data-cancel>Annuler</button><button type="submit" class="btn primary" ${etatQuestion.engine ? '' : 'disabled'}>Construire le parcours</button></div></form>`;
   const formulaire = fm.querySelector('form'), ta = formulaire.querySelector('textarea');
   setTimeout(() => ta.focus(), 30);

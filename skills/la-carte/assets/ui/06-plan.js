@@ -8,7 +8,7 @@
   if (!EBAUCHE) return;
   const { h } = CARTE;
   const Maj = (t) => t[0].toUpperCase() + t.slice(1);
-  const A = CARTE.agent || { name: 'Claude', app: 'Claude Code' };
+  const A = CARTE.agent;
   const G = CARTE.graphe;
 
   document.documentElement.classList.add('blueprint');

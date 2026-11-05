@@ -1,5 +1,5 @@
 // Requêtes sur le graphe de la carte, partagées par le visualiseur (comme outils de page pour l'appli Claude) et par
-// la-carte/.cache/requete.mjs (comme ligne de commande appelée par Claude Code ou Codex). Script simple : ni import ni export.
+// la-carte/.cache/requete.mjs (comme ligne de commande appelée par Claude Code). Script simple : ni import ni export.
 // Ids des éléments : n:<id du nœud>  f:<chemin du fichier>  r:<numéro de route>  s:<chemin du fichier>#<numéro d'export>
 
 function creerRequetesGraphe(G) {

@@ -1,6 +1,6 @@
-// Export : une copie de la carte à partager, en un seul fichier HTML, pour les personnes sans Claude ni Codex.
+// Export : une copie de la carte à partager, en un seul fichier HTML, pour les personnes sans Claude.
 // Le serveur de la carte (serveur.mjs) la fabrique : la même page sans la bulle de questions, sans demandes à
-// Claude ou Codex, sans liens vers cet ordinateur, avec en plus les éléments cochés ici. Ce fichier ne parle à
+// Claude, sans liens vers cet ordinateur, avec en plus les éléments cochés ici. Ce fichier ne parle à
 // la carte que par window.LaCarte.
 (() => {
   const CARTE = window.LaCarte;
@@ -58,7 +58,7 @@
     } catch (e) {
       erreur.hidden = false;
       // 'Failed to fetch' est le texte du navigateur : il reste en anglais
-      erreur.textContent = e.message === 'Failed to fetch' ? 'Impossible de joindre le serveur de la carte. Demande à Claude ou Codex de rouvrir la carte, puis réessaie.' : e.message;
+      erreur.textContent = e.message === 'Failed to fetch' ? 'Impossible de joindre le serveur de la carte. Demande à Claude de rouvrir la carte, puis réessaie.' : e.message;
     }
   }
 
@@ -66,7 +66,7 @@
     if (!SERVEUR) {
       CARTE.fenetre({
         title: 'Exporter une copie',
-        html: `<p>L’export a besoin du serveur de la carte. Demande à Claude ou Codex d’« exporter la carte », ou lance ceci dans le dossier du projet :</p><pre>${h(COMMANDE)}</pre>`,
+        html: `<p>L’export a besoin du serveur de la carte. Demande à Claude d’« exporter la carte », ou lance ceci dans le dossier du projet :</p><pre>${h(COMMANDE)}</pre>`,
         actions: [{ label: 'Copier la commande', primary: true, icon: 'copy', onClick: () => { CARTE.copier(COMMANDE); CARTE.message('Copié'); } }],
       });
       return;

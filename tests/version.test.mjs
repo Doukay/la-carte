@@ -20,21 +20,6 @@ test('la place de marché liste ce plugin, depuis ce dépôt', () => {
   assert.equal(entree.source, './');
 });
 
-test('le plugin Codex correspond au plugin Claude Code et pointe vers le même skill', () => {
-  const codex = lireJson(path.join(DEPOT, '.codex-plugin', 'plugin.json'));
-  assert.equal(codex.name, plugin.name);
-  assert.equal(codex.version, plugin.version, 'version de .codex-plugin/plugin.json');
-  assert.equal(codex.skills, './skills/');
-  assert.ok(fs.existsSync(path.join(DEPOT, 'skills', 'la-carte', 'SKILL.md')));
-});
-
-test('la place de marché Codex liste ce plugin, depuis ce dépôt', () => {
-  const placeDeMarcheCodex = lireJson(path.join(DEPOT, '.agents', 'plugins', 'marketplace.json'));
-  const entree = placeDeMarcheCodex.plugins.find((p) => p.name === plugin.name);
-  assert.ok(entree, `.agents/plugins/marketplace.json liste ${plugin.name}`);
-  assert.deepEqual(entree.source, { source: 'local', path: './' });
-});
-
 // Le badge de version du README est retiré exprès (il n’y a plus rien à garder à jour de ce côté) : on vérifie qu’il reste absent.
 test('le README n’a pas de badge de version', () => {
   assert.doesNotMatch(lire('README.md'), /badge\/version-/);

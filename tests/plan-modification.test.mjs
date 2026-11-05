@@ -22,7 +22,7 @@ async function servi(reponses, racine) {
     racine = creerProjet({});
     fs.cpSync(EXEMPLE, racine, { recursive: true });
     executer('plan.mjs', racine);
-    executer('construire.mjs', racine, '--no-claude-md', '--agent', 'claude');
+    executer('construire.mjs', racine, '--no-claude-md');
   }
   racines.push(racine);
   const fichierReponses = path.join(racine, 'replies.json');
@@ -30,7 +30,7 @@ async function servi(reponses, racine) {
   const journal = path.join(racine, 'fake.log');
   const port = 20000 + Math.floor(Math.random() * 20000);
   const serveur = spawn(process.execPath, [path.join(racine, 'la-carte', '.cache', 'serveur.mjs'), '--port', String(port), '--no-open'], {
-    cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', LA_CARTE_ENGINE: '', LA_CARTE_CLAUDE: FAUX, FAKE_LOG: journal, FAKE_CHANGES: fichierReponses }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: racine, env: { ...process.env, LA_CARTE_NO_PROMPTS: '1', LA_CARTE_CLAUDE: FAUX, FAKE_LOG: journal, FAKE_CHANGES: fichierReponses }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   serveurs.push(serveur);
   const base = await new Promise((resoudre, rejeter) => {
@@ -41,8 +41,8 @@ async function servi(reponses, racine) {
   });
   const page = JSON.parse(/window\.LA_CARTE_SERVER=(\{.*?\});/.exec(await (await fetch(base + '/')).text())[1]);
   const jeton = page.token;
-  // la doublure est Claude Code, qui tient ses réponses à un schéma : la carte propose donc Modifier
-  assert.equal(page.change, true);
+  // la doublure tient lieu de Claude Code : la carte propose donc Modifier
+  assert.equal(page.cli, true);
   const envoyer = (p, corps) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json', 'x-la-carte-token': jeton }, body: JSON.stringify(corps || {}) });
   return {
     root: racine,
@@ -146,7 +146,7 @@ test('si le second essai échoue aussi, rien ne change', async () => {
 test('une carte de vrai code ne peut pas être modifiée de cette façon', async () => {
   const racine = appliBoutique();
   executer('analyser.mjs', racine);
-  executer('construire.mjs', racine, '--no-claude-md', '--agent', 'claude');
+  executer('construire.mjs', racine, '--no-claude-md');
   const s = await servi([avecRemboursements()], racine);
   const [echec] = choisir(await s.change('add refunds'), 'failure');
   assert.match(echec.message, /Seul un plan peut être modifié depuis la carte/);

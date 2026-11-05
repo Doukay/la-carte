@@ -20,7 +20,7 @@ Si le défaut vient visiblement du code d'origine (il existe aussi dans la versi
 - tout ce qui pourrait faire fuir des secrets ou du code source ;
 - tout ce qui écrirait en dehors du dossier `la-carte/` du projet ou enverrait quelque chose sur Internet.
 
-Hors périmètre : les défauts de Claude Code lui-même, à signaler à [Anthropic](https://www.anthropic.com/responsible-disclosure-policy), et ceux de Codex lui-même, à signaler à [OpenAI](https://help.openai.com/en/articles/6653653-how-to-report-security-vulnerabilities-to-openai).
+Hors périmètre : les défauts de Claude Code lui-même, à signaler à [Anthropic](https://www.anthropic.com/responsible-disclosure-policy).
 
 ## Versions concernées
 

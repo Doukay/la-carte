@@ -87,6 +87,8 @@
   .feuille-x { display: grid; place-items: center; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 999px; background: none; color: var(--text-3); cursor: pointer; }
   body:has(#flowbar:not([hidden])) .col-bloc { scroll-margin-top: 170px; }
   .col-bloc .dir-ico { display: none; }
+  .col-lien.coupe { color: var(--k-casse); text-decoration: line-through; }
+  #btn-update { display: none; }
   #ask-send { width: 44px; height: 44px; }
   .chip button { position: relative; }
   .chip button::after { content: ""; position: absolute; inset: -12px; }
@@ -109,6 +111,7 @@
   .hr .btn .bl { display: inline; }
   header .hr .btn { width: auto; padding: 0 7px; gap: 5px; }
   header .hr .btn .badge { position: static; }
+  #btn-update .bl { display: none; }
   #btn-recent .bl, #tour-btn .bl { font-size: 0; }
   #btn-recent .bl::after { content: "Récent"; font-size: 13.5px; }
   #tour-btn .bl::after { content: "Visite"; font-size: 13.5px; }

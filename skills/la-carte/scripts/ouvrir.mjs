@@ -2,7 +2,7 @@
 // Montrer la carte à la personne après une construction ou une mise à jour. Réutilise le serveur de cette carte s’il tourne (les onglets
 // ouverts se sont déjà rechargés), le redémarre si serveur.mjs a changé, sinon le lance en
 // arrière-plan et ouvre un onglet du navigateur. Affiche l’adresse et la façon de l’arrêter.
-// usage : node ouvrir.mjs [racine] [--no-open] [--port N] [--engine claude|codex] [--model M] [--claude CHEMIN] [--codex CHEMIN]
+// usage : node ouvrir.mjs [racine] [--no-open] [--port N] [--model M] [--claude CHEMIN]
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -51,7 +51,7 @@ if (statut && statut.hash !== empreinte) {
 }
 
 if (!statut) {
-  const transmis = ['port', 'engine', 'model', 'claude', 'codex'].flatMap((k) => (params[k] ? ['--' + k, String(params[k])] : []));
+  const transmis = ['port', 'model', 'claude'].flatMap((k) => (params[k] ? ['--' + k, String(params[k])] : []));
   if (!params.port && s?.port) transmis.push('--port', String(s.port)); // garder l’adresse que la personne a déjà ouverte
   fs.mkdirSync(path.dirname(fichierEtat), { recursive: true });
   const journal = fs.openSync(path.join(dossier, '.cache', 'server.log'), 'w');
@@ -59,7 +59,7 @@ if (!statut) {
   spawn(process.execPath, [fichierServe, '--no-open', '--idle-exit', String(MINUTES_INACTIF), ...transmis], {
     cwd: racine, detached: true, stdio: ['ignore', journal, journal], windowsHide: true,
   }).unref();
-  // trouver la CLI Claude Code ou Codex prend quelques secondes avant que le serveur écoute
+  // trouver la CLI Claude Code prend quelques secondes avant que le serveur écoute
   for (let i = 0; i < 100; i++) {
     await dormir(200);
     const n = lireEtat();
@@ -80,11 +80,7 @@ else if (params['no-open']) affichage = 'pas ouverte dans un navigateur (--no-op
 else affichage = ouvrirNavigateur(s.url) ? 'ouverte dans le navigateur' : 'impossible d’ouvrir un navigateur : ouvre l’adresse toi-même';
 
 console.log(`LA_CARTE  ${s.url}  (${affichage})`);
-const CLI = {
-  claude: { name: 'la CLI Claude Code', docs: 'https://docs.claude.com/en/docs/claude-code' },
-  codex: { name: 'Codex', docs: 'https://developers.openai.com/codex' },
-};
 console.log(controle?.cli
-  ? `DEMANDER  fonctionne : les questions passent par ${CLI[controle.engine]?.name || 'la CLI Claude Code'}${controle.version ? ' (' + controle.version + ')' : ''}`
-  : `DEMANDER  a besoin de ${(CLI[controle?.want] || CLI.claude).name}, introuvable ; la carte elle-même marche (${(CLI[controle?.want] || CLI.claude).docs})`);
+  ? `DEMANDER  fonctionne : les questions passent par la CLI Claude Code${controle.version ? ' (' + controle.version + ')' : ''}`
+  : 'DEMANDER  a besoin de la CLI Claude Code, introuvable ; la carte elle-même marche (https://docs.claude.com/en/docs/claude-code)');
 console.log(`SERVEUR  tourne en arrière-plan, met à jour les onglets ouverts quand la carte est reconstruite, et s’arrête ${MINUTES_INACTIF / 60} heures après la fermeture du dernier onglet. Pour l’arrêter maintenant : node ${cheminRelatif}/serveur.mjs --stop`);
