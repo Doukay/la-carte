@@ -6,7 +6,7 @@
 
 Claude lit ton code et en dessine une carte interactive. Chaque partie, chaque fichier et chaque appel au serveur reçoit un nom en langage simple, et chaque lien entre eux est montré.
 
-Licence MIT · Node 18 ou plus · aucune dépendance
+Licence MIT · Node 18 ou plus · aucune dépendance · construit avec Claude Code
 
 [Installation](#installation) · [Démarrage rapide](#démarrage-rapide) · [Ce qui consomme des jetons](#ce-qui-consomme-des-jetons) · [Documentation](#documentation)
 
