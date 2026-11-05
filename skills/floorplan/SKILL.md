@@ -167,7 +167,7 @@ Quand la personne veut envoyer la carte à quelqu'un (un collègue, un client, q
 node floorplan/serveur.mjs --export [<fichier>] [--include flows,notes,recent,health]
 ```
 
-Il écrit `floorplan/<projet>-map.html` si aucun fichier n'est donné. `--include` vaut par défaut `flows,notes` (les parcours et la visite, les notes épinglées sur les fichiers) ; `recent` ajoute le travail récent et `health` ajoute le contrôle de santé, ou la revue du plan pour un plan. Laisse la santé de côté sauf si la personne la demande, et si elle la demande, dis que ça liste les adresses du serveur que n'importe qui peut utiliser et les endroits du code où se trouvent des secrets (jamais leurs valeurs) : elle ne doit donc l'envoyer qu'à des gens de confiance. Tout export montre comment l'appli est construite (chaque partie, fichier et adresse du serveur, avec noms et descriptions), mais pas le code source.
+Il écrit `floorplan/<projet>-carte.html` si aucun fichier n'est donné. `--include` vaut par défaut `flows,notes` (les parcours et la visite, les notes épinglées sur les fichiers) ; `recent` ajoute le travail récent et `health` ajoute le contrôle de santé, ou la revue du plan pour un plan. Laisse la santé de côté sauf si la personne la demande, et si elle la demande, dis que ça liste les adresses du serveur que n'importe qui peut utiliser et les endroits du code où se trouvent des secrets (jamais leurs valeurs) : elle ne doit donc l'envoyer qu'à des gens de confiance. Tout export montre comment l'appli est construite (chaque partie, fichier et adresse du serveur, avec noms et descriptions), mais pas le code source.
 
 ### Ce que la carte apporte en plus (automatique)
 

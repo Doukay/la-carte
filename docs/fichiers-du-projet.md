@@ -17,7 +17,7 @@ Floorplan n'écrit qu'à un seul endroit de ton projet : le dossier `floorplan/`
 | `serveur.mjs` | Sert la carte en local et répond aux questions par la ligne de commande de Claude Code ou par Codex | Non |
 | `requete.mjs` | Fait des recherches dans la carte depuis la ligne de commande ; Claude et Codex l'utilisent aussi | Non |
 | `artifact.html` | Une copie à ouvrir dans l'application Claude, seulement si tu en as demandé une | Non |
-| `<projet>-map.html` | Une copie exportée à partager, seulement si tu en as exporté une depuis Claude ou Codex (le bouton Exporter de la carte la télécharge à la place) | Non |
+| `<projet>-carte.html` | Une copie exportée à partager, seulement si tu en as exporté une depuis Claude ou Codex (le bouton Exporter de la carte la télécharge à la place) | Non |
 | `.cache/` | L'analyse, les feuilles de travail des descriptions, les changements de la dernière mise à jour, l'adresse du serveur qui tourne, et, pour un plan, les 20 dernières versions du plan auxquelles **Annuler** revient | Non. Tu peux le supprimer, mais **Annuler** n'aura alors plus rien où revenir |
 | `.gitignore` | Garde tout ce dossier hors de Git | Non |
 

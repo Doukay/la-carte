@@ -71,7 +71,7 @@ function exporterCarte(inclus, parcoursSupplementaires = []) {
   else if (sortie.sante) { const liste = lireRejets().map(({ reason: raison, ...d }) => d); if (liste.length) sortie.sante = { ...sortie.sante, dismissed: liste }; else delete sortie.sante.dismissed; }
   const json = JSON.stringify(sortie).replace(/<\/(script)/gi, '<\\/$1').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   const identifiantFichier = String(g.projet?.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'floorplan';
-  return { html: html.slice(0, a + DEBUT_DONNEES.length) + json + html.slice(b), name: `${identifiantFichier}-map.html`, include: retenues, plan: !!g.meta?.ebauche };
+  return { html: html.slice(0, a + DEBUT_DONNEES.length) + json + html.slice(b), name: `${identifiantFichier}-carte.html`, include: retenues, plan: !!g.meta?.ebauche };
 }
 /** Parcours demandés depuis la carte depuis sa dernière construction, tels que la page les envoie : vérifiés et raccourcis. */
 const nettoyerParcours = (liste) => (Array.isArray(liste) ? liste : []).slice(0, 50)

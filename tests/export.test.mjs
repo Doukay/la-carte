@@ -61,7 +61,7 @@ test('la carte a une santé, un travail récent, une note, un parcours et un dé
 
 test('par défaut l’export garde les parcours et les notes, et laisse de côté la santé, le travail récent et cet ordinateur', () => {
   const { html, file: fichier, out: sortie } = exporterCli();
-  assert.equal(path.basename(fichier), 'shop-map.html');
+  assert.equal(path.basename(fichier), 'shop-carte.html');
   assert.equal(path.dirname(fichier), path.join(fs.realpathSync(racine), 'floorplan'));
   const g = donneesDe(html);
   assert.match(g.meta.exported.at, /^\d{4}-\d\d-\d\dT/);
@@ -123,7 +123,7 @@ test('le bouton Exporter télécharge la copie, avec les parcours demandés depu
   const r = await appelerApi({ include: ['flows', 'health'], parcours: [supplement, { id: 'bad', steps: 'nope' }] }, { 'x-floorplan-token': jeton });
   assert.equal(r.status, 200);
   assert.match(r.headers.get('content-type'), /text\/html/);
-  assert.equal(r.headers.get('content-disposition'), 'attachment; filename="shop-map.html"');
+  assert.equal(r.headers.get('content-disposition'), 'attachment; filename="shop-carte.html"');
   const g = donneesDe(await r.text());
   assert.deepEqual(g.meta.exported.include, ['flows', 'health']);
   assert.deepEqual(g.parcours.map((f) => f.id), ['refund', 'custom-1']);
