@@ -168,7 +168,7 @@ test('sur un téléphone, la colonne qui défile remplace le schéma : ni zoom n
   assert.match(page, /rendreColonne\(vue, res\);/);
   assert.match(page, /if \(id\.startsWith\('x:'\) \|\| ouvrable\(id\)\) ouvrirBloc\(id\); else choisir\(id\);/); // toucher un bloc l'ouvre ou montre ses détails
   assert.match(page, /role="button" tabindex="0"/); // atteignable au clavier
-  assert.match(page, /if \(estTelephone\(\)\) colonne\.prepend\(elContexte\); else contexteOrigine\.insertBefore\(elContexte, contexteSuivant\);/);
+  assert.match(page, /if \(modeColonne\(\)\) colonne\.prepend\(elContexte\); else contexteOrigine\.insertBefore\(elContexte, contexteSuivant\);/);
   assert.match(page, /#crumbs button:not\(\.cur\):not\(:nth-last-child\(3\)\), #crumbs button\.cur:not\(:first-child\) \{ display: none; \}/); // le chemin montre où tu es, donc la rangée tient à 360 px
 });
 
@@ -183,4 +183,13 @@ test('estTelephone est défini avant la détection de l’outil d’IA, qui s’
 test('rien de nouveau n’apparaît sur un ordinateur : les boutons n’ont pas ajouté d’infobulles', () => {
   assert.doesNotMatch(page, /id="search-btn" title=/);
   assert.doesNotMatch(page, /id="flows-btn" title=/);
+});
+
+test('au-delà de 14 blocs sur ordinateur, la vue passe en cartes : pas de calcul de schéma, pas de lignes', () => {
+  assert.match(page, /const SEUIL_CARTES = 14;/);
+  assert.match(page, /const enCartes = !estTelephone\(\) && vue\.visible\.length > SEUIL_CARTES;/);
+  assert.match(page, /if \(modeColonne\(\)\) return disposerColonne\(vue\);/); // aucun schéma à calculer : c'est ce qui bloquait la page
+  assert.match(page, /body\.vue-cartes #svg, body\.vue-cartes #zoom, body\.vue-cartes #colonne > \.credit \{ display: none; \}/);
+  assert.match(page, /body\.vue-cartes \.col-lien\[hidden\] \{ display: none; \}/); // display: inline-flex écraserait hidden
+  assert.match(page, /body\.vue-cartes \.col-lien\.coupe \{ color: var\(--k-casse\); text-decoration: line-through; \}/);
 });

@@ -31,9 +31,9 @@ function liensColonne(vue, id) {
   return `<div class="col-liens"><span class="col-titre">Utilise</span>${cibles.map((b, n) => bouton(b, n >= 2)).join('')}${cibles.length > 2 ? `<button type="button" class="col-plus" aria-label="Montrer les ${cibles.length - 2} autres liens">+${cibles.length - 2}</button>` : ''}</div>`;
 }
 function rendreColonne(vue, res) {
-  if (!estTelephone()) { listeColonne.innerHTML = ''; return; }
+  if (!modeColonne()) { listeColonne.innerHTML = ''; return; }
   const connecteurs = new Map(vue.connectors.map((c) => [c.id, c]));
-  listeColonne.innerHTML = rangsColonne(vue, res).map((r) => `<div class="col-rang${r.relie ? ' relie' : ''}">${r.blocs.map(({ id }) => {
+  listeColonne.innerHTML = rangsColonne(vue, res).map((r) => `<div class="col-rang${r.relie ? ' relie' : ''}">${r.blocs.filter(({ id }) => estTelephone() || !connecteurs.has(id)).map(({ id }) => {
     const estConnecteur = connecteurs.has(id);
     const nom = nomDe(id);
     const couleur = couleurBloc(infosBloc(estConnecteur ? connecteurs.get(id).entity : id));
@@ -42,7 +42,7 @@ function rendreColonne(vue, res) {
   colonne.scrollTop = 0;
 }
 function montrerDansColonne(id, surligner = true) {
-  if (!estTelephone()) return;
+  if (!modeColonne()) return;
   const bloc = [...listeColonne.querySelectorAll('.col-bloc')].find((x) => x.dataset.id === id);
   if (!bloc) return false;
   if (surligner) bloc.classList.add('sel');
@@ -56,7 +56,7 @@ colonne.addEventListener('click', (ev) => {
   if (lien) { ev.stopPropagation(); const v = lien.dataset.vers; if (!montrerDansColonne(v)) localiser(v.startsWith('x:') ? entiteConnecteur(v) : v); return; }
   const zone = ev.target.closest('.col-zone');
   if (zone) { ev.stopPropagation(); const id = zone.parentElement.dataset.id; if (id.startsWith('x:') || ouvrable(id)) ouvrirBloc(id); else choisir(id); return; }
-  fermerFeuille();
+  if (estTelephone()) fermerFeuille(); else if (etatVue.selected) choisir(null);
 });
 colonne.addEventListener('keydown', (ev) => {
   const zone = ev.target.closest?.('.col-zone');

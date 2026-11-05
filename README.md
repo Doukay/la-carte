@@ -119,6 +119,10 @@ Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-s
 | [Dépannage](docs/depannage.md) | Les problèmes courants et leurs solutions |
 | [Développer la carte](docs/developpement.md) | Organisation du dépôt, tests, versions marquées |
 
+## Proposer une correction
+
+Les corrections sont les bienvenues : [CONTRIBUER.md](CONTRIBUER.md) dit comment faire, et ce qui ne doit jamais être envoyé. Chaque proposition est relue avant d'être intégrée.
+
 ## Signaler un problème
 
 Pour un défaut de sécurité, lis [SECURITY.md](SECURITY.md). Pour le reste, écris à la personne qui tient ce dépôt. L'auteur d'origine n'a rien à voir avec cette copie : ne lui envoie pas de demande à son sujet.

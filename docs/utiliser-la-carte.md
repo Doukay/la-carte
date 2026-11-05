@@ -45,6 +45,10 @@ Rien ne change à la souris dans une fenêtre de 1000 px de large ou plus. Le su
 
 Laisse la souris un instant sur un bloc pour voir de quel genre de chose il s'agit, où il se trouve et sa taille. Laisse-la sur une ligne pour voir ce qu'elle transporte, par exemple quelles adresses du serveur un écran appelle.
 
+## Quand il y a beaucoup de blocs
+
+Au-delà de 14 blocs, un schéma devient un paquet de lignes. La vue passe alors en cartes qui défilent : chaque carte dit ce que fait le bloc et ce qu'il **utilise**. Touche une pastille pour aller à ce bloc, ou une carte pour l'ouvrir. Le panneau de droite garde ce qui utilise cette partie et ce dont elle dépend.
+
 ## Voir l'état du code à l'instant T
 
 - **Mettre à jour** (en haut) refait la carte d'après le code actuel, en quelques secondes. La pastille du bouton dit combien de fichiers ont changé depuis la dernière carte. Ça ne consomme **aucun jeton**. Le bouton apparaît quand la carte est ouverte par son serveur.

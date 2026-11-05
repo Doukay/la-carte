@@ -1,0 +1,29 @@
+/* ---------- beaucoup de blocs : des cartes qui défilent à la place du schéma ---------- */
+/* au-delà de SEUIL_CARTES, un schéma devient un paquet de lignes : mêmes cartes que sur le téléphone, rangées en grille */
+@media (min-width: 701px) {
+  body.vue-cartes #svg, body.vue-cartes #zoom, body.vue-cartes #colonne > .credit { display: none; }
+  body.vue-cartes #colonne { display: block; position: absolute; inset: var(--hh, 64px) var(--pw) 0 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 24px 112px; background: var(--bg); }
+  body.vue-cartes #colonne #context { position: static; max-width: 640px; pointer-events: auto; margin-bottom: 20px; }
+  body.vue-cartes #colonne-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; align-items: stretch; }
+  body.vue-cartes .col-rang { display: contents; }
+  body.vue-cartes .col-bloc { scroll-margin-top: 12px; position: relative; display: flex; flex-direction: column; border-radius: var(--r-card); background: color-mix(in srgb, var(--c) 10%, var(--surface)); overflow: hidden; transition: background .15s var(--ease); }
+  body.vue-cartes .col-bloc:hover { background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
+  body.vue-cartes .col-bloc.sel { box-shadow: 0 0 0 2px var(--ring); }
+  body.vue-cartes .col-zone { position: relative; display: block; flex: 1; cursor: pointer; }
+  body.vue-cartes .col-zone:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; border-radius: var(--r-card); }
+  body.vue-cartes .col-bloc .card, body.vue-cartes .col-bloc .card.external { height: auto; background: transparent; box-shadow: none; animation: none; padding: 14px 36px 12px 14px; overflow: visible; }
+  body.vue-cartes .col-bloc .card.connector { padding: 12px 36px 12px 12px; }
+  body.vue-cartes .col-bloc .desc { -webkit-line-clamp: 2; max-height: 40px; }
+  body.vue-cartes .col-bloc .foot .meta { display: none; }
+  body.vue-cartes .col-bloc .foot:not(:has(.rw)) { display: none; }
+  body.vue-cartes .col-bloc .dir-ico { display: none; }
+  body.vue-cartes .col-ouvrir { position: absolute; right: 10px; top: 14px; color: var(--text-3); display: grid; place-items: center; width: 20px; height: 20px; }
+  body.vue-cartes .col-titre { font-size: 12px; color: var(--text-3); padding: 0 2px; }
+  body.vue-cartes .col-liens { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 0 12px 12px; }
+  body.vue-cartes .col-lien { display: inline-flex; align-items: center; min-height: 26px; max-width: 100%; padding: 0 10px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
+  body.vue-cartes .col-lien:hover { color: var(--text); }
+  body.vue-cartes .col-lien[hidden] { display: none; }
+  body.vue-cartes .col-lien.coupe { color: var(--k-casse); text-decoration: line-through; }
+  body.vue-cartes .col-lien span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.vue-cartes .col-plus { min-height: 26px; min-width: 26px; padding: 0 8px; border: 0; border-radius: 999px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
+}

@@ -19,7 +19,7 @@ function disposerColonne(vue) {
 
 const dispositionsCalculees = new Map();
 async function disposer(vue) {
-  if (estTelephone()) return disposerColonne(vue);
+  if (modeColonne()) return disposerColonne(vue);
   const deg = new Map();
   const incrementer = (id) => deg.set(id, (deg.get(id) || 0) + 1);
   for (const e of vue.edges) { incrementer(e.a); incrementer(e.b); }

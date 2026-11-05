@@ -2,6 +2,8 @@
 
 Cette page décrit ce dépôt tel qu'il est : une copie française et non officielle de Floorplan (de Hayden Smith, licence MIT), partie de la version 0.6.3 de l'auteur. Elle n'est reliée à aucun dépôt de l'auteur et ne publie rien vers lui. Les noms de fichiers cités ci-dessous sont ceux du code actuel ; certains seront renommés en français plus tard.
 
+Pour proposer une correction : [CONTRIBUER.md](../CONTRIBUER.md).
+
 ## Organisation du dépôt
 
 ```

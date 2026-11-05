@@ -8,6 +8,10 @@ if (!G) { document.body.innerHTML = '<p style="padding:2rem">Aucune donnée. Lan
 const PLAN = !!G.meta.ebauche;
 const requeteTelephone = matchMedia('(max-width: 700px)');
 const estTelephone = () => requeteTelephone.matches;
+// au-delà de ce nombre de blocs, un schéma devient un paquet de lignes : la vue passe en cartes, comme sur le téléphone
+const SEUIL_CARTES = 14;
+let vueEnCartes = false;
+const modeColonne = () => estTelephone() || vueEnCartes;
 const petitEcran = () => matchMedia('(max-width: 999px)').matches; // tablette comprise : à cette largeur, le panneau ouvert écraserait la carte
 // une copie exportée (serveur.mjs --export, ou le bouton Exporter) : en lecture seule, pour les personnes sans Claude
 const COPIE_EXPORTEE = G.meta.exported || null;

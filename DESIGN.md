@@ -377,6 +377,10 @@ La barre noire porte tout. Le niveau courant se lit à gauche, les niveaux supé
 
 **Mettre à jour** est le premier bouton de la barre, avec une pastille du nombre de fichiers modifiés depuis la dernière carte. Il disparaît sur téléphone, qui ne joint pas le serveur local, et sur une copie exportée. Quand la largeur manque, « Travail récent » devient « Récent », « Commencer ici » devient « Visite », et Mettre à jour garde son seul dessin.
 
+### Vue en cartes
+
+Au-delà de 14 blocs, sur ordinateur et tablette, une grille de cartes (250 px minimum) remplace le schéma : mêmes cartes que la colonne du téléphone, liens en pastilles « Utilise » de 26 px. Le panneau garde « Utilisé par » et « Dépend de » : la grille ne montre que ce que la partie contient.
+
 ### Liens coupés
 
 Pointillés rouges de 7 sur 6, avec au milieu du plus long morceau un rond qui porte une croix. Sur téléphone, le nom du lien dans « Utilise » est barré en rouge. Un lien coupé disparaît à la mise à jour qui suit la réparation du code.

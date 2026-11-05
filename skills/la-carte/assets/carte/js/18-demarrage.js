@@ -66,7 +66,7 @@ const synchroniserEntete = () => document.documentElement.style.setProperty('--h
 new ResizeObserver(synchroniserEntete).observe(elEntete); synchroniserEntete(); window.addEventListener('resize', synchroniserEntete);
 // sur un téléphone, le titre et la description défilent avec la colonne ; sur un écran plus large, ils reviennent au-dessus de la carte
 const elContexte = $('#context'), contexteOrigine = elContexte.parentNode, contexteSuivant = elContexte.nextSibling;
-const placerContexte = () => { if (estTelephone()) colonne.prepend(elContexte); else contexteOrigine.insertBefore(elContexte, contexteSuivant); synchroniserEntete(); };
+const placerContexte = () => { if (modeColonne()) colonne.prepend(elContexte); else contexteOrigine.insertBefore(elContexte, contexteSuivant); synchroniserEntete(); };
 requeteTelephone.addEventListener('change', () => { placerContexte(); if (etatVue.view) afficherVue(); }); // la colonne et le schéma n'ont pas la même disposition
  placerContexte();
 $('#btn-panel').onclick = () => reglerPanneau(document.body.classList.contains('no-panel'));

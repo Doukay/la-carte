@@ -1,0 +1,22 @@
+# Contrôle chaque proposition venue de l'extérieur : rien de personnel, et les tests. Ne donne aucun droit d'écriture ni aucun secret à son code.
+name: Proposition
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  controle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node outils/rien-de-personnel.mjs .
+      - run: node --test
