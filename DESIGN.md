@@ -263,6 +263,8 @@ Les couleurs d'état et de lien. Elles informent et ne décorent jamais.
 - **Gris de lecture** (`text-2`, `text-3`) : les descriptions, puis les indications et les petits libellés.
 - **Noir de barre** (`barre`, #000000) : la barre du haut, identique dans les deux thèmes, avec son champ de recherche (`barre-champ`), son survol (`barre-survol`) et ses textes (`barre-texte`, `barre-texte-2`).
 
+- **Alerte** (`k-casse` et `n-casse`, #d70015 ; sombre #ff453a) : un lien coupé et le bloc Introuvable. Le rouge reste réservé à ce qui est cassé ou à voir d'abord.
+
 ### Named Rules
 
 **La règle du groupe.** Un bloc porte la couleur de son groupe, et un bloc intérieur prend celle de sa partie de premier niveau. On ne crée pas de couleur pour un type de bloc ni pour faire joli.
@@ -351,6 +353,7 @@ Discrets au repos, ils répondent nettement quand on appuie.
 - **Pastille d'information :** pilule grise pour une taille de fichier ou le nom de l'outil d'IA relié, avec un petit point coloré si elle indique un état.
 - **Lien « Utilise » (téléphone) :** pilule blanche de 44px, qui mène au bloc cité. Les liens en trop se regroupent dans une pilule « +4 ».
 - **Référence dans une réponse :** pilule grise avec un point à la couleur du groupe.
+- **Pastille d'anomalie :** rond de 20px dans le haut du bloc, rouge ou orange selon la gravité, avec le nombre de points à voir. Elle garde sa taille à l'écran quand la carte est réduite.
 
 ### Cards / Containers
 
@@ -367,6 +370,12 @@ Discrets au repos, ils répondent nettement quand on appuie.
 ### Navigation
 
 La barre noire porte tout. Le niveau courant se lit à gauche, les niveaux supérieurs sont en gris, et la flèche permet de remonter. Sur téléphone, les boutons empilent icône et mot (Santé, Commencer ici, Parcours, Détails).
+
+**Mettre à jour** est le premier bouton de la barre, avec une pastille du nombre de fichiers modifiés depuis la dernière carte. Il disparaît sur téléphone, qui ne joint pas le serveur local, et sur une copie exportée. Quand la largeur manque, « Travail récent » devient « Récent », « Commencer ici » devient « Visite », et Mettre à jour garde son seul dessin.
+
+### Liens coupés
+
+Pointillés rouges de 7 sur 6, avec au milieu du plus long morceau un rond qui porte une croix. Sur téléphone, le nom du lien dans « Utilise » est barré en rouge. Un lien coupé disparaît à la mise à jour qui suit la réparation du code.
 
 ### Panneau de détails
 

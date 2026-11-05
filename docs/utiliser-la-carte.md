@@ -51,7 +51,7 @@ Laisse la souris un instant sur un bloc pour voir de quel genre de chose il s'ag
 - **Une pastille rouge ou orange sur un bloc** dit combien de points de santé sont à voir sur ce bloc ou à l'intérieur. Touche le bloc : le panneau les détaille. Les points mineurs restent dans le panneau Santé.
 - **Un lien rouge en pointillés, avec une croix,** est un lien coupé : un fichier importé qui n'existe plus, une fonction disparue, ou un appel à une adresse que le serveur n'a pas. Ce qui a disparu pour de bon arrive sur le bloc rouge **Introuvable**. Une fois le code réparé, **Mettre à jour** retire la coupure.
 
-La recherche de liens coupés lit le JavaScript et le TypeScript. Elle préfère rater un cas douteux plutôt que crier au loup : un chemin construit pendant l'exécution, par exemple, n'est pas signalé. Elle ne remplace pas des tests.
+La recherche de liens coupés lit le JavaScript, le TypeScript et les imports relatifs de Python ; les appels au serveur sont contrôlés dans tous les langages lus. Les imports d'autres langages (Go, Rust, Java) ne sont pas contrôlés. Elle préfère rater un cas douteux plutôt que crier au loup : un chemin construit pendant l'exécution, par exemple, n'est pas signalé. Elle ne remplace pas des tests.
 
 ## Le panneau latéral
 

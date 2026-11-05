@@ -8,7 +8,7 @@ Claude lit ton code et en dessine une carte interactive. Chaque partie, chaque f
 
 Licence MIT · Node 18 ou plus · aucune dépendance
 
-[Installation](#installation) · [Démarrage rapide](#démarrage-rapide) · [Comparaison](#comparaison-avec-archify-et-understand-anything) · [Fonctions](#fonctions) · [Voir en images](#voir-en-images) · [Comment ça marche](#comment-ça-marche) · [Documentation](docs/README.md) · [FAQ](#faq)
+[Installation](#installation) · [Démarrage rapide](#démarrage-rapide) · [Ce qui consomme des jetons](#ce-qui-consomme-des-jetons) · [Documentation](#documentation)
 
 </div>
 
@@ -26,122 +26,11 @@ La carte te donne le schéma que personne n'a dessiné. Demande une carte à Cla
 - **Pour une équipe :** accueillir quelqu'un en quelques minutes, de la vue d'ensemble jusqu'au fichier précis.
 - **Pour travailler avec une IA :** après chaque modification de Claude, voir exactement quelles parties il a touchées et pourquoi.
 
+<img src="docs/images/overview.png" alt="La vue d'ensemble d'une boutique en ligne fictive : le site, le serveur, les tests et les services extérieurs, reliés, avec une couleur par groupe de blocs">
 
-## Fonctions
+<img src="docs/images/coupes.png" alt="Un lien coupé en rouge avec une croix mène au bloc Introuvable, et une pastille indique les points à voir sur un bloc">
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-**🗺️ Une carte à chaque niveau de zoom**<br>
-Pars de l'appli entière, puis double-clique pour entrer dans une partie, un groupe de fichiers, un fichier, et ses adresses du serveur. Chaque vue montre ce qui l'utilise et ce qu'elle utilise.
-
-</td>
-<td width="50%" valign="top">
-
-**💬 Du langage simple partout**<br>
-« Encaisse les paiements par carte à la commande », pas « enveloppe de l'API Stripe ». Les termes techniques s'expliquent au survol, et un interrupteur affiche la vue pour développeurs.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-**🔌 De vrais liens, même entre dépôts**<br>
-Elle suit les imports, et relie chaque appel au serveur de ton interface à l'adresse du serveur qui y répond, même quand ils sont dans des dépôts séparés.
-
-</td>
-<td valign="top">
-
-**🖥️ Partir d'un écran**<br>
-Choisis une page que tu connais et vois tout ce qu'il y a derrière : ses parties, les appels qu'elle fait, le code du serveur, les données et les services extérieurs.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-**🧭 Poser une question à la carte**<br>
-« Comment un remboursement arrive-t-il sur la carte bancaire du client ? » donne une réponse et une mini-carte des seuls éléments concernés, avec une explication pas à pas.
-
-</td>
-<td valign="top">
-
-**🩺 Contrôle de santé**<br>
-Repère les erreurs classiques des applis faites avec l'IA : clés dans le code ou envoyées au navigateur, tables Supabase lisibles par tout le monde, règles Firebase ouvertes, webhooks Stripe que n'importe qui pourrait falsifier, adresses du serveur sans connexion. Chaque problème vient avec une demande de correction prête à coller. Un contrôle, pas un audit, et il se trompe parfois.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-**🟢 Travail récent**<br>
-Les blocs que ton IA vient de changer s'allument en vert, chacun avec une note qui dit en quoi la modification répond à ce que tu avais demandé.
-
-</td>
-<td valign="top">
-
-**⚡ À jour, et à toi**<br>
-Une mise à jour ne relit que ce qui a changé, et une carte déjà ouverte se recharge toute seule. Tout tourne sur ta machine, et rien n'est enregistré dans Git.
-
-</td>
-</tr>
-</table>
-
-Il y a aussi des **parcours** guidés que tu peux demander avec tes mots, une **visite guidée** d'une minute (**Commencer ici**), **Exporter** pour envoyer une copie à n'importe qui en un seul fichier HTML, une disposition pour **téléphones et tablettes** avec glisser et pincer, la recherche, des raccourcis clavier et des actions au clic droit sur chaque bloc.
-
-### Les plans, pour une appli pas encore construite
-
-La carte est faite pour cartographier du code que tu as déjà. Elle peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
-
-## Voir en images
-
-Ces captures montrent une boutique fictive, Atelier Lumière.
-
-<img src="docs/images/overview.png" alt="La vue d'ensemble d'une boutique en ligne : le site, le serveur, les tests et les services extérieurs, reliés, avec une couleur par groupe de blocs">
-
-<table>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/images/ask.png" alt="Un tableau de réponse : le paiement d'une commande, du panier jusqu'à Stripe et au mail de confirmation, avec des blocs numérotés">
-<p><b>Poser une question à la carte.</b> La réponse s'écrit en français et se dessine sur un tableau, avec seulement les blocs concernés.</p>
-</td>
-<td width="50%" valign="top">
-<img src="docs/images/screens.png" alt="Tout ce qu'il y a derrière la page Panier : ses demandes au serveur, le paiement et Stripe">
-<p><b>Partir d'un écran.</b> Choisis une page et vois tout ce qu'il y a derrière, du bouton jusqu'à la base de données et aux services extérieurs.</p>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<img src="docs/images/recent.png" alt="Le tableau Travail récent : annuler une commande, ce qui était demandé, ce qui a été fait, et une note sur chaque bloc modifié">
-<p><b>Travail récent.</b> Ce que tu avais demandé, ce qui a changé et pourquoi chaque changement était nécessaire, sur un seul tableau.</p>
-</td>
-<td valign="top">
-<img src="docs/images/health.png" alt="Le panneau Santé qui signale une clé secrète écrite dans le code et une adresse du serveur que tout le monde peut utiliser">
-<p><b>Contrôle de santé.</b> Une clé oubliée dans le code et une adresse du serveur que tout le monde peut utiliser, chacune avec une demande de correction en un clic.</p>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<img src="docs/images/inside.png" alt="L'intérieur du serveur : ses parties au milieu, ce qui l'utilise à gauche et les services extérieurs à droite">
-<p><b>Entrer dans une partie.</b> Ce qu'elle contient, ce qui l'utilise et ce dont elle dépend. Les petites étiquettes marquent ce qui vient de changer.</p>
-</td>
-<td valign="top">
-<img src="docs/images/flow.png" alt="Un parcours guidé, étape 2 sur 5 : le site transmet la commande au serveur">
-<p><b>Parcours guidés.</b> Regarde un appel traverser l'appli étape par étape, ou demande qu'on en suive un nouveau.</p>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<img src="docs/images/phone.png" alt="La carte sur téléphone : les blocs se suivent dans une colonne qui défile" width="280">
-<p><b>Sur téléphone.</b> Une colonne qui défile, sans zoom ni déplacement.</p>
-</td>
-<td valign="top">
-<img src="docs/images/coupes.png" alt="Un lien rouge en pointillés avec une croix mène au bloc Introuvable, et une pastille rouge indique les points à voir sur le serveur">
-<p><b>L'état du code à l'instant T.</b> Les liens coupés se voient en rouge, les blocs concernés portent une pastille. <b>Mettre à jour</b> refait la carte en quelques secondes, sans consommer de jetons.</p>
-</td>
-</tr>
-</table>
+D'autres captures dans [Tout ce que fait la carte](docs/fonctions.md#voir-en-images).
 
 ## Installation
 
@@ -179,7 +68,7 @@ Seul ce qui a changé est relu, et ce sur quoi tu viens de travailler s'allume d
 
 > Voici mon cahier des charges. Fais-moi une carte de ce qu'il faudrait construire.
 
-Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du système prévu, clairement marqué comme un plan.
+Tu obtiens un [plan](docs/fonctions.md#les-plans-pour-une-appli-pas-encore-construite) du système prévu, clairement marqué comme un plan.
 
 ### À essayer
 
@@ -192,22 +81,13 @@ Tu obtiens un [plan](#les-plans-pour-une-appli-pas-encore-construite) du systèm
 | « Réécris la carte pour des développeurs » | « Qu'avons-nous changé pour les remboursements ? » |
 | « Exporte la carte que je l'envoie à l'équipe » | |
 
-## Comment ça marche
+## Ce qui consomme des jetons
 
-```mermaid
-flowchart LR
-    code["Ton code<br/>un dépôt ou plusieurs"] --> scan["Analyse<br/>fichiers, imports, routes, appels"]
-    scan --> claude["Claude<br/>nomme les parties, décrit chaque fichier"]
-    claude --> build["Construction<br/>carte, santé, écrans, travail récent"]
-    build --> map["la-carte/index.html<br/>s'ouvre dans ton navigateur"]
-    map -. "mets à jour la carte" .-> scan
-```
-
-Des scripts font le travail mécanique : trouver les dépôts, lire le code dans une douzaine de langages, relier les appels aux adresses du serveur, disposer la carte. C'est du Node simple, sans dépendance. Claude fait la partie que seul un lecteur peut faire : décider ce que les parties de ton appli *sont*, et le dire simplement. Les détails sont dans [Comment ça marche](docs/comment-ca-marche.md).
-
-**Langages :** TypeScript, JavaScript, Python, Go, Rust, Java, Kotlin, Scala, plus les fichiers Vue, Svelte et Astro, avec une prise en charge plus légère des autres.<br>
-**Adresses du serveur :** Express, Fastify, Koa, Hono, Next.js, Firebase Cloud Functions, Flask, FastAPI, Django, net/http de Go, Gin, Echo et chi, Actix, Axum, Spring, et les tables de routes indexées par méthode et chemin (`"GET /api/orders": listOrders`) en JavaScript et en Python.<br>
-**Écrans :** Next.js, React Router, Vue, SvelteKit, Remix, Nuxt, Astro, Expo, Angular, TanStack.
+| Sans jeton | Sur ton compte Claude |
+|---|---|
+| Analyser le code, contrôle de santé, liens coupés | Première carte : nommer et décrire les fichiers |
+| Bouton **Mettre à jour** | Décrire les nouveaux fichiers, à ta demande |
+| Ouvrir, parcourir, chercher, exporter | Poser une question, demander un parcours |
 
 ## Ce que ça ajoute à ton projet
 
@@ -229,69 +109,15 @@ Plus de détails dans [Confidentialité et sécurité](docs/confidentialite-et-s
 | | |
 |---|---|
 | [Pour commencer](docs/bien-demarrer.md) | Installation, première carte, mise à jour, planifier à partir d'un cahier des charges, reprendre une correction de l'auteur, retirer |
+| [Tout ce que fait la carte](docs/fonctions.md) | Les fonctions en détail, avec des captures, et ce que la carte sait lire |
 | [Utiliser la carte](docs/utiliser-la-carte.md) | Chaque bouton, vue, raccourci et menu |
 | [Comment ça marche](docs/comment-ca-marche.md) | Le déroulé, la mise en relation des appels, les mises à jour |
 | [Ce qu'il y a dans ton projet](docs/fichiers-du-projet.md) | Chaque fichier créé par la carte, et comment le modifier |
 | [Confidentialité et sécurité](docs/confidentialite-et-securite.md) | Ce qui tourne où, et ce qui quitte ta machine |
 | [Est-ce sûr à installer ?](docs/est-ce-sur.md) | Ce que fait le plugin, les programmes qu'il lance, ses limites honnêtes |
+| [Questions fréquentes](docs/questions-frequentes.md) | Ce qu'on se demande le plus souvent |
 | [Dépannage](docs/depannage.md) | Les problèmes courants et leurs solutions |
 | [Développer la carte](docs/developpement.md) | Organisation du dépôt, tests, versions marquées |
-
-## FAQ
-
-<details>
-<summary><b>Est-ce sûr à installer ?</b></summary>
-
-Le plugin n'a ni crochets (hooks), ni serveurs MCP, ni dépendances, ne télécharge rien et n'exécute jamais de code venu d'Internet. Il ne se connecte à aucun service extérieur. Un test vérifie tout cela, et tu peux le relancer toi-même. Mais ça ne veut pas dire « sans risque » : Claude lit ton code et l'envoie à Anthropic, et le contrôle de santé n'est pas un audit. Tout est dans [Est-ce sûr à installer ?](docs/est-ce-sur.md).
-</details>
-
-<details>
-<summary><b>Mon code quitte-t-il mon ordinateur ?</b></summary>
-
-Oui, de la façon dont Claude Code fonctionne toujours : Claude lit les fichiers dont il a besoin pour décrire ton appli, et ils partent chez Anthropic sur ton compte. La carte elle-même est un fichier local et son serveur n'écoute que sur ta machine. Si tu choisis d'ouvrir la carte dans l'application Claude, Claude envoie la carte (noms, descriptions et structure, pas ton code source) vers ton compte claude.ai privé, et il te le demande avant. La carte elle-même n'envoie rien.
-</details>
-
-<details>
-<summary><b>Combien de temps ça prend, et combien ça coûte ?</b></summary>
-
-Une première carte prend quelques minutes pour une petite appli et plus pour une grosse, parce que chaque fichier et chaque adresse du serveur est décrit. Ça consomme ton abonnement Claude comme n'importe quelle autre tâche. Les gros projets sont répartis entre plusieurs aides en parallèle. Les mises à jour ne relisent que ce qui a changé : elles sont rapides et légères.
-</details>
-
-<details>
-<summary><b>Faut-il la ligne de commande pour la bulle de questions ?</b></summary>
-
-Non, la carte marche sans. La bulle de questions répond grâce à la ligne de commande de Claude Code, qui peut lire ton vrai code. Sans la ligne de commande, tu peux poser tes questions depuis l'application Claude, à partir de la carte seule.
-</details>
-
-<details>
-<summary><b>Va-t-elle modifier ou enregistrer mes fichiers ?</b></summary>
-
-Elle n'écrit que dans son propre dossier `la-carte/`, dont seul `sources/` est à garder dans Git. Elle ne modifie jamais ton code, ton `.gitignore` ni tes fichiers `CLAUDE.md` ou `CLAUDE.local.md`. (Les demandes « Corriger avec Claude » que tu copies, elles, servent à demander à Claude de modifier ton code, et c'est toi qui les colles.)
-</details>
-
-<details>
-<summary><b>Les noms choisis ne sont pas ceux qu'on utilise chez nous. Puis-je les changer ?</b></summary>
-
-Oui. Demande simplement (« renomme "Serveur principal" en "API boutique" dans la carte »), ou modifie toi-même `la-carte/sources/architecture.json` et `la-carte/sources/descriptions/`. Tes modifications sont gardées à chaque mise à jour.
-</details>
-
-<details>
-<summary><b>Puis-je l'utiliser avant d'avoir écrit du code ?</b></summary>
-
-Oui, même si cartographier du code existant est son usage principal. Donne un cahier des charges, une spécification ou une description de ton appli et demande une carte : tu obtiens un plan, une carte de ce qu'il faudrait construire, marquée comme un plan, avec une revue des décisions encore ouvertes. Tu peux le modifier depuis la carte, puis passer à une carte du vrai code une fois qu'il est construit. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
-</details>
-
-<details>
-<summary><b>Est-ce que ça marche avec les monorepos et les projets en plusieurs dépôts ?</b></summary>
-
-Oui. Pointe-le sur un monorepo, sur un sous-dossier, ou sur un simple dossier qui contient plusieurs dépôts côte à côte. Il trouve chaque dépôt et les relie.
-</details>
-
-<details>
-<summary><b>Pourquoi une version française ?</b></summary>
-
-Cette copie existe pour que le plugin, son code, ses messages et ses réponses soient entièrement en français, par et pour un francophone. Elle n'est pas reliée à l'original : voir [Pour commencer](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur) pour reprendre une correction de l'auteur.
-</details>
 
 ## Signaler un problème
 

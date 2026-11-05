@@ -21,6 +21,39 @@ export function trouverLiensCasses(racine, fichiers, routes) {
     return EXTENSIONS.some((e) => fs.existsSync(base + e));
   };
   const parChemin = new Map(fichiers.map((f) => [f.path, f]));
+  // Python : seulement les imports relatifs (from .prix import calcul). Un import absolu peut venir de n'importe quel paquet installé.
+  const existePy = (depuis, spec) => {
+    const points = /^\.+/.exec(spec)[0].length;
+    let dossier = path.dirname(depuis);
+    for (let n = 1; n < points; n++) dossier = path.dirname(dossier);
+    const base = path.join(racine, dossier, ...spec.slice(points).split('.').filter(Boolean));
+    return fs.existsSync(`${base}.py`) || fs.existsSync(`${base}.pyi`) || fs.existsSync(`${base}.so`) || fs.existsSync(base);
+  };
+  for (const f of fichiers) {
+    if (f.lang !== 'python') continue;
+    for (const i of f.imports || []) {
+      const spec = String(i.spec || '');
+      if (!spec.startsWith('.')) continue;
+      if (!/^\.+$/.test(spec) && !i.files?.length) {
+        if (!existePy(f.path, spec)) casses.push({ from: f.path, kind: 'fichier', target: spec, line: i.line });
+        continue;
+      }
+      if (/^\.+$/.test(spec) || i.files?.length !== 1) continue;
+      const cible = parChemin.get(i.files[0]);
+      if (cible?.lang !== 'python') continue;
+      const texte = texteDe(cible.path);
+      // from x import * et __getattr__ fabriquent des noms que la lecture du fichier ne montre pas
+      if (texte == null || /\bimport\s+\*|__getattr__/.test(texte)) continue;
+      for (const nom of new Set(i.names || [])) {
+        // dans un paquet, le nom importé peut être un fichier ou un dossier voisin de __init__.py
+        // « from .noyau import base » : la cible est alors le fichier base.py lui-même, le nom désigne le fichier
+        if (path.basename(cible.path).replace(/\.pyi?$/, '') === nom) continue;
+        const voisin = path.join(racine, path.dirname(cible.path), nom);
+        if (path.basename(cible.path) === '__init__.py' && (fs.existsSync(`${voisin}.py`) || fs.existsSync(voisin))) continue;
+        if (!new RegExp(`(^|[^\\w])${nom}([^\\w]|$)`).test(texte)) casses.push({ from: f.path, kind: 'fonction', target: nom, to: cible.path, line: i.line });
+      }
+    }
+  }
 
   for (const f of fichiers) {
     if (!LANGUES_JS.has(f.lang)) continue;

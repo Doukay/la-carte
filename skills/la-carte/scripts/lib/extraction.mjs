@@ -68,6 +68,17 @@ function gestionnaireTable(brut) {
   return null; // une chaîne, un nombre, un objet, une liste, ou un appel sur une constante : ce n'est pas une table de routes
 }
 
+// La même idée, en liste : ['GET', '/api/state', state.getState], ou ("GET", "/api/state", get_state) en Python.
+const LIGNE_TABLE = /[\[(]\s*['"](GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)['"]\s*,\s*['"](\/[^'"\n]*)['"]\s*,\s*([^\n]+?)\s*[\])]\s*,?\s*(?:\/\/[^\n]*)?$/gm;
+function tableRoutesParListe(code, ligneDe) {
+  const sortie = [];
+  for (const m of tout(LIGNE_TABLE, code)) {
+    const h = gestionnaireTable(m[3]);
+    if (h?.handler) sortie.push({ method: m[1], path: m[2], var: null, line: ligneDe(m.index), framework: 'table', handler: h.handler });
+  }
+  return sortie.length >= 2 ? sortie : [];
+}
+
 function tableRoutesParCle(code, ligneDe) {
   const sortie = [];
   for (const m of tout(CLE_TABLE, code)) {
@@ -272,7 +283,7 @@ function extraireJs(source, cheminFichier) {
     for (const methode of methodes.length ? methodes : ['ANY']) routes.push({ method: methode, path: p, var: null, line: 1, framework: 'next' });
   }
 
-  routes.push(...tableRoutesParCle(code, ligneDe));
+  routes.push(...tableRoutesParCle(code, ligneDe), ...tableRoutesParListe(code, ligneDe));
 
   const declencheurs = /firebase-functions/.test(code) ? fonctionsFirebase(code, ligneDe, routes, montages) : [];
 
@@ -446,7 +457,7 @@ function extrairePy(source) {
     }
     for (const methode of methodes) routes.push({ method: methode, path: m[3], var: m[1], line: ligneDe(m.index) });
   }
-  routes.push(...tableRoutesParCle(code, ligneDe));
+  routes.push(...tableRoutesParCle(code, ligneDe), ...tableRoutesParListe(code, ligneDe));
   // Django urls.py
   for (const m of tout(/\b(?:re_)?path\(\s*r?["']([^"']*)["']\s*,(?!\s*include\()/g, code)) routes.push({ method: 'ANY', path: '/' + m[1].replace(/^\^|\$$/g, ''), var: null, line: ligneDe(m.index), framework: 'django' });
 
