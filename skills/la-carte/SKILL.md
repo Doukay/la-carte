@@ -12,6 +12,7 @@ allowed-tools:
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/ouvrir.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/plan.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/recents.mjs *)
+  - Bash(node ${CLAUDE_SKILL_DIR}/scripts/sans-claude.mjs *)
 ---
 
 # La carte
@@ -77,6 +78,8 @@ Fais seulement ce que `ENSUITE` demande :
 - vérifie les résumés des modules et les parcours si le changement était gros.
 
 Une mise à jour typique après quelques heures de travail, c'est une poignée d'entrées de fiche. Ensuite, marque le travail récent (étape 7), puis montre la carte et fais le rapport (étape 8). Montre-la toujours, même si rien n'a changé : la personne a demandé à voir sa carte.
+
+Si `sources/architecture.json` contient `"auto": true`, la carte a été faite sans Claude par `sans-claude.mjs` (une tâche planifiée) : les parties suivent seulement les dossiers. Réécris-le comme pour une première carte (étape 3), en gardant les descriptions déjà écrites, et retire `"auto"`. Si la personne demande une mise à jour automatique, sans jetons, c'est `node ${CLAUDE_SKILL_DIR}/scripts/sans-claude.mjs <racine> [--export <fichier>]` à lancer chaque jour ; avec `LA_CARTE_DOSSIER=<dossier>`, la carte est rangée hors du projet.
 
 ## Déroulé (première fois)
 

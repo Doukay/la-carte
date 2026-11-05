@@ -129,6 +129,8 @@ export function avertissementDocker(racine) {
 
 /** Le dossier de la carte pour une racine de code. */
 export function dossierCarte(racine) {
+  // LA_CARTE_DOSSIER range la carte hors du projet : une tâche planifiée ne doit rien écrire dans le code (sans-claude.mjs)
+  if (process.env.LA_CARTE_DOSSIER) return path.resolve(process.env.LA_CARTE_DOSSIER);
   const dossier = path.join(racine, DOSSIER_CARTE);
   if (fs.existsSync(dossier) && !estDossierCarte(dossier) && fs.readdirSync(dossier).length) {
     console.error(`✗ ${DOSSIER_CARTE}/ existe déjà ici et ce n'est pas une carte (il fait partie du projet). Ajoute --out <dossier> pour mettre la carte ailleurs.`);

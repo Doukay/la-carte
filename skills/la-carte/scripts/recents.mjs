@@ -2,7 +2,9 @@
 // Faits pour marquer le « travail récent » sur la carte : ce qui a changé depuis la dernière carte (d’après actualiser.mjs),
 // les changements non commités et les commits récents, chacun relié au bloc qu’il devient. Claude ajoute le pourquoi
 // (ce que la personne avait demandé) et écrit la-carte/.cache/travail-recent.json. Lecture seule.
-// usage : node recents.mjs [racine] [--days 7]
+// Avec --git, aucun Claude : chaque commit des derniers jours devient une tâche (son message pour titre) et le script écrit
+// lui-même travail-recent.json, sauf si Claude en a écrit un plus récent que le dernier commit.
+// usage : node recents.mjs [racine] [--days 7] [--git]
 import fs from 'node:fs';
 import path from 'node:path';
 import { git, lireArguments, dossierCarte } from './lib/commun.mjs';
@@ -27,6 +29,37 @@ const blocDe = (p) => {
   const routesFichier = routesDe.get(p) || [];
   return `"${f.name}" dans ${etiquettes.get(f.n) || f.n}${routesFichier.length ? ` · ${routesFichier.length} adresse(s) du serveur` : ''}`;
 };
+
+if (params.git) {
+  const depuisGit = new Date(Date.now() - (Number(params.days) || 7) * 86400000).toISOString();
+  const taches = [];
+  let dernierCommit = 0;
+  for (const r of G.meta.repos || []) {
+    const prefixe = r.path === '.' ? '' : r.path + '/';
+    const journal = git(path.join(racine, r.path), ['log', `--since=${depuisGit}`, '--max-count=15', '--no-merges', '--name-status', '--date=iso-strict', '--format=@@%h%x09%ad%x09%s']) || '';
+    for (const bloc of journal.split('@@').filter((b) => b.trim())) {
+      const [entete, ...lignes] = bloc.trim().split('\n').filter(Boolean);
+      const [hash, date, ...sujet] = entete.split('\t');
+      dernierCommit = Math.max(dernierCommit, Date.parse(date) || 0);
+      const elements = lignes.map((l) => l.split('\t'))
+        .map((champs) => ({ ref: prefixe + champs[champs.length - 1], change: champs[0].startsWith('A') ? 'new' : 'changed' }))
+        .filter((e) => fichiers.has(e.ref));
+      if (elements.length) taches.push({ title: sujet.join('\t'), summary: `Commit ${hash} du ${date.slice(0, 10)}.`, at: Date.parse(date) || 0, items: elements.slice(0, 12) });
+    }
+  }
+  // un travail récent écrit par Claude (avec le pourquoi) reste tant qu’aucun commit n’est venu après lui
+  const ecritLe = actuel && (Date.parse(actuel.updatedAt) || fs.statSync(path.join(dossier, '.cache', 'travail-recent.json')).mtimeMs);
+  if (actuel && actuel.source !== 'git' && ecritLe >= dernierCommit) {
+    console.log(`Travail récent écrit par Claude le ${actuel.updatedAt} gardé : aucun commit depuis.`);
+    process.exit(0);
+  }
+  taches.sort((a, b) => b.at - a.at);
+  const sortie = { source: 'git', updatedAt: new Date().toISOString(), tasks: taches.slice(0, 10).map(({ at, ...t }) => t) };
+  fs.writeFileSync(path.join(dossier, '.cache', 'travail-recent.json'), JSON.stringify(sortie, null, 2) + '\n');
+  console.log(`Travail récent d’après Git : ${sortie.tasks.length} commit(s) des ${Number(params.days) || 7} derniers jours. Lance construire.mjs.`);
+  process.exit(0);
+}
+
 const L = [];
 const MAXIMUM = 40;
 const liste = (lignes) => { lignes.slice(0, MAXIMUM).forEach((r) => L.push('  ' + r)); if (lignes.length > MAXIMUM) L.push(`  … +${lignes.length - MAXIMUM} de plus`); };

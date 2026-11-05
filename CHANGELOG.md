@@ -2,6 +2,12 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.6 (2026-11-05)
+
+- **Mise à jour sans Claude** (`scripts/sans-claude.mjs`) : remet une carte à jour sans aucun jeton, pour une tâche planifiée. Sans carte décrite, les parties suivent les dossiers (`"auto": true` dans `architecture.json`, que Claude réécrit à la première vraie mise à jour). `--export` écrit une copie à partager, sans contrôle de santé.
+- **« Travail récent » depuis Git** : `recents.mjs --git` fait de chaque commit des sept derniers jours une tâche, son message pour titre. Un récit écrit par Claude reste tant qu'aucun commit n'est venu après.
+- **Carte rangée hors du projet** : avec `LA_CARTE_DOSSIER=<dossier>`, tous les scripts lisent et écrivent la carte dans ce dossier.
+
 ## 0.6.3-fr.5 (2026-11-05)
 
 - **Textes par défaut plus propres** : avant que Claude décrive un fichier, la carte reprend son commentaire de tête. Elle en retire maintenant les pastilles, les dates, les renvois (« (revue écran 13) ») et les parenthèses datées, baisse une phrase écrite toute en majuscules, et ne coupe plus la phrase sur « ex. » ni dans des guillemets.

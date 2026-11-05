@@ -91,6 +91,11 @@ Ce choix reste sur ta machine, dans `la-carte/`. **Rien n'est envoyé à l'auteu
 ### Travail récent
 Apparaît quand Claude vient de changer des choses. Il place les blocs modifiés sur un seul tableau, avec ce que tu avais demandé, un résumé de ce qui a été fait, et une note sur chaque bloc. Ailleurs sur la carte, les blocs modifiés ont un anneau vert et une étiquette **Modifié** ou **Nouveau**, et les parties qui les contiennent affichent **N modifiés**, pour que tu puisses suivre le vert depuis le niveau le plus haut.
 
+Une carte mise à jour sans Claude (voir plus bas) montre à la place les commits des sept derniers jours : leur message sert de titre, sans le « pourquoi ». Dès que Claude met la carte à jour, son récit reprend la place, jusqu'au commit suivant.
+
+### Mise à jour automatique, sans jeton
+`node <dossier du skill>/scripts/sans-claude.mjs <racine> --export <fichier>`, lancé chaque jour par une tâche planifiée, remet la carte à jour sans rien demander à Claude : les descriptions déjà écrites restent, un nouveau fichier reçoit un nom tiré de son nom et de son commentaire de tête, « Travail récent » vient de Git, et `--export` écrit une copie à partager (sans contrôle de santé). Sans carte décrite, les parties suivent simplement les dossiers. Avec `LA_CARTE_DOSSIER=<dossier>`, la carte est rangée dans ce dossier et le projet n'est pas touché.
+
 ### Écrans
 Chaque page de ton appli que la carte a détectée. Choisis-en une pour voir tout ce qu'il y a derrière : ses composants, les appels qu'elle fait, le code du serveur qui y répond, les données qu'ils touchent, et les services extérieurs.
 

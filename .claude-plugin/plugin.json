@@ -1,6 +1,6 @@
 {
   "name": "la-carte",
-  "version": "0.6.3-fr.5",
+  "version": "0.6.3-fr.6",
   "description": "Vois comment ton appli est construite : une carte interactive de ton code où chaque partie, fichier et appel au serveur a un nom et une description en français simple, avec un contrôle de santé, les écrans, des parcours guidés, des questions sur la carte et le travail récent. Traduction française non officielle de Floorplan (Hayden Smith).",
   "author": {
     "name": "Hayden Smith (auteur d'origine) ; traduction française non officielle",

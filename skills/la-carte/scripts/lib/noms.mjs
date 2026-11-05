@@ -2,7 +2,7 @@
 import path from 'node:path';
 
 const P = path.posix;
-const ACRONYMES = /(?<![\p{L}\p{N}])(api|ui|ux|id|ids|sku|skus|csv|url|urls|http|db|sql|bc|mcp|pos|gcs|s3|aws|gcp|jwt|pdf|ai|llm|cli|css|html|json|xml|oauth|sso|cdn|dns|ip|io|qa|ci|cd|crud|rpc|grpc|sdk|ttl|uuid|mtg)(?![\p{L}\p{N}])/gu;
+const ACRONYMES = /(?<![\p{L}\p{N}])(api|ui|ux|id|ids|sku|skus|csv|url|urls|http|db|sql|bc|mcp|pos|gcs|s3|aws|gcp|jwt|pdf|ai|llm|cli|css|html|json|xml|oauth|sso|cdn|dns|ip|io|qa|ci|cd|crud|rpc|grpc|sdk|ttl|uuid|mtg|js|ts|jsx|tsx)(?![\p{L}\p{N}])/gu;
 const GENERIQUES = /^(index|page|layout|route|routes|__init__|__main__|main|mod|lib|app|server|loading|error|not-found|template|default|handler|handlers|views?|urls|models?|schemas?|types?|constants?|utils?|helpers?|config|settings)$/i;
 
 // mots français souvent écrits sans accent dans les noms de code (etat_deux_facteurs, PageSante)
