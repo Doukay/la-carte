@@ -15,8 +15,6 @@ Licence MIT · Node 18 ou plus · aucune dépendance
 > **La carte est une traduction française non officielle de Floorplan.** Cette copie est faite par une personne qui n'a aucun lien avec l'auteur du plugin. Tout le code a été réécrit en français à partir de la version 0.6.3 de l'auteur. Elle n'est reliée à aucune de ses mises à jour : une correction publiée par l'auteur n'arrive pas toute seule ici, il faut la reprendre à la main (voir [Reprendre une correction de l'auteur](docs/bien-demarrer.md#reprendre-une-correction-de-lauteur)).
 >
 > Floorplan a été créé par **[Hayden Smith](https://github.com/haydenschmitty)**. Dépôt d'origine : <https://github.com/haydenschmitty/floorplan>. Le travail est à lui, cette copie ne fait que le traduire et en retirer quelques fonctions (voir le [journal des changements](CHANGELOG.md#version-française)). Licence MIT conservée, voir [LICENSE](LICENSE).
->
-> **Les images** de ce dépôt (`docs/images/`) sont des captures d'écran de la version d'origine : leur interface est en anglais. Les noms des boutons dans le texte sont ceux de cette version française.
 
 ## Pourquoi la carte ?
 
@@ -94,42 +92,51 @@ Il y a aussi des **parcours** guidés que tu peux demander avec tes mots, une **
 
 ### Les plans, pour une appli pas encore construite
 
-La carte est fait pour cartographier du code que tu as déjà. Il peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
+La carte est faite pour cartographier du code que tu as déjà. Elle peut aussi partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire, et dessiner un **plan** : la même carte, qui montre chaque partie, fichier, adresse du serveur et écran dont tu aurais besoin et comment ils s'assembleraient. Les blocs sont en pointillés pour montrer que c'est un plan. À la place du contrôle de santé, tu as une revue de ce que le plan laisse encore ouvert, chaque partie a sa demande toute prête pour la construire, et tu peux remodeler le plan depuis la carte (« prévois aussi les remboursements »). Quand le code existe, le plan devient une carte de la vraie appli. Voir [Planifier une appli pas encore construite](docs/bien-demarrer.md#planifier-une-appli-pas-encore-construite).
 
 ## Voir en images
 
-Ces captures viennent de la version d'origine : leur interface est en anglais. Elles montrent la même chose que cette version française.
+Ces captures montrent une boutique fictive, Atelier Lumière.
+
+<img src="docs/images/overview.png" alt="La vue d'ensemble d'une boutique en ligne : le site, le serveur, les tests et les services extérieurs, reliés, avec une couleur par groupe de blocs">
 
 <table>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/images/ask.png" alt="Un tableau de réponse : l'abonnement cadeau suivi de la page cadeau jusqu'à la boîte mail de l'ami, avec des blocs numérotés et une explication écrite">
-<p><b>Poser une question à la carte.</b> Une vraie réponse, donnée par le Claude Code en ligne de commande en 31 secondes. Elle a suivi le cadeau du formulaire jusqu'à la boîte mail à travers deux dépôts, et a repéré deux bogues en route.</p>
+<img src="docs/images/ask.png" alt="Un tableau de réponse : le paiement d'une commande, du panier jusqu'à Stripe et au mail de confirmation, avec des blocs numérotés">
+<p><b>Poser une question à la carte.</b> La réponse s'écrit en français et se dessine sur un tableau, avec seulement les blocs concernés.</p>
 </td>
 <td width="50%" valign="top">
-<img src="docs/images/screens.png" alt="Tout ce qu'il y a derrière la page Cadeau : son formulaire, les appels qu'elle fait, le code du serveur, la base de données, Stripe et SendGrid">
+<img src="docs/images/screens.png" alt="Tout ce qu'il y a derrière la page Panier : ses demandes au serveur, le paiement et Stripe">
 <p><b>Partir d'un écran.</b> Choisis une page et vois tout ce qu'il y a derrière, du bouton jusqu'à la base de données et aux services extérieurs.</p>
 </td>
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/images/recent.png" alt="Le tableau Travail récent d'une fonction d'abonnements cadeaux : ce qui était demandé, ce qui a été fait, et une note sur chaque bloc modifié">
+<img src="docs/images/recent.png" alt="Le tableau Travail récent : annuler une commande, ce qui était demandé, ce qui a été fait, et une note sur chaque bloc modifié">
 <p><b>Travail récent.</b> Ce que tu avais demandé, ce qui a changé et pourquoi chaque changement était nécessaire, sur un seul tableau.</p>
 </td>
 <td valign="top">
-<img src="docs/images/health.png" alt="Le panneau Santé qui liste une clé secrète écrite dans le code et une adresse du serveur que tout le monde peut utiliser, chacune avec un bouton pour la montrer sur la carte et un bouton de correction">
-<p><b>Contrôle de santé.</b> Un mot de passe oublié dans le code et une adresse du serveur que tout le monde peut appeler, chacun avec une demande de correction en un clic.</p>
+<img src="docs/images/health.png" alt="Le panneau Santé qui signale une clé secrète écrite dans le code et une adresse du serveur que tout le monde peut utiliser">
+<p><b>Contrôle de santé.</b> Une clé oubliée dans le code et une adresse du serveur que tout le monde peut utiliser, chacune avec une demande de correction en un clic.</p>
 </td>
 </tr>
 <tr>
 <td valign="top">
-<img src="docs/images/inside.png" alt="L'intérieur de la partie Règles métier du serveur : ses fichiers au milieu, ce qui les utilise à gauche et les services extérieurs à droite">
-<p><b>Zoomer.</b> Dans n'importe quelle partie : ce qu'elle contient, ce qui l'utilise et ce dont elle dépend. Les étiquettes vertes marquent ce qui vient de changer.</p>
+<img src="docs/images/inside.png" alt="L'intérieur du serveur : ses parties au milieu, ce qui l'utilise à gauche et les services extérieurs à droite">
+<p><b>Entrer dans une partie.</b> Ce qu'elle contient, ce qui l'utilise et ce dont elle dépend. Les petites étiquettes marquent ce qui vient de changer.</p>
 </td>
 <td valign="top">
-<img src="docs/images/flow.png" alt="Un parcours guidé, étape 4 sur 6, qui montre le serveur principal en train d'envoyer le code cadeau par mail avec SendGrid">
+<img src="docs/images/flow.png" alt="Un parcours guidé, étape 2 sur 5 : le site transmet la commande au serveur">
 <p><b>Parcours guidés.</b> Regarde un appel traverser l'appli étape par étape, ou demande qu'on en suive un nouveau.</p>
 </td>
+</tr>
+<tr>
+<td valign="top">
+<img src="docs/images/phone.png" alt="La carte sur téléphone : les blocs se suivent dans une colonne qui défile" width="280">
+<p><b>Sur téléphone.</b> Une colonne qui défile, sans zoom ni déplacement.</p>
+</td>
+<td></td>
 </tr>
 </table>
 

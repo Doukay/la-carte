@@ -10,7 +10,7 @@ body.resizing #panel-resize::after { background: rgba(var(--ink), .4); }
 body.resizing, body.resizing * { cursor: ew-resize !important; user-select: none; }
 body.resizing #panel, body.resizing #ask, body.resizing #flowbar { transition: none; }
 body.exported #ask { display: none; }
-.credit { padding: 10px 20px 12px; font-size: 11.5px; line-height: 1.4; color: var(--text-3); }
+.credit { padding: 10px 16px 12px; font-size: 11px; line-height: 1.4; color: var(--text-3); }
 .feuille-x { display: none; }
 #panel > .credit { position: sticky; bottom: 0; background: var(--surface); }
 .credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }

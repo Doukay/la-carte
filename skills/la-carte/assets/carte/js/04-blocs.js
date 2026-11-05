@@ -16,7 +16,7 @@ function piedBloc(element) {
   else if (i.type === 'module') taille = 'ce fichier';
   else if (i.type === 'file') { const nr = (routesParFichier.get(i.f.p) || []).length; taille = nr ? accorder(nr, 'adresse') + ' du serveur' : ''; }
   const recents = recentsDe(element), dedans = recentsDans.get(element.startsWith('m:') ? 'f:' + element.slice(2) : element);
-  const pastille = recents ? `<span class="rw">${libelleRecent(recents)}</span>` : dedans ? `<span class="rw soft">${dedans.length} modifiés</span>` : '';
+  const pastille = recents ? `<span class="rw">${libelleRecent(recents)}</span>` : dedans ? `<span class="rw soft">${accorder(dedans.length, 'modifié')}</span>` : '';
   return taille || pastille ? `<div class="foot">${taille ? `<span class="meta">${taille}</span>` : '<span></span>'}${pastille}</div>` : '';
 }
 /** Hauteur supplémentaire dont un bloc a besoin au-delà de sa taille de base : un pied, et un titre assez long pour passer à la ligne. */

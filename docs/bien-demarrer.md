@@ -63,7 +63,7 @@ La carte refait l'analyse et la compare à la dernière carte. Les fichiers dép
 
 ## Planifier une appli pas encore construite
 
-Tout ce qui précède concerne le travail principal de la carte : cartographier du code qui existe déjà. Il a un second usage, quand il n'y a pas encore de code : dessiner un **plan** d'appli à partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire. Ouvre le dossier où tu la construiras (un dossier vide convient), donne le document, et demande :
+Tout ce qui précède concerne le travail principal de la carte : cartographier du code qui existe déjà. Elle a un second usage, quand il n'y a pas encore de code : dessiner un **plan** d'appli à partir d'un cahier des charges, d'une spécification ou d'une description de ce que tu veux construire. Ouvre le dossier où tu la construiras (un dossier vide convient), donne le document, et demande :
 
 > Voici mon cahier des charges. Fais-moi une carte de ce qu'il faudrait construire.
 

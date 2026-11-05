@@ -2,8 +2,6 @@
 
 La carte est un tableau de blocs reliés par des lignes. Chaque bloc est une partie de ton appli : une grande zone comme « Serveur principal », un groupe de fichiers, un seul fichier, ou une adresse du serveur (un appel que le serveur peut recevoir). Les lignes montrent qui utilise quoi.
 
-> Les captures d'écran de ce guide viennent de la version d'origine de Floorplan : leur interface est en anglais.
-
 ## Se déplacer
 
 | Pour… | Fais ceci |

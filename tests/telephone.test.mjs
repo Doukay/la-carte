@@ -35,7 +35,7 @@ test('sur téléphone et tablette, la barre du haut passe sur une deuxième lign
 });
 
 test('avec une souris à 1000 px et plus, la barre du haut reste exactement comme avant : chaque changement de la barre est dans une règle téléphone/tablette', () => {
-  assert.match(page, /header \{ position: fixed; inset: 0 0 auto 0; height: 52px; display: grid; grid-template-columns: 1fr auto 1fr;/);
+  assert.match(page, /header \{ position: fixed; inset: 0 0 auto 0; height: 52px; display: grid; grid-template-columns: minmax\(max-content, 1fr\) minmax\(0, auto\) minmax\(max-content, 1fr\);/);
   const dehors = page.replace(/@media [^{]*\{(?:[^{}]|\{[^{}]*\})*\}/g, '');
   assert.doesNotMatch(dehors, /header \{[^}]*flex-wrap/);
   assert.doesNotMatch(dehors, /\.hr \.btn \.bl \{ display: none/);
