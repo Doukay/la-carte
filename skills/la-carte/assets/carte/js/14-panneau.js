@@ -84,10 +84,10 @@ function sectionParties(racines) {
 function panneauApercu() {
   const p = G.projet;
   const racines = fils.get('root') || [];
-  const nonDecrits = G.files.filter((f) => f.auto).length + routes.filter((r) => r.auto).length;
+  const nonDecrits = compterNonDecrits();
   return `<div class="sec"><div class="ph"><span class="ico" style="--c:var(--accent)">${picto('feature')}</span><span class="kind">${PLAN ? 'Plan' : 'Projet'}</span></div><h2 class="pt">${h(p.name)}</h2>${p.summary ? `<p class="pd">${h(p.summary)}</p>` : ''}
       <div class="stats" style="margin-top:14px"><div><b>${formaterNombre(G.meta.counts.files)}</b><span>${PLAN ? 'fichiers prévus' : 'fichiers'}</span></div>${PLAN ? `<div><b>${formaterNombre((G.ecrans || []).length)}</b><span>écrans</span></div>` : `<div><b>${formaterNombre(G.meta.counts.loc)}</b><span>lignes</span></div>`}${routes.length ? `<div><b>${formaterNombre(routes.length)}</b><span>adresses du serveur</span></div>` : ''}</div>
-      ${nonDecrits ? `<div class="callout">${nonDecrits} fichiers et adresses du serveur gardent encore des noms générés. Demande à Claude de mettre à jour la carte pour les décrire.</div>` : ''}</div>
+      ${nonDecrits ? encartNonDecrits(nonDecrits) : ''}</div>
     ${sectionParties(racines)}
     ${sectionListe('Parcours guidés', G.parcours.map((f) => `<a class="row" data-flow="${h(f.id)}"><span class="dot" style="background:var(--accent)"></span><span class="rt"><div class="rn">${h(f.title)}</div>${f.description ? `<div class="rd">${h(f.description)}</div>` : ''}</span><span class="rc">${f.steps.length} étapes</span></a>`))}
     ${sectionListe('Dépôts', G.meta.repos.map((r) => `<div class="row" style="cursor:default"><span class="dot" style="background:var(--text-4)"></span><span class="rt"><div class="rn">${h(r.name)}</div><div class="rp">${h(r.branch || '')} @ ${h((r.head || '').slice(0, 7))}</div></span></div>`))}

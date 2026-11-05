@@ -34,7 +34,8 @@
     let r;
     try { r = await fetch('/api/update', { method: 'POST', headers: entetes }).then((x) => x.json()); } catch { r = { ok: false, error: 'Impossible de joindre le serveur de la carte.' }; }
     if (r.ok) {
-      const message = r.sansDescription ? `Carte à jour. ${CARTE.pluriel(r.sansDescription, 'fichier')} sans description : demande à Claude de ${r.sansDescription > 1 ? 'les' : 'le'} décrire.` : 'Carte à jour.';
+      const suite = SERVEUR.cli ? 'le bouton Décrire est sur la fiche du projet (clique sur le fond de la carte)' : `demande à Claude de ${r.sansDescription > 1 ? 'les' : 'le'} décrire`;
+      const message = r.sansDescription ? `Carte à jour. ${CARTE.pluriel(r.sansDescription, 'fichier')} sans description : ${suite}.` : 'Carte à jour.';
       CARTE.stockage.set(CLE_MESSAGE, message);
       // le serveur recharge les onglets quand la page change ; si rien n'a changé dans la page, on recharge quand même
       setTimeout(() => location.reload(), 2500);

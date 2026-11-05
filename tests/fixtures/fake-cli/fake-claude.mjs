@@ -26,6 +26,12 @@ process.stdin.on('end', () => {
     out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: replies[Math.min(n, replies.length - 1)] });
     return;
   }
+  // the Décrire button: answer with the JSON in $FAKE_DESCRIPTIONS
+  if (process.env.FAKE_DESCRIPTIONS && schema.includes('"routes"')) {
+    out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'src/a.js' } }] } });
+    out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: JSON.parse(fs.readFileSync(process.env.FAKE_DESCRIPTIONS, 'utf8')) });
+    return;
+  }
   const bash = (command) => out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command } }] } });
   if (input.includes('SEARCH-COMMANDS')) {
     bash('node la-carte/.cache/requete.mjs find "refund"');

@@ -8,6 +8,7 @@ allowed-tools:
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/construire.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/decrire.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/etat.mjs *)
+  - Bash(node ${CLAUDE_SKILL_DIR}/scripts/nouveaux.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/ouvrir.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/plan.mjs *)
   - Bash(node ${CLAUDE_SKILL_DIR}/scripts/recents.mjs *)

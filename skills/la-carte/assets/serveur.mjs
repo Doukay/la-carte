@@ -160,7 +160,7 @@ function charger() {
   const html = fs.readFileSync(path.join(ici, 'index.html'), 'utf8');
   const g = JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'graphe.json'), 'utf8'));
   const sourceNoyau = fs.readFileSync(path.join(ici, '.cache', 'requete.mjs'), 'utf8').split('// ---- cli ----')[0];
-  const c = new Function(`${sourceNoyau.replace(/^import .*$/gm, '')}; return { LA_CARTE_SCHEMA_REPONSE, LA_CARTE_SCHEMA_PARCOURS, LA_CARTE_SCHEMA_CHANGEMENT, laCarteConsignesQuestion, laCarteConsignesParcours, laCarteConsignesChangement, creerRequetesGraphe };`)();
+  const c = new Function(`${sourceNoyau.replace(/^import .*$/gm, '')}; return { LA_CARTE_SCHEMA_REPONSE, LA_CARTE_SCHEMA_PARCOURS, LA_CARTE_SCHEMA_CHANGEMENT, LA_CARTE_SCHEMA_DESCRIPTIONS, laCarteConsignesQuestion, laCarteConsignesParcours, laCarteConsignesChangement, laCarteConsignesDescriptions, creerRequetesGraphe };`)();
   c.q = c.creerRequetesGraphe(g);
   page = html.replace('</head>', injection + '</head>');
   G = g; noyau = c;
@@ -168,7 +168,10 @@ function charger() {
   MODES = {
     ask: { instructions: noyau.laCarteConsignesQuestion(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_REPONSE },
     flow: { instructions: noyau.laCarteConsignesParcours(G, 'cli'), schema: noyau.LA_CARTE_SCHEMA_PARCOURS },
-    ...(G.meta?.ebauche ? { change: { instructions: noyau.laCarteConsignesChangement(G), schema: noyau.LA_CARTE_SCHEMA_CHANGEMENT } } : {}),
+    ...(G.meta?.ebauche ? { change: { instructions: noyau.laCarteConsignesChangement(G), schema: noyau.LA_CARTE_SCHEMA_CHANGEMENT } } : {
+      // nommer des fichiers ne demande pas le plus gros modèle, et ce bouton se clique souvent ; la liste à décrire est longue
+      describe: { instructions: noyau.laCarteConsignesDescriptions(G), schema: noyau.LA_CARTE_SCHEMA_DESCRIPTIONS, modele: 'sonnet', longueurMax: 40000 },
+    }),
   };
 }
 charger();
@@ -245,9 +248,9 @@ function lancerClaude(corps, mode) {
     // sans les serveurs MCP de l’ordinateur : leurs listes d’outils suffisent à faire déborder la demande
     '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}'];
   if (corps.session) params.push('--resume', String(corps.session));
-  if (modele) params.push('--model', modele);
+  if (modele || mode.modele) params.push('--model', modele || mode.modele);
   return {
-    args: params, input: String(corps.question || '').slice(0, 4000),
+    args: params, input: String(corps.question || '').slice(0, mode.longueurMax || 4000),
     onEvent(evenement, sortie) {
       if (evenement.type === 'assistant') for (const c of evenement.message?.content || []) if (c.type === 'tool_use') sortie.progress(decrireOutil(c.name, c.input));
       if (evenement.type !== 'result') return;
@@ -303,9 +306,36 @@ function demander(requete, reponse, corps) {
   const envoyer = (nomEvenement, donnees) => { if (!reponse.writableEnded) reponse.write(`event: ${nomEvenement}\ndata: ${JSON.stringify(donnees)}\n\n`); };
   if (!cli) { envoyer('failure', { code: 'cli_missing', message: 'Claude Code est introuvable.' }); return reponse.end(); }
   if (corps.mode === 'change') return changerPlan(reponse, envoyer, corps);
+  if (corps.mode === 'describe') return decrireNouveaux(reponse, envoyer);
   lancerAgent(reponse, envoyer, corps)
     .then((a) => envoyer('answer', a), (e) => { if (e !== FERME) envoyer('failure', { code: codeErreur(e.message), message: e.message }); })
     .finally(() => reponse.end());
+}
+
+// ---------- nommer et décrire les nouveaux fichiers depuis la carte ----------
+// Claude reste en lecture seule : il renvoie les noms, nouveaux.mjs du skill ne garde que ce qui a été demandé et l'écrit dans
+// sources/descriptions/, puis construire.mjs redessine la carte. La liste vient du graphe, jamais du navigateur.
+let descriptionEnCours = false;
+async function decrireNouveaux(reponse, envoyer) {
+  if (!MODES.describe) { envoyer('failure', { code: 'cli_error', message: 'Un plan ne se décrit pas depuis ce bouton.' }); return reponse.end(); }
+  if (descriptionEnCours) { envoyer('failure', { code: 'busy', message: 'Une description est déjà en cours.' }); return reponse.end(); }
+  descriptionEnCours = true;
+  try {
+    const lot = JSON.parse(scriptSkill('nouveaux.mjs', '--liste'));
+    if (!lot.total) return envoyer('answer', { ok: true, ecrits: 0, rejetes: 0, restants: 0 });
+    const donnees = await lancerAgent(reponse, envoyer, { question: lot.demande, mode: 'describe' });
+    envoyer('progress', { text: 'Enregistrement des noms' });
+    const recue = path.join(ici, '.cache', 'descriptions-recues.json');
+    fs.writeFileSync(recue, JSON.stringify(donnees));
+    const r = JSON.parse(scriptSkill('nouveaux.mjs', '--enregistrer', recue));
+    if (r.ecrits) scriptSkill('construire.mjs', '--no-claude-md');
+    envoyer('answer', r);
+  } catch (e) {
+    if (e !== FERME) { console.error(`✗ Description interrompue : ${e.message}`); envoyer('failure', { code: e.checks ? 'cli_error' : codeErreur(e.message), message: e.message }); }
+  } finally {
+    descriptionEnCours = false;
+    reponse.end();
+  }
 }
 
 // ---------- modifier un plan depuis la carte ----------

@@ -86,7 +86,7 @@ Tu obtiens un [plan](docs/fonctions.md#les-plans-pour-une-appli-pas-encore-const
 | Sans jeton | Sur ton compte Claude |
 |---|---|
 | Analyser le code, contrôle de santé, liens coupés | Première carte : nommer et décrire les fichiers |
-| Bouton **Mettre à jour** | Décrire les nouveaux fichiers, à ta demande |
+| Bouton **Mettre à jour** | Bouton **Décrire** : nommer et décrire les nouveaux fichiers |
 | Ouvrir, parcourir, chercher, exporter | Poser une question, demander un parcours |
 
 ## Ce que ça ajoute à ton projet

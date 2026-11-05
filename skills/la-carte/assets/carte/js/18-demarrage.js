@@ -73,6 +73,8 @@ $('#btn-panel').onclick = () => reglerPanneau(document.body.classList.contains('
 panneau.addEventListener('click', (ev) => {
   if (ev.target.closest('.feuille-x')) reglerPanneau(false);
   if (ev.target.closest('[data-voir-sante]')) $('#btn-health')?.click();
+  if (ev.target.closest('[data-decrire]')) lancerDescription();
+  if (ev.target.closest('[data-decrire-stop]')) descriptionLancee?.ctl.abort();
 });
 Object.assign(etatVue.kinds, stockageLocal.get('kinds', {}));
 window.addEventListener('keydown', (ev) => {

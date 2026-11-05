@@ -189,12 +189,8 @@ function montrerResultatChangement() {
   feuille.querySelectorAll('[data-cf]').forEach((b) => b.onclick = () => { reglerModeQuestion('change'); champQuestion.value = b.dataset.cf; envoyerQuestion(); });
 }
 
-async function demanderViaCli(question, progression, mode = 'ask') {
-  const res = await fetch('/api/ask', {
-    method: 'POST', signal: etatQuestion.ctl.signal,
-    headers: { 'content-type': 'application/json', 'x-la-carte-token': window.LA_CARTE_SERVER.token },
-    body: JSON.stringify({ question, mode, session: mode === 'ask' ? etatQuestion.session : undefined }),
-  });
+/** Lit la réponse en flux du serveur : l'avancement au fil de l'eau, puis la réponse ou l'erreur. */
+async function lireFlux(res, progression) {
   if (!res.ok || !res.body) throw { code: 'cli_error', message: `Réponse du serveur : ${res.status}` };
   const lecteur = res.body.getReader(), dec = new TextDecoder();
   let tampon = '', reponse = null;
@@ -207,11 +203,22 @@ async function demanderViaCli(question, progression, mode = 'ask') {
       const bloc = tampon.slice(0, i); tampon = tampon.slice(i + 2);
       const ev = /^event: (.*)$/m.exec(bloc)?.[1], donnees = JSON.parse(/^data: (.*)$/m.exec(bloc)?.[1] || 'null');
       if (ev === 'progress') progression(donnees.text);
-      else if (ev === 'answer') { reponse = donnees; if (mode === 'ask') etatQuestion.session = donnees.session || etatQuestion.session; }
+      else if (ev === 'answer') reponse = donnees;
       else if (ev === 'failure') throw donnees;
     }
   }
   if (!reponse) throw { code: 'cli_error', message: 'La ligne de commande s\'est arrêtée sans réponse.' };
+  return reponse;
+}
+
+async function demanderViaCli(question, progression, mode = 'ask') {
+  const res = await fetch('/api/ask', {
+    method: 'POST', signal: etatQuestion.ctl.signal,
+    headers: { 'content-type': 'application/json', 'x-la-carte-token': window.LA_CARTE_SERVER.token },
+    body: JSON.stringify({ question, mode, session: mode === 'ask' ? etatQuestion.session : undefined }),
+  });
+  const reponse = await lireFlux(res, progression);
+  if (mode === 'ask') etatQuestion.session = reponse.session || etatQuestion.session;
   return reponse;
 }
 

@@ -60,7 +60,7 @@ test('rien à installer : aucune dépendance et aucun script d’installation', 
 test('les seules commandes pré-approuvées sont les scripts du skill lui-même, et cette liste est fixe', () => {
   const entete = /^---\n([\s\S]*?)\n---/.exec(lire(path.join(DOSSIER_SKILL, 'SKILL.md')).replace(/\r\n/g, '\n'))[1];
   // chaque script se lance sans demande pendant que le skill sert, donc en ajouter un est un changement voulu
-  const SCRIPTS = ['actualiser.mjs', 'analyser.mjs', 'construire.mjs', 'decrire.mjs', 'etat.mjs', 'ouvrir.mjs', 'plan.mjs', 'recents.mjs'];
+  const SCRIPTS = ['actualiser.mjs', 'analyser.mjs', 'construire.mjs', 'decrire.mjs', 'etat.mjs', 'nouveaux.mjs', 'ouvrir.mjs', 'plan.mjs', 'recents.mjs'];
   const accordes = /^allowed-tools:\n((?: {2}- .*\n?)+)/m.exec(entete + '\n')?.[1].trim().split('\n').map((l) => l.replace(/^\s*- /, '').trim());
   assert.deepEqual(accordes, SCRIPTS.map((s) => `Bash(node \${CLAUDE_SKILL_DIR}/scripts/${s} *)`), `SKILL.md allowed-tools : exactement les scripts du skill. ${MISE_A_JOUR}`);
   const scripts = fs.readdirSync(path.join(DOSSIER_SKILL, 'scripts')).filter((n) => !fs.statSync(path.join(DOSSIER_SKILL, 'scripts', n)).isDirectory()).sort();

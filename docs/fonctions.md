@@ -113,7 +113,7 @@ Ces captures montrent une boutique fictive, Atelier Lumière.
 </td>
 <td valign="top">
 <img src="images/coupes.png" alt="Un lien rouge en pointillés avec une croix mène au bloc Introuvable, et une pastille rouge indique les points à voir sur le serveur">
-<p><b>L'état du code à l'instant T.</b> Les liens coupés se voient en rouge, les blocs concernés portent une pastille. <b>Mettre à jour</b> refait la carte en quelques secondes, sans consommer de jetons.</p>
+<p><b>L'état du code à l'instant T.</b> Les liens coupés se voient en rouge, les blocs concernés portent une pastille. <b>Mettre à jour</b> refait la carte en quelques secondes, sans consommer de jetons. <b>Décrire</b> demande ensuite à Claude de nommer les nouveaux fichiers, seulement quand tu le veux.</p>
 </td>
 </tr>
 </table>

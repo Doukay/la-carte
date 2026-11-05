@@ -21,10 +21,12 @@ flowchart TD
 | Analyser le code, contrôle de santé, liens coupés, bouton **Mettre à jour** | Non, ce sont des scripts sur ton ordinateur | **Aucun** |
 | Ouvrir, parcourir, chercher, exporter la carte | Non | **Aucun** |
 | Première carte : choisir les parties, nommer et décrire les fichiers | Oui | Sur ton compte Claude, plus c'est gros, plus ça coûte |
-| Décrire les fichiers nouveaux ou modifiés, à ta demande | Oui, seulement ceux-là | Sur ton compte Claude |
+| Bouton **Décrire**, ou demande à Claude dans le terminal : nommer les fichiers nouveaux | Oui, seulement ceux-là, 40 au plus par clic avec le bouton | Sur ton compte Claude |
 | Poser une question dans la bulle, demander un parcours | Oui, à chaque question | Sur ton compte Claude |
 
-Un nouveau fichier apparaît donc tout de suite après **Mettre à jour**, avec un nom provisoire. Il garde ce nom tant que tu ne demandes pas à Claude de le décrire.
+Un nouveau fichier apparaît donc tout de suite après **Mettre à jour**, avec un nom provisoire. Il garde ce nom tant que tu ne cliques pas sur **Décrire**, sur la fiche du projet.
+
+Avec ce bouton, Claude ne peut toujours rien modifier : il lit les fichiers de la liste et renvoie des noms. La carte ne garde que ce qui a été demandé, refuse ce qui ressemble à une clé, puis écrit dans `la-carte/sources/descriptions/`. Le bouton utilise un modèle moins coûteux que celui de la première carte (Sonnet), sauf si tu en as choisi un autre pour la carte.
 
 ## 1. L'analyse
 
