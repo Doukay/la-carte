@@ -591,10 +591,49 @@ export function nettoyerDoc(texte) {
   const paragraphe = [];
   for (const l of lignes) { if (!l && paragraphe.length) break; paragraphe.push(l); }
   let s = paragraphe.join(' ').replace(/\s+/g, ' ').trim();
-  if (!s || s.length < 8 || LICENCE.test(s)) return null;
-  const phrase = /^(.{20,220}?[.!?])(\s|$)/.exec(s);
-  s = phrase ? phrase[1] : s.length > 220 ? s.slice(0, 217).replace(/\s+\S*$/, '') + '…' : s;
+  if (!s || LICENCE.test(s)) return null;
+  s = sansReperes(s);
+  if (s.length < 8) return null;
+  const fin = finDePhrase(s);
+  s = fin ? s.slice(0, fin) : s.length > 220 ? s.slice(0, 217).replace(/\s+\S*$/, '') + '…' : s;
+  // une phrase toute en majuscules se lit comme un cri : on la baisse
+  const lettres = s.replace(/[^\p{L}]/gu, '');
+  if (lettres.length > 15 && lettres.replace(/[^\p{Lu}]/gu, '').length / lettres.length > 0.7) s = s.charAt(0) + s.slice(1).toLowerCase();
   return s;
+}
+
+// Les commentaires de suivi (« 🟡 06/09 (revue écran 13) — LE BOUTON… ») sont écrits pour l'équipe, pas pour la carte :
+// on retire la pastille, la date et le renvoi de tête, les parenthèses datées et une suite datée (« — 🟡 20/08, trouvé… »).
+const DATE = String.raw`(?:\d{1,2}\/\d{1,2}(?:\/\d{2,4})?|\d{4}-\d{2}-\d{2})`;
+function sansReperes(s) {
+  s = s.replace(new RegExp(String.raw`\s*\([^()]*${DATE}[^()]*\)`, 'g'), '')
+    .replace(new RegExp(String.raw`\s+[-–—]\s+[\p{Extended_Pictographic}\s]*${DATE}.*$`, 'u'), '.');
+  for (let avant = ''; avant !== s;) {
+    avant = s;
+    s = s.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '')
+      .replace(new RegExp(String.raw`^${DATE}(?:\s*[-–—,et]+\s*${DATE})*`), '')
+      .replace(/^\s*\([^()]*\)/, '')
+      .replace(/^[\s\-–—:,.]+/, '');
+    // renvoi court avant « : » ou « — » (« ROADMAP AI.04, lot 3a : … ») : il porte un chiffre et pas de phrase
+    const renvoi = /^([^:—()]{1,40}?)\s+[:—]\s+/.exec(s);
+    if (renvoi && /\d/.test(renvoi[1]) && !/[.!?](\s|$)/.test(renvoi[1])) s = s.slice(renvoi[0].length);
+  }
+  s = s.replace(/\s+([.,])/g, '$1').trim();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+// fin de la première phrase (20 à 220 caractères), sans couper sur une abréviation ni dans des guillemets ou parenthèses
+const ABREVIATIONS = /(?:^|[\s(«])(?:ex|etc|cf|env|p|n°|vs|e\.g|i\.e|M|Mme|Dr|St|janv|févr|avr|juil|sept|oct|nov|déc)\.$/i;
+function finDePhrase(s) {
+  for (let i = 19; i < Math.min(s.length, 220); i++) {
+    if (!/[.!?]/.test(s[i]) || (i + 1 < s.length && !/\s/.test(s[i + 1]))) continue;
+    const avant = s.slice(0, i + 1);
+    if (ABREVIATIONS.test(avant)) continue;
+    if ((avant.match(/«/g) || []).length > (avant.match(/»/g) || []).length) continue;
+    if ((avant.match(/\(/g) || []).length > (avant.match(/\)/g) || []).length) continue;
+    return i + 1;
+  }
+  return 0;
 }
 
 function docPyApres(lignes, indice) {

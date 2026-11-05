@@ -193,7 +193,10 @@ test('au-delà de 14 blocs sur ordinateur, la vue passe en cartes : pas de calcu
   assert.match(page, /< ZOOM_LISIBLE\) \{ reglerCartes\(true\); res = disposerColonne\(vue\); \}/);
   assert.match(page, /\n\s*'elk\.separateConnectedComponents': 'true'/); // sur sa propre ligne : un commentaire en fin de ligne l'avait désactivé
   assert.match(page, /cibles\.sort\(\(x, y\) => coupes\.has\(y\) - coupes\.has\(x\)\);/); // un lien coupé ne se cache pas derrière « +N »
-  assert.match(page, /const enCartes = !estTelephone\(\) && !reponse && vue\.visible\.length \+ vue\.connectors\.length > SEUIL_CARTES;/);
+  assert.match(page, /const enCartes = !estTelephone\(\) && !reponse && \(resteEnCartes \|\| vue\.visible\.length \+ vue\.connectors\.length > SEUIL_CARTES\);/);
+  // décocher un type de lien ne rebascule pas un bloc en schéma sans lignes : il reste en cartes tant qu'on ne le quitte pas
+  assert.match(page, /const resteEnCartes = etatVue\.cartesDe === vue\.container;/);
+  assert.match(page, /etatVue\.cartesDe = vueEnCartes && !estTelephone\(\) \? vue\.container : null;/);
   assert.match(page, /if \(modeColonne\(\)\) return disposerColonne\(vue\);/); // aucun schéma à calculer : c'est ce qui bloquait la page
   assert.match(page, /body\.vue-cartes #svg, body\.vue-cartes #zoom, body\.vue-cartes #colonne > \.credit \{ display: none; \}/);
   assert.match(page, /body\.vue-cartes \.col-lien\[hidden\] \{ display: none; \}/); // display: inline-flex écraserait hidden

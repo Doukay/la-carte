@@ -50,7 +50,24 @@ test('les noms par défaut se lisent comme des mots simples', () => {
   assert.equal(humaniser('order_service'), 'Order service');
   assert.equal(humaniser('OrderService'), 'Order service');
   assert.equal(nomFichierParDefaut('api/routes/order_service.py'), 'Order service');
-  assert.equal(nomRouteParDefaut({ method: 'POST', path: '/orders/:id/refund' }), 'Créer orders refund');
+  assert.equal(nomRouteParDefaut({ method: 'POST', path: '/orders/:id/refund' }), 'Créer remboursement (commandes)');
+});
+
+test('noms par défaut : accents rendus, mots d’URL anglais traduits, suffixes techniques retirés', () => {
+  assert.equal(nomRouteParDefaut({ handler: 'regenerer_codes_secours', method: 'POST', path: '/2fa/regenerer-codes' }), 'Régénérer codes secours');
+  assert.equal(nomRouteParDefaut({ handler: 'etat', method: 'GET', path: '/push/etat' }), 'État');
+  assert.equal(nomRouteParDefaut({ handler: 'definir_foyer_actif_route', method: 'PATCH', path: '/foyer/actif' }), 'Définir foyer actif');
+  assert.equal(nomRouteParDefaut({ method: 'GET', path: '/api/reports' }), 'Lire rapports');
+  assert.equal(nomRouteParDefaut({ method: 'GET', path: '/api/v1/users/:id' }), 'Lire utilisateurs');
+  assert.equal(nomRouteParDefaut({ handler: 'getUsers', method: 'GET', path: '/users' }), 'Lire utilisateurs');
+  assert.equal(nomRouteParDefaut({ handler: 'delete_order', method: 'DELETE', path: '/orders/:id' }), 'Supprimer commande');
+  assert.equal(nomRouteParDefaut({ method: 'GET', path: '/' }), 'Lire racine');
+  assert.equal(nomFichierParDefaut('frontend/src/components/PartsProposees.test.jsx'), 'Tests de parts proposées');
+  assert.equal(nomFichierParDefaut('frontend/src/fonctionnalites/admin/PageSante.jsx'), 'Page santé');
+  assert.equal(nomFichierParDefaut('frontend/src/index.css'), 'Styles de frontend');
+  assert.equal(nomFichierParDefaut('frontend/src/EtatInitial.test.jsx'), 'Tests d’état initial');
+  // les noms de fichier anglais restent tels quels : seuls les noms d'adresses sont traduits
+  assert.equal(nomFichierParDefaut('src/OrderList.tsx'), 'Order list');
 });
 
 test('chemins d’adresses du serveur : les paramètres, dans tous les styles de framework, correspondent à n’importe quoi', () => {

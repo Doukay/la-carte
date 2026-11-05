@@ -32,7 +32,7 @@ test('les fonctions appelables et onRequest sont des adresses du serveur, sous l
     'GET /api/reports', 'POST /api/reports',
   ]);
   assert.equal(graphe.routes.find((r) => r.p === '/approveItem').d, 'Approves an item once an admin has reviewed it.');
-  assert.equal(graphe.routes.find((r) => r.p === '/api/reports' && r.m === 'GET').name, 'Lire api reports');
+  assert.equal(graphe.routes.find((r) => r.p === '/api/reports' && r.m === 'GET').name, 'Lire rapports');
 });
 
 test("les appels du site web atteignent les fonctions : httpsCallable, un utilitaire autour, et fetch", () => {

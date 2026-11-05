@@ -1,7 +1,7 @@
-# la carte 0.6.3-fr.4: SHA-256 de chaque fichier d'où le plugin tourne.
+# la carte 0.6.3-fr.5: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
-c61433fa8b966d8269fa301da389a2bbca263bc7ccef0d6bef58318ae14946be  .claude-plugin/plugin.json
+de37c1d4f5a6c3decf41eacb1ad0b9eb2d9195f71808eac8abc6b1aeb3c5bcf0  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 b1accf26cf1c5d032b4783154d65e6f5a2db8a59c69ec1840926ec2ac078412e  skills/la-carte/SKILL.md
 4009e0c5b85677d3fef9f733a7b59296b47ae21924b07e97694da2f213bdee1b  skills/la-carte/assets/carte/css/01-jetons.css
@@ -21,7 +21,7 @@ c2fedcf1f82303a38d9725ec0ddfa7e47158e1603ba45720e2c52ecad3f750ee  skills/la-cart
 0ef40a00abb980f6b3c5d219b197f6913034d54fa83208875f832749f8650121  skills/la-carte/assets/carte/js/03-projection.js
 caed7168a24f81a57bec41e246f09be5827be18d76c09dc91ee9f957de67cd9f  skills/la-carte/assets/carte/js/04-blocs.js
 1e310c16f7480b16238115403ac4159f34bf845cf5a2509aee22a2320b0a7e6c  skills/la-carte/assets/carte/js/05-mise-en-page.js
-cfc773a2cd8ef51dc628c31e78b864b681a002b7353e334bc8a5e416e35c5942  skills/la-carte/assets/carte/js/06-affichage.js
+c656abbeb0b75fe4844f54a7987a54e6b0755a9b6974c7210c740789b2429d1f  skills/la-carte/assets/carte/js/06-affichage.js
 8438373f54fafe896e43763508c9b4727191c9210a1e225494bfbc8cb1e16d34  skills/la-carte/assets/carte/js/07-infobulles.js
 c3dec12bab59ccdc3d1f1cb1c9ad4165fec76e0c5d8657f18c45af4eb74c663b  skills/la-carte/assets/carte/js/08-menus.js
 6bbd51cc54d081883653d20b02454ced8644ec501c122648bf4d8118bdc6ba16  skills/la-carte/assets/carte/js/09-deplacement.js
@@ -67,9 +67,9 @@ a91a09d2c5ce1a9d4972529f23de6b6b087f40aef9ec761dd293e0b6f4bcf4f8  skills/la-cart
 7dd517817c0c697b030e25be8cb598ba85e1e472515b1af91e2d3eea29e38c61  skills/la-carte/scripts/lib/commun.mjs
 9e0bdbfa8b1cf2dbfae42562d18b5254df5459c60b1bb67056e0824763327418  skills/la-carte/scripts/lib/ebauche.mjs
 72c41e94a4a5f45ac8aade50340ddf3234b92ab48131944d5f4182c68bfb0ccf  skills/la-carte/scripts/lib/ecrans.mjs
-bcd15cc356232f8810625c5a326a707d90f162e0010d54d1a3780461857dc2fa  skills/la-carte/scripts/lib/extraction.mjs
+a70bd438ee7df327d87cc1160b6c94258ac226de521a20476fba03652d80a304  skills/la-carte/scripts/lib/extraction.mjs
 d7e21b92ac50e6f87c406cb6c816a30c51c06ddf286e57a359351a443c0989a9  skills/la-carte/scripts/lib/liens-casses.mjs
-1936e1a0e6c09b4a12e951bb24ce43288d66c217aafcb0b41b0bd439ffb8aa34  skills/la-carte/scripts/lib/noms.mjs
+c4074ffc72df312dce63035ed4d076d31417bb88bb10f055210379728736ad9f  skills/la-carte/scripts/lib/noms.mjs
 3f03a52c82b21643c553153b2f9be4ae395dd4516b5523fdf313fa495a79fe4d  skills/la-carte/scripts/lib/page.mjs
 e032a100f7fd902db6ae2e909f4f3d733c77fcbff3db3281a3077ae200ef1e77  skills/la-carte/scripts/lib/resolution.mjs
 648f4a08aeb0f9368ea5171527c8586b1eaee4d9cfc1a8cffdf5ef55d8c42f1b  skills/la-carte/scripts/lib/routes.mjs

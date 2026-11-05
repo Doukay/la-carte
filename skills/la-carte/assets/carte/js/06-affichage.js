@@ -19,7 +19,10 @@ async function afficherVue(options = {}) {
   const jeton = ++jetonAffichage;
   const vue = construireVue(etatVue.container);
   const reponse = vue.container === 'q:answer'; // la réponse à une question reste un schéma : elle montre un enchaînement
-  const enCartes = !estTelephone() && !reponse && vue.visible.length + vue.connectors.length > SEUIL_CARTES;
+  // un bloc passé en cartes y reste tant qu'on ne le quitte pas : décocher un type de lien retire des traits,
+  // le schéma redevient assez étroit, et la vue basculerait sinon en schéma sans lignes
+  const resteEnCartes = etatVue.cartesDe === vue.container;
+  const enCartes = !estTelephone() && !reponse && (resteEnCartes || vue.visible.length + vue.connectors.length > SEUIL_CARTES);
   const reglerCartes = (on) => { if (on !== vueEnCartes) { vueEnCartes = on; document.body.classList.toggle('vue-cartes', on); placerContexte(); } };
   reglerCartes(enCartes);
   const chargement = setTimeout(() => $('#loading').classList.add('on'), 160);
@@ -34,6 +37,7 @@ async function afficherVue(options = {}) {
     const a = zoneDisponible();
     if (Math.min(a.w / (res.width + 40), a.h / (res.height + 20)) < ZOOM_LISIBLE) { reglerCartes(true); res = disposerColonne(vue); }
   }
+  etatVue.cartesDe = vueEnCartes && !estTelephone() ? vue.container : null;
   etatVue.view = vue; etatVue.layout = res;
   queueMicrotask(() => emettre('render', { container: etatVue.container, view: vue }));
   dessiner(vue, res);

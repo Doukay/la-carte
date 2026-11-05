@@ -95,3 +95,23 @@ test('commentaires de documentation : JSDoc est nettoyé, les en-têtes de licen
   assert.equal(nettoyerDoc('/**\n * Lists orders.\n * @param x\n */'), 'Lists orders.');
   assert.equal(nettoyerDoc('# Copyright 2020 Example Corp'), null);
 });
+
+test('commentaires de documentation : dates, pastilles, renvois et majuscules ne passent pas dans la description', () => {
+  assert.equal(nettoyerDoc('// 🟡 06/09 (revue écran par écran) — LES PUCES DU FILTRE MEMBRE ANNONCENT LEUR ÉTAT.'), 'Les puces du filtre membre annoncent leur état.');
+  assert.equal(nettoyerDoc('// 25/10 (audit sécurité du 24/10, M3) — la confirmation d\'email exige d\'être connecté au compte.'), 'La confirmation d\'email exige d\'être connecté au compte.');
+  assert.equal(nettoyerDoc('// Ce que la page dit quand la liste est vide (02/09, revue).'), 'Ce que la page dit quand la liste est vide.');
+  assert.equal(nettoyerDoc('// ROADMAP AI.04, lot 3a (décisions du 14/10) : la phrase de présentation d\'une liste, facultative.'), 'La phrase de présentation d\'une liste, facultative.');
+  assert.equal(nettoyerDoc('// 2026-10-26 : les formateurs écrivent la même chose.'), 'Les formateurs écrivent la même chose.');
+  // une abréviation ou un point dans des guillemets ne coupe pas la phrase
+  assert.equal(nettoyerDoc('// pytest ajoute le dossier au chemin, ce qui rend le paquet importable (ex. dans les tests). Suite.'), 'Pytest ajoute le dossier au chemin, ce qui rend le paquet importable (ex. dans les tests).');
+  assert.equal(nettoyerDoc('// En colonne étroite, un mois s\'écrit « oct. » et pas en entier. Suite.'), 'En colonne étroite, un mois s\'écrit « oct. » et pas en entier.');
+  // un mot mis en relief reste tel quel, un sigle aussi
+  assert.equal(nettoyerDoc('// Polices hébergées AVEC l\'application, pour la CSP.'), 'Polices hébergées AVEC l\'application, pour la CSP.');
+  // la phrase en majuscules est baissée même si la suite du paragraphe ne l'est pas
+  assert.equal(nettoyerDoc('// 🔴 06/09 (revue) — DEUX QUESTIONS, DEUX CHIFFRES.\n// La suite explique en minuscules ce que le test vérifie, longuement.'), 'Deux questions, deux chiffres.');
+  // un renvoi entre parenthèses n'est pas coupé en deux, une suite datée est retirée
+  assert.equal(nettoyerDoc('// 🟠 07/09 (audit, R8 — décision : « mets "Reste" ») — LE MOT « SOLDE » NE PARLE PAS D\'ARGENT.'), 'Le mot « solde » ne parle pas d\'argent.');
+  assert.equal(nettoyerDoc('// Polices hébergées avec l\'application — 15/08 (audit performance).'), 'Polices hébergées avec l\'application.');
+  // il ne reste qu'une date : rien
+  assert.equal(nettoyerDoc('// 05/10'), null);
+});

@@ -2,6 +2,12 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.5 (2026-11-05)
+
+- **Textes par défaut plus propres** : avant que Claude décrive un fichier, la carte reprend son commentaire de tête. Elle en retire maintenant les pastilles, les dates, les renvois (« (revue écran 13) ») et les parenthèses datées, baisse une phrase écrite toute en majuscules, et ne coupe plus la phrase sur « ex. » ni dans des guillemets.
+- **Noms par défaut plus lisibles** : les accents sont rendus (« État deux facteurs », « Page santé »), les mots d'adresse anglais courants sont traduits (« Lire rapports » au lieu de « Lire api reports »), les suffixes techniques retirés (« Définir foyer actif » au lieu de « … route »), et un fichier `index.css` s'appelle « Styles de … ».
+- **Vue en cartes stable** : un bloc affiché en cartes y reste quand on décoche un type de lien, au lieu de basculer en schéma sans lignes. Le choix se refait quand on change de bloc.
+
 ## 0.6.3-fr.4 (2026-11-05)
 
 - **Questions de base et réponses gardées** : la barre de question propose cinq questions de base et celles déjà posées. Chaque réponse est gardée dans `la-carte/sources/questions.json` ; la même question revient sans jeton. Le serveur compare l'empreinte des fichiers utilisés et dit si le code a changé depuis, avec **Reposer la question**. Ce qui ressemble à une clé est masqué avant d'être écrit. Fermer une réponse termine la conversation.
