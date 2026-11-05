@@ -2,6 +2,11 @@
 // la-carte/.cache/requete.mjs (comme ligne de commande appelée par Claude Code). Script simple : ni import ni export.
 // Ids des éléments : n:<id du nœud>  f:<chemin du fichier>  r:<numéro de route>  s:<chemin du fichier>#<numéro d'export>
 
+/** La même question écrite un peu autrement : sans majuscules, accents ni ponctuation. Sert à reprendre une réponse gardée. */
+function laCarteCleQuestion(question) {
+  return String(question || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
 function creerRequetesGraphe(G) {
   const noeuds = new Map(G.nodes.map((n) => [n.id, n]));
   const fichiers = new Map(G.files.map((f) => [f.p, f]));

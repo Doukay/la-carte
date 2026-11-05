@@ -76,14 +76,15 @@ function afficherFeuille(question, corps) {
     ${etatQuestion.last && etatVue.container !== 'q:answer' ? '<button class="btn soft" data-act="board">Afficher le tableau de réponse</button>' : ''}
     ${etatVue.container === 'q:answer' ? '<button class="btn soft" data-act="map">Retour à la carte</button>' : ''}
     <button class="btn icon" data-act="close" title="Fermer">${pictoI('x')}</button></div><div class="sb">${corps}</div>`;
-  feuille.querySelector('[data-act="close"]').onclick = () => { if (etatQuestion.busy) annulerQuestion(); feuille.hidden = true; if (etatVue.container === 'q:answer') allerVers('root'); else ajusterVue(true); };
+  feuille.querySelector('[data-act="close"]').onclick = () => { if (etatQuestion.busy) annulerQuestion(); feuille.hidden = true; etatQuestion.session = null; etatQuestion.reprise = null; if (etatVue.container === 'q:answer') allerVers('root'); else ajusterVue(true); };
   feuille.querySelector('[data-act="map"]')?.addEventListener('click', () => allerVers('root'));
   feuille.querySelector('[data-act="board"]')?.addEventListener('click', () => allerVers('q:answer'));
   feuille.querySelectorAll('[data-ref]').forEach((r) => r.onclick = () => {
     const id = r.dataset.ref;
     if (etatVue.container === 'q:answer' && etatVue.view.visible.includes(id)) { choisir(id); centrerSur(id); } else localiser(id);
   });
-  feuille.querySelectorAll('[data-follow]').forEach((b) => b.onclick = () => { champQuestion.value = b.dataset.follow; envoyerQuestion(); });
+  feuille.querySelectorAll('[data-follow]').forEach((b) => b.onclick = () => { champQuestion.value = b.dataset.follow; envoyerQuestion({ suite: true }); });
+  feuille.querySelector('[data-act="reposer"]')?.addEventListener('click', () => reposerQuestion(etatQuestion.last));
   feuille.querySelector('[data-act="steps"]')?.addEventListener('click', () => {
     const a = etatQuestion.last;
     etatVue.flow = { f: { title: a.title, steps: a.steps.map((s) => ({ ref: s.id, note: s.note })) }, i: 0, inPlace: true };
@@ -95,7 +96,7 @@ function montrerProgression(question, lignes) {
 }
 function afficherReponse(a) {
   const etapes = a.steps?.length >= 2;
-  afficherFeuille(a.question, `${md(a.answer)}
+  afficherFeuille(a.question, `${a.garde ? banniereGardee(a.garde) : ''}${md(a.answer)}
     <div class="sheet-actions">${etapes ? `<button class="btn soft" data-act="steps">${pictoI('right')}Suivre les ${a.steps.length} étapes</button>` : ''}</div>
     ${a.followups?.length ? `<div class="followups">${a.followups.slice(0, 3).map((f) => `<button data-follow="${h(f)}">${h(f)}</button>`).join('')}</div>` : ''}`);
 }
@@ -104,7 +105,7 @@ function montrerReponse(brut, question) {
   const elements = nettoyer(brut.items);
   const etapes = nettoyer(brut.steps);
   for (const s of etapes) if (!elements.some((x) => x.id === s.id)) elements.push({ id: s.id, note: s.note });
-  const a = { title: String(brut.title || 'Réponse'), answer: String(brut.answer || ''), items: elements.slice(0, 18), steps: etapes, followups: (brut.followups || []).map(String), question };
+  const a = { title: String(brut.title || 'Réponse'), answer: String(brut.answer || ''), items: elements.slice(0, 18), steps: etapes, followups: (brut.followups || []).map(String), question, garde: brut.garde || null };
   etatQuestion.last = a;
   if (a.items.length) { etatVue.answer = a; allerVers('q:answer', { force: true, after: () => afficherReponse(a) }); }
   else afficherReponse(a);
@@ -211,14 +212,18 @@ async function lireFlux(res, progression) {
   return reponse;
 }
 
-async function demanderViaCli(question, progression, mode = 'ask') {
+async function demanderViaCli(question, progression, mode = 'ask', garde = {}) {
   const res = await fetch('/api/ask', {
     method: 'POST', signal: etatQuestion.ctl.signal,
     headers: { 'content-type': 'application/json', 'x-la-carte-token': window.LA_CARTE_SERVER.token },
-    body: JSON.stringify({ question, mode, session: mode === 'ask' ? etatQuestion.session : undefined }),
+    body: JSON.stringify({ question, mode, session: mode === 'ask' ? etatQuestion.session || undefined : undefined, ...garde }),
   });
   const reponse = await lireFlux(res, progression);
-  if (mode === 'ask') etatQuestion.session = reponse.session || etatQuestion.session;
+  if (mode !== 'ask') return reponse;
+  // une réponse gardée ne vient d'aucune conversation : la suite repart avec elle comme contexte
+  if (reponse.garde) { etatQuestion.session = null; etatQuestion.reprise = { question: garde.affiche, answer: reponse.answer }; }
+  else { etatQuestion.session = reponse.session || etatQuestion.session; etatQuestion.reprise = null; }
+  if (typeof chargerQuestions === 'function') chargerQuestions();
   return reponse;
 }
 
@@ -261,9 +266,12 @@ function afficherPuces() {
 }
 champQuestion.addEventListener('keydown', (ev) => { if (ev.key === 'Backspace' && !champQuestion.value && etatQuestion.context.length) { etatQuestion.context.pop(); afficherPuces(); } });
 
-async function envoyerQuestion() {
+async function envoyerQuestion(options = {}) {
   if (etatQuestion.busy) { annulerQuestion(); return; }
-  const idsContexte = etatQuestion.context.slice();
+  if (typeof fermerListeQuestions === 'function') fermerListeQuestions();
+  // une question de base ou « Reposer la question » commence une nouvelle conversation
+  if (options.nouvelle) { etatQuestion.session = null; etatQuestion.reprise = null; }
+  const idsContexte = options.contexte || etatQuestion.context.slice();
   let question = champQuestion.value.trim();
   if (!question && idsContexte.length) question = idsContexte.length === 1 ? `Qu'est-ce que ${infosBloc(idsContexte[0]).name} et comment s'insère-t-il dans l'ensemble ?` : `Quel est le lien entre ${idsContexte.map((id) => infosBloc(id).name).join(' et ')} ?`;
   if (!question || !etatQuestion.engine) return;
@@ -273,13 +281,19 @@ async function envoyerQuestion() {
   const affiche = question;
   // ce que Claude voit : la question plus les éléments épinglés, par id, pour qu'il parte d'eux
   if (idsContexte.length) question += `\n\nConcentre-toi sur ces éléments de la carte : ${idsContexte.map((id) => `${id} (${infosBloc(id).name})`).join(', ')}.`;
+  // après une réponse gardée, la conversation n'existe plus chez Claude : lui redonner la question et la réponse d'avant
+  const reprise = !etatQuestion.session && etatQuestion.reprise;
+  if (options.invite) question = options.invite;
+  else if (reprise) question = `Question précédente : « ${reprise.question} »\nRéponse donnée : ${String(reprise.answer).slice(0, 1500)}\n\nNouvelle question : ${question}`;
+  const precedente = options.suiteDe || (etatQuestion.session ? etatQuestion.last?.question : reprise?.question);
+  const garde = { affiche, contexte: idsContexte, suite: !!options.suite, rafraichir: !!options.rafraichir, ...(precedente ? { suiteDe: precedente } : {}) };
   reglerOccupe(true);
   etatQuestion.ctl = new AbortController();
   const lignes = ['Réflexion…'];
   const progression = (t) => { lignes.push(t); montrerProgression(affiche, lignes.slice(-6)); };
   montrerProgression(affiche, lignes);
   try {
-    const brut = etatQuestion.engine === 'cli' ? await demanderViaCli(question, progression) : await demanderViaApp(question, progression);
+    const brut = etatQuestion.engine === 'cli' ? await demanderViaCli(question, progression, 'ask', garde) : await demanderViaApp(question, progression);
     montrerReponse(brut, affiche);
   } catch (e) {
     if (e?.name === 'AbortError') montrerEchec(affiche, 'cancelled');

@@ -161,7 +161,7 @@ function charger() {
   const html = fs.readFileSync(path.join(ici, 'index.html'), 'utf8');
   const g = JSON.parse(fs.readFileSync(path.join(ici, '.cache', 'graphe.json'), 'utf8'));
   const sourceNoyau = fs.readFileSync(path.join(ici, '.cache', 'requete.mjs'), 'utf8').split('// ---- cli ----')[0];
-  const c = new Function(`${sourceNoyau.replace(/^import .*$/gm, '')}; return { LA_CARTE_SCHEMA_REPONSE, LA_CARTE_SCHEMA_PARCOURS, LA_CARTE_SCHEMA_CHANGEMENT, LA_CARTE_SCHEMA_DESCRIPTIONS, laCarteConsignesQuestion, laCarteConsignesParcours, laCarteConsignesChangement, laCarteConsignesDescriptions, creerRequetesGraphe };`)();
+  const c = new Function(`${sourceNoyau.replace(/^import .*$/gm, '')}; return { LA_CARTE_SCHEMA_REPONSE, LA_CARTE_SCHEMA_PARCOURS, LA_CARTE_SCHEMA_CHANGEMENT, LA_CARTE_SCHEMA_DESCRIPTIONS, laCarteConsignesQuestion, laCarteConsignesParcours, laCarteConsignesChangement, laCarteConsignesDescriptions, laCarteCleQuestion, creerRequetesGraphe };`)();
   c.q = c.creerRequetesGraphe(g);
   page = html.replace('</head>', injection + '</head>');
   G = g; noyau = c;
@@ -191,6 +191,102 @@ fs.watchFile(path.join(ici, 'index.html'), { interval: 1000 }, (actuel, preceden
 if (delaiInactivite) setInterval(() => { if (!onglets.size && !enCours.size && Date.now() - dernierOnglet > delaiInactivite) process.exit(0); }, 60000).unref();
 const fichierParcours = path.join(ici, 'sources', 'parcours-perso.json');
 const lireParcours = () => { try { return JSON.parse(fs.readFileSync(fichierParcours, 'utf8')).parcours || []; } catch { return []; } };
+
+// ---------- réponses gardées : une question déjà posée ne repart pas vers Claude ----------
+// Dans sources/questions.json, à côté des parcours. Pour chaque réponse, l'empreinte des fichiers qu'elle utilise : les comparer ne coûte aucun jeton.
+const fichierQuestions = path.join(ici, 'sources', 'questions.json');
+const lireQuestions = () => { try { const { questions } = JSON.parse(fs.readFileSync(fichierQuestions, 'utf8')); return Array.isArray(questions) ? questions : []; } catch { return []; } };
+const ecrireQuestions = (questions) => fs.writeFileSync(fichierQuestions, JSON.stringify({ questions }, null, 2) + '\n');
+const QUESTIONS_MAX = 200, FICHIERS_PAR_REPONSE = 300;
+// sources/ part avec le projet sur Git : ce qui ressemble à une clé ou à un mot de passe n'y entre pas. Ni / ni - dans la première : un chemin de fichier n'est pas une clé
+const masquer = (texte, longueur) => String(texte ?? '')
+  .replace(/\b([\w-]*(?:pass(?:word|wd)?|secret|token|api_?key|mot_?de_?passe)[\w-]*\s*[:=]\s*)["'`]?[^\s"'`,;]+["'`]?/gi, '$1•••')
+  .replace(/[A-Za-z0-9+_=]{40,}/g, '•••')
+  .slice(0, longueur);
+const cleDe = (corps) => {
+  const cle = noyau.laCarteCleQuestion(corps.affiche || corps.question);
+  const contexte = Array.isArray(corps.contexte) ? corps.contexte.map(String).sort().join(',') : '';
+  return cle && contexte ? `${cle}|${contexte}` : cle;
+};
+function trouverReponse(corps) {
+  const cle = cleDe(corps);
+  return cle ? lireQuestions().find((e) => e.cle === cle && !e.suiteDe) : null;
+}
+/** Le chemin d'un fichier du projet, depuis sa racine, ou null s'il est ailleurs ou s'il appartient à la carte. */
+function cheminDansProjet(p) {
+  const relatif = path.relative(racine, path.resolve(racine, String(p || ''))).replace(/\\/g, '/');
+  return !relatif || relatif.startsWith('..') || path.isAbsolute(relatif) || /(^|\/)la-carte\//.test(relatif) ? null : relatif;
+}
+function empreinteFichier(relatif) {
+  try { return crypto.createHash('sha1').update(fs.readFileSync(path.join(racine, relatif))).digest('hex').slice(0, 12); } catch { return null; }
+}
+/** Les fichiers d'une réponse : ceux que Claude a ouverts d'abord, puis ceux des éléments qu'elle cite, sous-parties comprises. */
+function fichiersDeLaReponse(a, lus) {
+  const parents = new Map((G.nodes || []).map((n) => [n.id, n.parent]));
+  const dansBloc = (noeud, id) => { for (let n = noeud; n; n = parents.get(n)) if (n === id) return true; return false; };
+  const chemins = [...lus];
+  for (const { id } of [...(a.items || []), ...(a.steps || [])]) {
+    const v = String(id || ''), reste = v.slice(2);
+    if (v.startsWith('f:')) chemins.push(reste);
+    else if (v.startsWith('s:')) chemins.push(reste.split('#')[0]);
+    else if (v.startsWith('r:')) chemins.push(G.routes?.[Number(reste)]?.f);
+    else if (v.startsWith('n:')) for (const f of G.files || []) if (dansBloc(f.n, reste)) chemins.push(f.p);
+  }
+  const fichiers = {};
+  for (const p of chemins) {
+    if (Object.keys(fichiers).length >= FICHIERS_PAR_REPONSE) break;
+    const relatif = cheminDansProjet(p), empreinte = relatif && empreinteFichier(relatif);
+    if (empreinte) fichiers[relatif] = empreinte;
+  }
+  return fichiers;
+}
+/** Enregistre la réponse et renvoie ce que la page affiche. Une panne d'écriture ne doit pas faire perdre la réponse. */
+function garderReponse(corps, a, lus) {
+  const element = ({ id, note }) => ({ id: String(id), note: masquer(note, 2000) });
+  const elements = (liste) => (Array.isArray(liste) ? liste : []).map((x) => (typeof x === 'string' ? { id: x } : x)).filter((x) => x?.id).slice(0, 18).map(element);
+  const propre = { title: masquer(a.title, 300), answer: masquer(a.answer, 20000), items: elements(a.items), steps: elements(a.steps), followups: (Array.isArray(a.followups) ? a.followups : []).slice(0, 3).map((f) => masquer(f, 300)) };
+  const cle = cleDe(corps);
+  if (!cle || !propre.answer) return { ...a, ...propre };
+  try {
+    const suiteDe = corps.suite || corps.session || corps.rafraichir ? masquer(corps.suiteDe, 500) : '';
+    const question = masquer(corps.affiche || corps.question, 500), invite = masquer(corps.question, 4000);
+    const entree = {
+      id: crypto.randomBytes(6).toString('hex'), question, cle, ...(suiteDe ? { suiteDe } : {}), ...(invite !== question ? { invite } : {}),
+      ...(Array.isArray(corps.contexte) && corps.contexte.length ? { contexte: corps.contexte.map(String).slice(0, 3) } : {}),
+      at: new Date().toISOString(), ...propre, fichiers: fichiersDeLaReponse(propre, lus),
+    };
+    const autres = lireQuestions().filter((e) => !(e.cle === cle && (e.suiteDe || '') === (entree.suiteDe || '')));
+    ecrireQuestions([...autres, entree].slice(-QUESTIONS_MAX));
+  } catch (e) { console.error(`réponse non gardée : ${e.message}`); }
+  return { ...a, ...propre };
+}
+/** Ce qui a changé depuis la réponse : ses fichiers, et les fichiers du même type apparus ou modifiés dans leurs dossiers. */
+function changementsDepuis(e) {
+  const fichiers = e.fichiers && typeof e.fichiers === 'object' ? e.fichiers : {};
+  const changements = [], extensions = new Map();
+  const surveilles = Object.keys(fichiers).filter(cheminDansProjet);
+  for (const p of surveilles) {
+    const actuelle = empreinteFichier(p);
+    if (actuelle !== fichiers[p]) changements.push({ p, etat: actuelle ? 'modifié' : 'disparu' });
+    const dossier = path.posix.dirname(p);
+    if (!extensions.has(dossier)) extensions.set(dossier, new Set());
+    extensions.get(dossier).add(path.posix.extname(p));
+  }
+  const depuis = Date.parse(e.at) || 0;
+  for (const [dossier, types] of extensions) {
+    let noms = []; try { noms = fs.readdirSync(path.join(racine, dossier), { withFileTypes: true }); } catch {}
+    for (const n of noms) {
+      const p = path.posix.join(dossier, n.name);
+      if (!n.isFile() || fichiers[p] || !types.has(path.posix.extname(n.name))) continue;
+      try { if (fs.statSync(path.join(racine, p)).mtimeMs > depuis) changements.push({ p, etat: 'nouveau' }); } catch {}
+    }
+  }
+  return { changements, surveilles: surveilles.length };
+}
+const reponseGardee = (e) => ({
+  question: e.question, title: e.title, answer: e.answer, items: e.items || [], steps: e.steps || [], followups: e.followups || [],
+  garde: { id: e.id, at: e.at, ...(e.suiteDe ? { suiteDe: e.suiteDe } : {}), ...(e.invite ? { invite: e.invite } : {}), ...(e.contexte ? { contexte: e.contexte } : {}), ...changementsDepuis(e) },
+});
 
 // ---------- poser des questions ----------
 const nomPour = (id) => { try { return noyau.q.brief(id)?.name || id; } catch { return id; } };
@@ -242,6 +338,7 @@ const codeErreur = (texteMessage) => /not logged in|logged out|\/login|log ?in a
 const FICHIERS_SECRETS = ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '**/*.p12', '**/*.pfx', '**/id_rsa', '**/id_ed25519', '**/*secret*', '**/*token*', '**/*credential*', '**/.ssh/**', '**/.aws/**'];
 // Claude Code : `claude -p` avec des outils en lecture seule, qui répond dans le schéma ; les questions suivantes reprennent sa session
 function lancerClaude(corps, mode) {
+  const lus = [];
   const params = [...cli.args, '-p', '--output-format', 'stream-json', '--verbose',
     '--json-schema', JSON.stringify(mode.schema), '--append-system-prompt', mode.instructions,
     '--tools', 'Read,Grep,Glob,Bash', '--allowedTools', 'Bash(node la-carte/.cache/requete.mjs:*)', 'Read', 'Grep', 'Glob',
@@ -253,10 +350,10 @@ function lancerClaude(corps, mode) {
   return {
     args: params, input: String(corps.question || '').slice(0, mode.longueurMax || 4000),
     onEvent(evenement, sortie) {
-      if (evenement.type === 'assistant') for (const c of evenement.message?.content || []) if (c.type === 'tool_use') sortie.progress(decrireOutil(c.name, c.input));
+      if (evenement.type === 'assistant') for (const c of evenement.message?.content || []) if (c.type === 'tool_use') { if (c.name === 'Read' && c.input?.file_path) lus.push(c.input.file_path); sortie.progress(decrireOutil(c.name, c.input)); }
       if (evenement.type !== 'result') return;
       if (evenement.is_error) sortie.fail(String(evenement.result || evenement.subtype || 'Claude Code a signalé une erreur'));
-      else sortie.answer({ ...lireReponse(evenement), session: evenement.session_id });
+      else sortie.answer({ ...lireReponse(evenement), session: evenement.session_id, lus });
     },
   };
 }
@@ -305,11 +402,15 @@ function lancerAgent(reponse, envoyer, corps) {
 function demander(requete, reponse, corps) {
   reponse.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });
   const envoyer = (nomEvenement, donnees) => { if (!reponse.writableEnded) reponse.write(`event: ${nomEvenement}\ndata: ${JSON.stringify(donnees)}\n\n`); };
+  const estQuestion = !corps.mode || corps.mode === 'ask';
+  // déjà posée : rien ne repart vers Claude. Une suite de conversation ou « Reposer la question » y va toujours
+  const gardee = estQuestion && !corps.suite && !corps.rafraichir ? trouverReponse(corps) : null;
+  if (gardee) { envoyer('answer', reponseGardee(gardee)); return reponse.end(); }
   if (!cli) { envoyer('failure', { code: 'cli_missing', message: 'Claude Code est introuvable.' }); return reponse.end(); }
   if (corps.mode === 'change') return changerPlan(reponse, envoyer, corps);
   if (corps.mode === 'describe') return decrireNouveaux(reponse, envoyer);
   lancerAgent(reponse, envoyer, corps)
-    .then((a) => envoyer('answer', a), (e) => { if (e !== FERME) envoyer('failure', { code: codeErreur(e.message), message: e.message }); })
+    .then(({ lus, ...a }) => envoyer('answer', estQuestion ? garderReponse(corps, a, lus) : a), (e) => { if (e !== FERME) envoyer('failure', { code: codeErreur(e.message), message: e.message }); })
     .finally(() => reponse.end());
 }
 
@@ -565,6 +666,26 @@ const serveur = http.createServer((requete, reponse) => {
         }
       });
       return;
+    }
+    if (url.pathname === '/api/questions') {
+      const envoyerJson = (code, donnees) => { reponse.writeHead(code, { 'Content-Type': 'application/json' }); reponse.end(JSON.stringify(donnees)); };
+      const resume = () => lireQuestions().slice().reverse().map(({ id, question, cle, at, suiteDe }) => ({ id, question, cle, at, ...(suiteDe ? { suiteDe } : {}) }));
+      if (requete.method === 'GET') {
+        const id = url.searchParams.get('id');
+        if (!id) return envoyerJson(200, { questions: resume() });
+        const e = lireQuestions().find((x) => x.id === id);
+        return e ? envoyerJson(200, reponseGardee(e)) : envoyerJson(404, { error: 'Question inconnue.' });
+      }
+      if (requete.method === 'DELETE') {
+        let brut = '';
+        requete.on('data', (d) => { brut += d; if (brut.length > 2000) requete.destroy(); });
+        requete.on('end', () => {
+          let corps = {}; try { corps = JSON.parse(brut); } catch {}
+          ecrireQuestions(lireQuestions().filter((x) => x.id !== corps.id));
+          envoyerJson(200, { questions: resume() });
+        });
+        return;
+      }
     }
     if (requete.method === 'POST' && url.pathname === '/api/ask') {
       let brut = '';

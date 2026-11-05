@@ -1,7 +1,7 @@
-# la carte 0.6.3-fr.3: SHA-256 de chaque fichier d'où le plugin tourne.
+# la carte 0.6.3-fr.4: SHA-256 de chaque fichier d'où le plugin tourne.
 # Vérifier une copie installée : récupère cette version, puis lance node outils/empreintes.mjs --check <dossier installé>.
 5b2ccd74520a68b13f3e13559c2ad59c96021fe369834fc75103bd3e30000f14  .claude-plugin/marketplace.json
-4a11df660d60a1b4dd05b1058c9176abc4d226371cb92536fb38df9f881b6b5d  .claude-plugin/plugin.json
+c61433fa8b966d8269fa301da389a2bbca263bc7ccef0d6bef58318ae14946be  .claude-plugin/plugin.json
 03e1b81b579f6a1ed6934e89c98d392a002e4bb8332b0c8283ebdb5f799c5b24  package.json
 b1accf26cf1c5d032b4783154d65e6f5a2db8a59c69ec1840926ec2ac078412e  skills/la-carte/SKILL.md
 4009e0c5b85677d3fef9f733a7b59296b47ae21924b07e97694da2f213bdee1b  skills/la-carte/assets/carte/css/01-jetons.css
@@ -12,9 +12,9 @@ dee97c61fb9c709da1555a26eb976741cf561dde35d861604fa1bf2e45d53858  skills/la-cart
 8d3c0a35b63975a0a1cb42556db9eb3b7d93b13910a7eaf3c244587ffc0f3d20  skills/la-carte/assets/carte/css/06-flottants.css
 c2fedcf1f82303a38d9725ec0ddfa7e47158e1603ba45720e2c52ecad3f750ee  skills/la-carte/assets/carte/css/07-panneau.css
 3020311ac1e422cb1c0e5ee040449508aa4c2018c973d47866f012362129a860  skills/la-carte/assets/carte/css/08-palette.css
-802381629086693cb8d292300d6322936cbffcae0b28dc1c2f96db581ff365fb  skills/la-carte/assets/carte/css/09-bulle.css
+820721c8f4727aa16c548c646c968f858122e95efa2b522034936082833eb0ee  skills/la-carte/assets/carte/css/09-bulle.css
 85433b7b80e661c18543c46ac497056bbc9856f59e363fee9533845626ca13cd  skills/la-carte/assets/carte/css/10-extensions.css
-a761dc85b54c19538bd2e13db151c256266426b023beef139f9f4922356ab168  skills/la-carte/assets/carte/css/11-petits-ecrans.css
+818f73251b5b9c3ed2edd65610d8b47395ba393c0016b240effc406d517f7fbb  skills/la-carte/assets/carte/css/11-petits-ecrans.css
 4ba52cd17f069cd3587fffa8f3eeca1963f317739146dfb262fa5e20fd0f3187  skills/la-carte/assets/carte/css/12-vue-cartes.css
 1fb7a0ac856b5cd6c05389bb91e525463e51b822178e3747367fcb046b30b96a  skills/la-carte/assets/carte/js/01-base.js
 4eaafc59393ea9cf5df8e781195f1a08259b84d942dc2618d2d3fbc08249a99d  skills/la-carte/assets/carte/js/02-modele.js
@@ -33,13 +33,14 @@ ec354c8ef19bdc4e6ce7d1e5ab2bb77d85d414dc3da939bd17d5db121172d679  skills/la-cart
 239e0f9f19acdd6e4790792589b85aee52036a698754014dbb50b24a6e8e4f87  skills/la-carte/assets/carte/js/15-recherche.js
 41faca36504384726be27e30eae8239882722b0a51c3ce9c9372e900191d96cb  skills/la-carte/assets/carte/js/16-parcours.js
 beca5635f102a49e9500c295bec5fe39e97153e87f789f4fbd55b2cfb6d815fa  skills/la-carte/assets/carte/js/17-decrire.js
-194b11a87980ef1eafb34d303d782ae3b619544e3603b0585e6418e450f952db  skills/la-carte/assets/carte/js/17-questions.js
+a93569fd16288ef7247029c5bbd6fa63db4f90e4f4687cb51fad59cdeb83d3f1  skills/la-carte/assets/carte/js/17-questions.js
+1848c923297e075f729036b28b1ba9ab263dc1447ca859a9e7fed586a643ee6b  skills/la-carte/assets/carte/js/17-reponses-gardees.js
 ba57fcb7b055a83f490609e2844429d3abb2c6cb37cde67f8dece75babdab73a  skills/la-carte/assets/carte/js/18-demarrage.js
 8911359ffa69d5e9fcca233641813b3388f8bb6ea67e18ddfe05a6f014e02245  skills/la-carte/assets/carte/js/19-api.js
-6fed729dcfb0e6bed7501f1f8eed6057cabc51e7d45277509788a8925bf74061  skills/la-carte/assets/carte/page.html
+f71a89a5428aa1a306d9e98d75539d830542523b252a84a80a569d3ee4f8c1bb  skills/la-carte/assets/carte/page.html
 85dad448514013643d94fecb7a599d993a1f5de0c72b24c9be36a8629ff7eac1  skills/la-carte/assets/requete-cli.mjs
-5e643070bd8d25eeb1231ec47f2bce59f7ebddc29ad9fc8e14750fd99afbe19c  skills/la-carte/assets/requetes-graphe.js
-02f7df513ecb8c84fbc42fb3558447e7a7b8252f3a1ef4840967ffbba1f0d708  skills/la-carte/assets/serveur.mjs
+5e9a2537852d4feecdebb16fd163cda81df9ab725fae211d5d2961c7d656fdaf  skills/la-carte/assets/requetes-graphe.js
+33803f28866f18d6223b0ecb32931ed04baa9704c8f2d9f94af8052fe76a4136  skills/la-carte/assets/serveur.mjs
 956ee77e108d14237b13e6be94718a306c1e2c6627fe5ec2b20af464354056cd  skills/la-carte/assets/ui/05-theme.js
 7865a6eae469e87beec5394f7426976e03b3666f0dd070d738eee0ffe1f96f7f  skills/la-carte/assets/ui/06-plan.js
 90964e203a90cf089fd55d93e488024cb7ea9adb79eee828b6f2e2f5d917330f  skills/la-carte/assets/ui/10-glossaire.js

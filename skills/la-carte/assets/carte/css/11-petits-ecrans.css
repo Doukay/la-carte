@@ -56,6 +56,8 @@
   body:not(.no-panel) #ask { display: none; }
   #ask { left: 50%; bottom: 8px; width: calc(100% - 16px); min-width: 0; }
   #ask-input { min-width: 0; }
+  .al-q { min-height: 44px; }
+  .al-x { width: 44px; height: 44px; }
   #ask-form { padding-left: 14px; }
   #flowbar { left: 50%; width: calc(100% - 16px); }
   #toast { left: 50%; max-width: calc(100% - 16px); }

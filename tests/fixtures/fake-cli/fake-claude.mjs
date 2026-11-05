@@ -42,6 +42,10 @@ process.stdin.on('end', () => {
     bash('node la-carte/.cache/requete.mjs overview');
     out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: 'shop-api/routes/orders.js' } }] } });
   }
+  if (input.includes('READ-OUTSIDE')) out({ type: 'assistant', message: { content: [{ type: 'tool_use', name: 'Read', input: { file_path: '../outside.txt' } }, { type: 'tool_use', name: 'Read', input: { file_path: 'la-carte/.cache/graphe.json' } }] } });
+  const item = /ITEM:(\S+)/.exec(input);
+  if (item) { out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: { title: 'Item', answer: 'About this item.', items: [{ id: item[1], note: '' }] } }); return; }
+  if (input.includes('SECRET-IN-ANSWER')) { out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: { title: 'Secret', answer: 'DB_PASSWORD = "correct-horse-value" in [[f:shop-api/routes/a-very-long-folder-name/with-a-long-file-name-too.js]].', items: [] } }); return; }
   out({ type: 'result', subtype: 'success', is_error: false, session_id: 'test-session', structured_output: {
     title: 'Refunds', answer: 'Refunds go through [[f:shop-api/routes/orders.js]].',
     items: [{ id: 'f:shop-api/routes/orders.js', note: 'Holds the refund endpoint.' }],

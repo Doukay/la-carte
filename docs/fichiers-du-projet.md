@@ -22,6 +22,7 @@ la-carte/
 | `descriptions/*.json` | Le nom et la description de chaque fichier et de chaque adresse du serveur, un fichier par partie | **Oui** |
 | `plan.json` | Pour les plans seulement : les fichiers, adresses du serveur et écrans prévus, qui peut utiliser chaque adresse, la technologie, les hypothèses et les questions ouvertes. Les noms et descriptions sont ici au lieu de `descriptions/` | **Oui** |
 | `parcours-perso.json` | Les parcours demandés depuis la carte | Seulement pour en supprimer un |
+| `questions.json` | Les questions posées depuis la carte et leurs réponses, avec l'empreinte des fichiers que chaque réponse utilise. Ce qui ressemble à une clé ou à un mot de passe y est masqué avant d'être écrit | Non : la croix de la liste oublie une question |
 | `rejets-sante.json` | Les problèmes de santé que tu as marqués **Pas un problème**, avec tes raisons | Seulement pour en annuler un. **Afficher à nouveau** sur la carte le fait aussi |
 
 Ces fichiers sont le travail qui coûte des jetons. Enregistrés dans Git, ils suivent ton projet sur un autre ordinateur ou dans un worktree, et ils ne sont pas perdus si le reste est supprimé. La carte ne les enregistre pas à ta place : ajoute `la-carte/sources/` à ton prochain enregistrement. Ils ne contiennent pas ton code, seulement des noms et des descriptions. Si ton dépôt est public, relis-les : ils décrivent comment ton appli est construite.

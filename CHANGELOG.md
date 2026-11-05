@@ -2,6 +2,10 @@
 
 > **En français.** Ce journal est celui de l'auteur d'origine (Hayden Smith), gardé tel quel en anglais pour pouvoir y retrouver l'origine d'une correction : les sections `## 0.6.3` et les suivantes ne sont pas traduites et ne parlent pas de cette copie. Les changements propres à cette traduction française sont listés dans la section suivante, `## Version française`.
 
+## 0.6.3-fr.4 (2026-11-05)
+
+- **Questions de base et réponses gardées** : la barre de question propose cinq questions de base et celles déjà posées. Chaque réponse est gardée dans `la-carte/sources/questions.json` ; la même question revient sans jeton. Le serveur compare l'empreinte des fichiers utilisés et dit si le code a changé depuis, avec **Reposer la question**. Ce qui ressemble à une clé est masqué avant d'être écrit. Fermer une réponse termine la conversation.
+
 ## 0.6.3-fr.3 (2026-11-05)
 
 - **Liens « événement » en vert** : leur rouge ressemblait à celui des liens coupés, et un lien normal pouvait passer pour une panne. Le rouge sert maintenant aux seuls liens coupés.
