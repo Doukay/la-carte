@@ -4,7 +4,7 @@ Cette copie française de Floorplan n'est pas officielle et n'a aucun lien avec 
 
 ## Signaler une faille
 
-Signale-la en privé à la personne qui tient ce dépôt, sans l'écrire dans un ticket public. Si le dépôt est sur GitHub, utilise l'onglet **Security** puis **Report a vulnerability** quand il est disponible ; sinon, contacte directement la personne qui te l'a donné.
+Signale-la en privé à la personne qui tient ce dépôt, sans l'écrire dans un ticket public : sur GitHub, onglet **Security**, puis **Report a vulnerability**.
 
 Dis ce qu'est le problème et ce qu'on pourrait en faire, comment le reproduire, et la version concernée (`.claude-plugin/plugin.json`, et la marque Git si tu en as une).
 
